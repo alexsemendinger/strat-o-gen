@@ -103,7 +103,14 @@ class PlayerScraper:
 
     def _fetch_batting_stats(self, player_id: str, year: int) -> Optional[Dict]:
         """Fetch batting statistics from various sources."""
-        # Try Lahman database first (offline, always reliable)
+        # Try manual data first (for when APIs are down)
+        from manual_data import get_manual_player_data
+        manual_stats = get_manual_player_data(player_id, year)
+        if manual_stats:
+            print(f"Using manually entered data for {player_id} {year}")
+            return manual_stats
+
+        # Try Lahman database (offline, usually reliable)
         stats = self._fetch_from_lahman(player_id, year)
         if stats:
             return stats
@@ -655,6 +662,12 @@ class PlayerScraper:
         Returns:
             Dictionary of league averages
         """
+        # Try manual data first (for when APIs are down)
+        from manual_data import get_manual_league_averages
+        manual_avg = get_manual_league_averages(year, league)
+        if manual_avg:
+            return manual_avg
+
         # Check if we have cached league averages
         league_file = Path(config.LEAGUE_AVG_FILE)
         if league_file.exists():
