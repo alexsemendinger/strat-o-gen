@@ -1,15 +1,15 @@
-"""Card rendering module for HTML and PDF output."""
+"""Card rendering module for HTML and PDF output - SOM-style format."""
 
 from typing import Dict
 from pathlib import Path
 
 
 class CardRenderer:
-    """Renders Strat-O-Matic cards as HTML and PDF."""
+    """Renders Strat-O-Matic cards as HTML and PDF matching official card layout."""
 
     def render_html(self, card_data: Dict) -> str:
         """
-        Render card as HTML string.
+        Render card as HTML string matching official SOM card layout.
 
         Args:
             card_data: Complete card data from CardEngine
@@ -17,170 +17,154 @@ class CardRenderer:
         Returns:
             HTML string
         """
+        player_name = card_data['player_name'].upper()
+        bats = card_data['bats']
+        year = card_data['year']
+        team = card_data['team']
+        positions = '/'.join(card_data['positions'])
+
         html = f"""
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>{card_data['player_name']} - {card_data['year']} Strat-O-Matic Card</title>
+    <title>{player_name} - {year} Strat-O-Matic Card</title>
     <style>
+        @page {{
+            size: 3.5in 2.5in;
+            margin: 0;
+        }}
+
         body {{
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            margin: 0;
             padding: 20px;
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }}
 
-        .card-container {{
-            background-color: white;
-            border: 3px solid #333;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            width: 600px;
-            padding: 20px;
+        .card {{
+            width: 800px;
+            background: white;
+            border: 3px solid black;
+            padding: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }}
 
         .card-header {{
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-bottom: 2px solid black;
             text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
         }}
 
         .player-name {{
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
-            color: #000;
+            margin-bottom: 4px;
         }}
 
         .player-info {{
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
+            font-size: 12px;
         }}
 
-        .player-stats {{
-            font-size: 16px;
-            margin-top: 5px;
+        .card-body {{
+            display: flex;
+        }}
+
+        .platoon-section {{
+            flex: 1;
+        }}
+
+        .platoon-section.vs-lhp {{
+            background-color: #c8e1f5;
+            border-right: 2px solid black;
+        }}
+
+        .platoon-section.vs-rhp {{
+            background-color: #ffd4d4;
+        }}
+
+        .platoon-header {{
+            text-align: center;
+            padding: 6px;
             font-weight: bold;
+            font-size: 11px;
+            border-bottom: 2px solid black;
+        }}
+
+        .platoon-stats {{
+            font-size: 10px;
+            text-align: center;
+            padding: 4px;
+            border-bottom: 1px solid #666;
         }}
 
         .card-grid {{
-            margin: 20px 0;
-            border-collapse: collapse;
+            display: table;
             width: 100%;
+            border-collapse: collapse;
         }}
 
-        .card-grid th, .card-grid td {{
-            border: 1px solid #333;
-            padding: 8px;
+        .grid-row {{
+            display: table-row;
+        }}
+
+        .dice-cell {{
+            display: table-cell;
+            width: 30px;
             text-align: center;
+            font-weight: bold;
+            border: 1px solid #666;
+            padding: 4px 2px;
+            font-size: 13px;
+            background-color: #e0e0e0;
         }}
 
-        .card-grid th {{
+        .result-cell {{
+            display: table-cell;
+            border: 1px solid #666;
+            padding: 4px 4px;
+            font-size: 10px;
+            line-height: 1.3;
+            text-align: center;
+            min-height: 28px;
+            vertical-align: middle;
+        }}
+
+        .col-header {{
+            display: table-cell;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #666;
+            padding: 4px;
+            font-size: 12px;
             background-color: #000;
             color: white;
-            font-weight: bold;
-        }}
-
-        .dice-col {{
-            background-color: #ddd;
-            font-weight: bold;
-        }}
-
-        .result {{
-            font-size: 12px;
-            min-height: 30px;
-        }}
-
-        .result.HOMERUN {{
-            background-color: #ffeb3b;
-            font-weight: bold;
-        }}
-
-        .result.TRIPLE {{
-            background-color: #81c784;
-        }}
-
-        .result.DOUBLE {{
-            background-color: #a5d6a7;
-        }}
-
-        .result.SINGLE {{
-            background-color: #c8e6c9;
-        }}
-
-        .result.WALK {{
-            background-color: #bbdefb;
-        }}
-
-        .result.STRIKEOUT {{
-            background-color: #ffcdd2;
         }}
 
         .ratings {{
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f5f5f5;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }}
-
-        .ratings-title {{
-            font-weight: bold;
-            margin-bottom: 5px;
+            border-top: 2px solid black;
+            padding: 8px;
+            font-size: 11px;
+            text-align: center;
+            background-color: #f8f8f8;
         }}
 
         .rating-item {{
             display: inline-block;
-            margin-right: 15px;
+            margin: 0 8px;
+            font-weight: bold;
         }}
 
         .warnings {{
-            margin-top: 15px;
-            padding: 10px;
+            padding: 8px;
             background-color: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 5px;
-        }}
-
-        .confidence {{
-            margin-top: 15px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }}
-
-        .confidence.HIGH {{
-            background-color: #d4edda;
-            border-color: #28a745;
-        }}
-
-        .confidence.MEDIUM {{
-            background-color: #fff3cd;
-            border-color: #ffc107;
-        }}
-
-        .confidence.LOW {{
-            background-color: #f8d7da;
-            border-color: #dc3545;
-        }}
-
-        .chances-summary {{
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #e3f2fd;
-            border: 1px solid #2196f3;
-            border-radius: 5px;
-            font-size: 12px;
-        }}
-
-        .chances-item {{
-            display: inline-block;
-            margin-right: 10px;
+            border-top: 1px solid #ffc107;
+            font-size: 10px;
         }}
 
         @media print {{
@@ -188,116 +172,123 @@ class CardRenderer:
                 background-color: white;
                 padding: 0;
             }}
-            .card-container {{
+            .card {{
                 box-shadow: none;
                 border: 2px solid black;
-            }}
-            .no-print {{
-                display: none;
             }}
         }}
     </style>
 </head>
 <body>
-    <div class="card-container">
+    <div class="card">
         <div class="card-header">
-            <div class="player-name">{card_data['player_name']}</div>
-            <div class="player-info">
-                {card_data['year']} {card_data['team']} |
-                {', '.join(card_data['positions'])} |
-                Bats: {card_data['bats']} Throws: {card_data['throws']}
+            <div class="player-name">{bats} | {player_name}</div>
+            <div class="player-info">If-{positions} {team}/{year}</div>
+        </div>
+
+        <div class="card-body">
+            <!-- VS LEFT-HAND PITCHERS -->
+            <div class="platoon-section vs-lhp">
+                <div class="platoon-header">AGAINST LEFT-HAND PITCHERS</div>
+                <div class="platoon-stats">Power-{card_data['ratings']['power']}</div>
+
+                <div class="card-grid">
+                    <!-- Column headers -->
+                    <div class="grid-row">
+                        <div class="dice-cell"></div>
+                        <div class="col-header">1</div>
+                        <div class="col-header">2</div>
+                        <div class="col-header">3</div>
+                    </div>
+"""
+
+        # Add rows for dice 2-12 (VS LHP)
+        for dice in range(2, 13):
+            html += f"""
+                    <div class="grid-row">
+                        <div class="dice-cell">{dice}</div>
+"""
+            for col in [1, 2, 3]:
+                result = card_data['grid']['vs_lhp'][col].get(dice, 'OUT')
+                # Format result for display
+                result_display = result.replace('\n', '<br>')
+                html += f"""                        <div class="result-cell">{result_display}</div>\n"""
+
+            html += """                    </div>\n"""
+
+        html += """
+                </div>
             </div>
-            <div class="player-stats">
-                AVG: {card_data['stats']['AVG']:.3f} |
-                HR: {card_data['stats']['HR']} |
-                RBI: {card_data['stats']['RBI']} |
-                R: {card_data['stats']['R']} |
-                H: {card_data['stats']['H']} |
-                PA: {card_data['stats']['PA']}
+
+            <!-- VS RIGHT-HAND PITCHERS -->
+            <div class="platoon-section vs-rhp">
+                <div class="platoon-header">AGAINST RIGHT-HAND PITCHERS</div>
+                <div class="platoon-stats">Power-{power_rating}</div>
+
+                <div class="card-grid">
+                    <!-- Column headers -->
+                    <div class="grid-row">
+                        <div class="dice-cell"></div>
+                        <div class="col-header">1</div>
+                        <div class="col-header">2</div>
+                        <div class="col-header">3</div>
+                    </div>
+""".replace('{power_rating}', card_data['ratings']['power'])
+
+        # Add rows for dice 2-12 (VS RHP)
+        for dice in range(2, 13):
+            html += f"""
+                    <div class="grid-row">
+                        <div class="dice-cell">{dice}</div>
+"""
+            for col in [1, 2, 3]:
+                result = card_data['grid']['vs_rhp'][col].get(dice, 'OUT')
+                # Format result for display
+                result_display = result.replace('\n', '<br>')
+                html += f"""                        <div class="result-cell">{result_display}</div>\n"""
+
+            html += """                    </div>\n"""
+
+        html += """
+                </div>
             </div>
         </div>
 
-        <table class="card-grid">
-            <thead>
-                <tr>
-                    <th>DICE</th>
-                    <th>1</th>
-                    <th>2</th>
-                    <th>3</th>
-                </tr>
-            </thead>
-            <tbody>
-"""
-
-        # Add grid rows
-        for dice in range(2, 13):
-            html += f"                <tr>\n"
-            html += f"                    <td class='dice-col'>{dice}</td>\n"
-            for col in [1, 2, 3]:
-                result = card_data['grid'][col].get(dice, 'OUT')
-                result_class = result.split('(')[0] if '(' in result else result
-                html += f"                    <td class='result {result_class}'>{result}</td>\n"
-            html += f"                </tr>\n"
-
-        html += """
-            </tbody>
-        </table>
-
         <div class="ratings">
-            <div class="ratings-title">RATINGS</div>
 """
 
         # Add ratings
         ratings = card_data['ratings']
-        html += f"            <span class='rating-item'><strong>Power:</strong> {ratings.get('power', 'N')}</span>\n"
-        html += f"            <span class='rating-item'><strong>Steal:</strong> {ratings.get('steal', 'E')}</span>\n"
-        html += f"            <span class='rating-item'><strong>Speed:</strong> {ratings.get('speed', 'C')}</span>\n"
-        html += f"            <span class='rating-item'><strong>Bunt:</strong> {ratings.get('bunt', 'B')}</span>\n"
-        html += f"            <span class='rating-item'><strong>Hit & Run:</strong> {ratings.get('hit_and_run', 'B')}</span>\n"
+        stats = card_data['stats']
+        sb = stats.get('SB', 0) if 'SB' in card_data.get('stats', {}) else card_data.get('SB', 0)
+        cs = stats.get('CS', 0) if 'CS' in card_data.get('stats', {}) else card_data.get('CS', 0)
 
-        html += """
-        </div>
-"""
-
-        # Add chances summary
-        chances = card_data.get('chances', {})
-        html += """
-        <div class="chances-summary">
-            <strong>Outcome Distribution (out of 108 chances):</strong><br>
-"""
-        for outcome in ['HOMERUN', 'TRIPLE', 'DOUBLE', 'SINGLE', 'WALK', 'HBP', 'STRIKEOUT', 'OUT']:
-            count = chances.get(outcome, 0)
-            if count > 0:
-                html += f"            <span class='chances-item'>{outcome}: {count:.1f}</span>\n"
-
-        html += """
-        </div>
-"""
-
-        # Add confidence indicator
-        confidence = card_data.get('confidence', {})
-        overall = confidence.get('overall', 'MEDIUM')
         html += f"""
-        <div class="confidence {overall}">
-            <strong>Card Confidence: {overall}</strong>
+            <span class="rating-item">stealing-({ratings.get('steal', 'E')})</span>
+            <span class="rating-item">{sb}/{cs} ({sb + cs}-{sb})</span>
+            <span class="rating-item">bunting-{ratings.get('bunt', 'D')}</span>
+            <span class="rating-item">hit & run-{ratings.get('hit_and_run', 'B')}</span>
 """
 
-        if confidence.get('missing_data'):
-            html += f"            <br><em>Missing data: {', '.join(confidence['missing_data'])}</em>\n"
+        # Add running rating
+        html += f"""
+            <br>
+            <span class="rating-item">running {ratings.get('speed', '1-10')}</span>
+"""
 
         html += """
         </div>
 """
 
         # Add warnings if any
-        all_warnings = card_data.get('warnings', []) + confidence.get('warnings', [])
+        all_warnings = card_data.get('warnings', []) + card_data['confidence'].get('warnings', [])
         if all_warnings:
             html += """
         <div class="warnings">
-            <strong>⚠ Warnings:</strong><br>
+            <strong>⚠ Notes:</strong>
 """
             for warning in all_warnings:
-                html += f"            • {warning}<br>\n"
+                html += f"            {warning}<br>\n"
 
             html += """
         </div>

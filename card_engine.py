@@ -49,6 +49,8 @@ class CardEngine:
                 'R': player_stats.get('R', 0),
                 'H': player_stats.get('H', 0),
                 'PA': player_stats.get('PA', 0),
+                'SB': player_stats.get('SB', 0),
+                'CS': player_stats.get('CS', 0),
             },
             'positions': player_stats.get('positions', ['Unknown']),
             'bats': player_stats.get('bats', 'R'),
@@ -182,24 +184,16 @@ class CardEngine:
 
     def create_card_grid(self, chances: Dict) -> Dict:
         """
-        Place results on a 3×11 card grid respecting dice probabilities.
+        Place results on a 6×11 card grid respecting dice probabilities.
+        Creates platoon splits: columns 1-3 vs LHP, columns 4-6 vs RHP.
 
         Args:
             chances: Dictionary of outcome chances
 
         Returns:
-            Grid dictionary with structure {column: {dice_sum: result}}
+            Grid dictionary with structure {platoon: {column: {dice_sum: result}}}
         """
-        # Create allocation list weighted by dice probabilities
-        allocations = []
-
-        for dice_sum in range(2, 13):
-            weight = config.DICE_WEIGHTS[dice_sum]
-            allocations.extend([dice_sum] * weight)
-
-        # We have 36 weighted slots per column, 3 columns = 108 total
         # Build a list of 108 results based on chances
-
         results_list = []
         for outcome, chance_count in chances.items():
             count = int(round(chance_count))
@@ -223,42 +217,80 @@ class CardEngine:
         }
         results_list.sort(key=lambda x: result_value.get(x, 0), reverse=True)
 
-        # Create grid: 3 identical columns (Basic game)
-        # Each column maps dice sum (2-12) to result
-        grid = {1: {}, 2: {}, 3: {}}
+        # Create grid with platoon splits
+        # For now, duplicate results for both platoons (future: calculate separate splits)
+        grid = {
+            'vs_lhp': {1: {}, 2: {}, 3: {}},
+            'vs_rhp': {1: {}, 2: {}, 3: {}}
+        }
 
         # Assign results to dice positions
-        # Strategy: rare rolls (2, 12) get best results, common rolls (7) get worst
         dice_rarity_order = [2, 12, 3, 11, 4, 10, 5, 9, 6, 8, 7]
 
-        result_idx = 0
-        for col in [1, 2, 3]:
-            for dice_sum in dice_rarity_order:
-                weight = config.DICE_WEIGHTS[dice_sum]
-                # Assign 'weight' results to this dice position
-                if result_idx < len(results_list):
-                    # For simplicity in basic version, just assign the first available result
-                    # In reality, we'd assign multiple results per position based on weight
-                    grid[col][dice_sum] = self._format_result(results_list[result_idx])
-                    result_idx += weight
-                else:
-                    grid[col][dice_sum] = self._format_result('OUT')
+        # Create both platoon grids (for now they're identical)
+        for platoon in ['vs_lhp', 'vs_rhp']:
+            position_counter = {'count': 0}
+            result_idx = 0
+
+            for col in [1, 2, 3]:
+                for dice_sum in dice_rarity_order:
+                    weight = config.DICE_WEIGHTS[dice_sum]
+                    if result_idx < len(results_list):
+                        grid[platoon][col][dice_sum] = self._format_result(
+                            results_list[result_idx],
+                            position_counter
+                        )
+                        result_idx += weight
+                    else:
+                        grid[platoon][col][dice_sum] = self._format_result(
+                            'OUT',
+                            position_counter
+                        )
 
         return grid
 
-    def _format_result(self, outcome: str) -> str:
-        """Format outcome for card display."""
+    def _format_result(self, outcome: str, position_counter: Dict = None) -> str:
+        """Format outcome for card display with variety."""
+        import random
+
+        if position_counter is None:
+            position_counter = {'count': 0}
+
         result_formats = {
             'HOMERUN': 'HOMERUN',
             'TRIPLE': 'TRIPLE',
-            'DOUBLE': 'DOUBLE',
-            'SINGLE': 'SINGLE',
+            'DOUBLE': ['DOUBLE', 'DOUBLE*', 'DOUBLE**'],
+            'SINGLE': ['SINGLE', 'SINGLE*', 'SINGLE**', 'SINGLE(lf)', 'SINGLE(cf)', 'SINGLE(rf)'],
             'WALK': 'WALK',
-            'HBP': 'HBP',
-            'STRIKEOUT': 'STRIKEOUT',
-            'OUT': 'gb(A)'  # Default out type
+            'HBP': 'HBP\nplus injury',
+            'STRIKEOUT': ['STRIKEOUT', 'Δ2-strikeout'],
         }
-        return result_formats.get(outcome, 'OUT')
+
+        # For outs, distribute among different fielder types
+        out_types = [
+            'fly (lf) B?',
+            'fly (cf) B?',
+            'fly (rf) B?',
+            'gb (2b) A+',
+            'gb (ss) A',
+            'gb (3b) C',
+            'gb (1b) A',
+            'lo (2b)',
+            'po (1b)',
+        ]
+
+        if outcome == 'OUT':
+            # Cycle through out types for variety
+            idx = position_counter['count'] % len(out_types)
+            position_counter['count'] += 1
+            return out_types[idx]
+        elif outcome in result_formats:
+            fmt = result_formats[outcome]
+            if isinstance(fmt, list):
+                return random.choice(fmt)
+            return fmt
+
+        return outcome
 
     def calculate_ratings(self, stats: Dict) -> Dict:
         """
@@ -300,17 +332,23 @@ class CardEngine:
         hr = stats.get('HR', 0)
         ratings['power'] = 'N' if hr >= config.POWER_THRESHOLD_HR else 'W'
 
-        # SPEED RATING (based on triples and steals)
+        # SPEED RATING (in SOM "1-13" style format based on triples and steals)
         triples = stats.get('3B', 0)
         speed_score = (sb * 2) + (triples * 3)
-        if speed_score >= 30:
-            ratings['speed'] = 'A'
+
+        # Convert to "running 1-X" format like real SOM cards
+        if speed_score >= 40:
+            ratings['speed'] = '1-17'
+        elif speed_score >= 30:
+            ratings['speed'] = '1-15'
         elif speed_score >= 20:
-            ratings['speed'] = 'B'
+            ratings['speed'] = '1-13'
         elif speed_score >= 10:
-            ratings['speed'] = 'C'
+            ratings['speed'] = '1-10'
+        elif speed_score >= 5:
+            ratings['speed'] = '1-8'
         else:
-            ratings['speed'] = 'D'
+            ratings['speed'] = '1-6'
 
         # BUNTING (placeholder - would need more sophisticated analysis)
         ratings['bunt'] = 'B'  # Default
