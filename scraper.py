@@ -45,16 +45,30 @@ class PlayerScraper:
                 player_info = {
                     'player_id': row.get('key_bbref', ''),
                     'name': f"{row.get('name_first', '')} {row.get('name_last', '')}",
+                    'name_first': row.get('name_first', ''),
+                    'name_last': row.get('name_last', ''),
                     'years': f"{row.get('mlb_played_first', 'Unknown')}-{row.get('mlb_played_last', 'Unknown')}",
                     'debut': row.get('mlb_played_first', 0),
                     'final': row.get('mlb_played_last', 0)
                 }
                 players.append(player_info)
 
+                # Cache the player name for later use
+                self._cache_player_name(player_info['player_id'], player_info['name'])
+
             return players
         except Exception as e:
             print(f"Error searching for player: {e}")
             return []
+
+    def _cache_player_name(self, player_id: str, name: str) -> None:
+        """Cache player name for ID lookup."""
+        cache_file = self.cache_dir / f"{player_id}_name.json"
+        try:
+            with open(cache_file, 'w') as f:
+                json.dump({'player_id': player_id, 'name': name}, f)
+        except:
+            pass
 
     def get_player_stats(self, player_id: str, year: int) -> Optional[Dict]:
         """
@@ -88,56 +102,375 @@ class PlayerScraper:
             return None
 
     def _fetch_batting_stats(self, player_id: str, year: int) -> Optional[Dict]:
-        """Fetch batting statistics from Baseball Reference."""
+        """Fetch batting statistics from various sources."""
+        # Try Lahman database first (offline, always reliable)
+        stats = self._fetch_from_lahman(player_id, year)
+        if stats:
+            return stats
+
+        # Try Baseball Reference scraping as fallback
         try:
-            # Use pybaseball's player_stats_bref function for specific player
-            # This fetches directly from Baseball Reference using their player ID
-            from pybaseball import player_stats_bref
-
-            # Get all batting stats for the player
-            try:
-                df = player_stats_bref(player_id)
-                if df is None or len(df) == 0:
-                    return None
-
-                # Filter for the specific year
-                # The year might be in different columns depending on format
-                year_data = None
-                if 'Year' in df.columns:
-                    year_data = df[df['Year'] == str(year)]
-                elif 'season' in df.columns:
-                    year_data = df[df['season'] == year]
-
-                if year_data is None or len(year_data) == 0:
-                    return None
-
-                # If multiple rows (multi-team season), aggregate
-                if len(year_data) > 1:
-                    # Look for a 'TOT' row or aggregate manually
-                    tot_row = year_data[year_data.get('Tm', '') == 'TOT']
-                    if len(tot_row) > 0:
-                        row = tot_row.iloc[0]
-                    else:
-                        # Aggregate stats across teams
-                        row = self._aggregate_multi_team(year_data)
-                else:
-                    row = year_data.iloc[0]
-
-                # Extract stats
-                stats = self._extract_stats_from_row(row, year)
-                stats['player_id'] = player_id
-                stats['year'] = year
-
+            stats = self._fetch_from_baseball_reference(player_id, year)
+            if stats:
                 return stats
+        except Exception as e:
+            print(f"Baseball Reference fetch failed: {e}")
 
-            except Exception as e:
-                print(f"player_stats_bref failed, trying alternative: {e}")
-                # Fallback: try batting_stats with broad search
-                return self._fetch_batting_stats_fallback(player_id, year)
+        # Last resort: try other pybaseball methods
+        return self._fetch_via_pybaseball_alt(player_id, year)
+
+    def _fetch_via_pybaseball_alt(self, player_id: str, year: int) -> Optional[Dict]:
+        """Alternative method using pybaseball batting_stats_bref."""
+        try:
+            # Try batting_stats_bref which goes directly to Baseball Reference
+            batting = pyb.batting_stats_bref(year)
+
+            if batting is None or len(batting) == 0:
+                return None
+
+            # Get player name from cache
+            player_name_parts = self._get_player_name_from_id(player_id)
+
+            if not player_name_parts:
+                return None
+
+            first, last = player_name_parts
+
+            # Search for player in the data
+            for idx, row in batting.iterrows():
+                name = str(row.get('Name', ''))
+                if last.lower() in name.lower() and first.lower() in name.lower():
+                    stats = self._extract_stats_from_row(row, year)
+                    stats['player_id'] = player_id
+                    stats['year'] = year
+                    return stats
+
+            return None
 
         except Exception as e:
-            print(f"Error in _fetch_batting_stats: {e}")
+            print(f"pybaseball batting_stats_bref failed: {e}")
             return None
+
+    def _fetch_from_lahman(self, player_id: str, year: int) -> Optional[Dict]:
+        """Fetch stats from Lahman database (offline, reliable)."""
+        try:
+            # Download Lahman database if not already downloaded
+            try:
+                pyb.download_lahman()
+            except:
+                pass  # May already be downloaded
+
+            # Get Lahman batting data (function is called 'batting')
+            lahman = pyb.batting()
+
+            if lahman is None or len(lahman) == 0:
+                return None
+
+            # Filter for this player and year
+            player_data = lahman[
+                (lahman['playerID'] == player_id) &
+                (lahman['yearID'] == year)
+            ]
+
+            if len(player_data) == 0:
+                return None
+
+            # If multiple rows (played for multiple teams), aggregate
+            if len(player_data) > 1:
+                row = self._aggregate_lahman_stats(player_data)
+            else:
+                row = player_data.iloc[0]
+
+            # Convert Lahman format to our format
+            stats = self._convert_lahman_stats(row, year)
+            stats['player_id'] = player_id
+            stats['year'] = year
+
+            return stats
+
+        except Exception as e:
+            print(f"Lahman database lookup failed: {e}")
+            return None
+
+    def _aggregate_lahman_stats(self, df: pd.DataFrame) -> pd.Series:
+        """Aggregate Lahman stats across teams."""
+        # Lahman has counting stats, so just sum them
+        numeric_cols = ['G', 'AB', 'R', 'H', '2B', '3B', 'HR', 'RBI', 'SB', 'CS', 'BB', 'SO', 'IBB', 'HBP', 'SH', 'SF', 'GIDP']
+
+        result = {}
+        for col in numeric_cols:
+            if col in df.columns:
+                result[col] = df[col].sum()
+
+        # Get non-numeric from first row
+        result['playerID'] = df.iloc[0]['playerID']
+        result['yearID'] = df.iloc[0]['yearID']
+        result['lgID'] = df.iloc[0].get('lgID', 'AL')
+
+        return pd.Series(result)
+
+    def _convert_lahman_stats(self, row: pd.Series, year: int) -> Dict:
+        """Convert Lahman database format to our format."""
+
+        def safe_int(key, default=0):
+            val = row.get(key, default)
+            return int(val) if pd.notna(val) else default
+
+        ab = safe_int('AB')
+        h = safe_int('H')
+        doubles = safe_int('2B')
+        triples = safe_int('3B')
+        hr = safe_int('HR')
+        bb = safe_int('BB')
+        hbp = safe_int('HBP')
+        sf = safe_int('SF')
+        sh = safe_int('SH')
+
+        # Calculate PA
+        pa = ab + bb + hbp + sf + sh
+
+        # Calculate BA/OBP/SLG
+        ba = h / ab if ab > 0 else 0.0
+
+        obp_denom = ab + bb + hbp + sf
+        obp = (h + bb + hbp) / obp_denom if obp_denom > 0 else 0.0
+
+        singles = h - doubles - triples - hr
+        tb = singles + (2 * doubles) + (3 * triples) + (4 * hr)
+        slg = tb / ab if ab > 0 else 0.0
+
+        stats = {
+            'player_name': 'Unknown',  # Lahman doesn't include names in batting table
+            'team': str(row.get('teamID', 'Unknown')),
+            'league': str(row.get('lgID', 'AL')),
+            'G': safe_int('G'),
+            'AB': ab,
+            'PA': pa,
+            'H': h,
+            '2B': doubles,
+            '3B': triples,
+            'HR': hr,
+            'R': safe_int('R'),
+            'RBI': safe_int('RBI'),
+            'BB': bb,
+            'SO': safe_int('SO'),
+            'SB': safe_int('SB'),
+            'CS': safe_int('CS'),
+            'BA': ba,
+            'OBP': obp,
+            'SLG': slg,
+            'HBP': hbp,
+            'SF': sf if year >= 1954 else None,
+            'SH': sh,
+            'IBB': safe_int('IBB') if year >= 1955 else None,
+            'GDP': safe_int('GIDP'),
+            'positions': ['Unknown'],
+            'bats': 'R',
+            'throws': 'R',
+        }
+
+        # Get player name from cache if available
+        name_parts = self._get_player_name_from_id(row.get('playerID', ''))
+        if name_parts:
+            stats['player_name'] = f"{name_parts[0]} {name_parts[1]}"
+
+        # Generate warnings
+        stats['warnings'] = self._generate_warnings(stats, year)
+
+        return stats
+
+    def _get_player_name_from_id(self, player_id: str) -> Optional[Tuple[str, str]]:
+        """Extract player name from ID or cache."""
+        # Check name cache first
+        name_cache = self.cache_dir / f"{player_id}_name.json"
+        if name_cache.exists():
+            try:
+                with open(name_cache, 'r') as f:
+                    cached = json.load(f)
+                    name = cached.get('name', '')
+                    parts = name.split()
+                    if len(parts) >= 2:
+                        return parts[0], parts[-1]
+            except:
+                pass
+
+        # Check stats cache
+        cache_files = list(self.cache_dir.glob(f"{player_id}_*.json"))
+        for cache_file in cache_files:
+            if '_name.json' in str(cache_file):
+                continue
+            try:
+                with open(cache_file, 'r') as f:
+                    cached = json.load(f)
+                    name = cached.get('player_name', '')
+                    parts = name.split()
+                    if len(parts) >= 2:
+                        return parts[0], parts[-1]
+            except:
+                pass
+
+        return None
+
+    def _fetch_from_baseball_reference(self, player_id: str, year: int) -> Optional[Dict]:
+        """Fetch stats directly from Baseball Reference HTML."""
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+
+            # Baseball Reference URL format
+            url = f"https://www.baseball-reference.com/players/{player_id[0]}/{player_id}.shtml"
+
+            # Add headers to avoid being blocked
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+
+            time.sleep(config.SCRAPE_DELAY_SECONDS)
+            response = requests.get(url, headers=headers, timeout=15)
+
+            if response.status_code != 200:
+                print(f"Baseball Reference returned status {response.status_code}")
+                return None
+
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Find the batting stats table - Baseball Reference often puts tables in HTML comments
+            batting_table = soup.find('table', {'id': 'batting_standard'})
+
+            if not batting_table:
+                # Try to find the table in HTML comments
+                import re
+                comments = soup.find_all(string=lambda text: isinstance(text, str) and 'batting_standard' in text)
+
+                for comment in comments:
+                    # Parse the comment as HTML
+                    comment_soup = BeautifulSoup(str(comment), 'html.parser')
+                    batting_table = comment_soup.find('table', {'id': 'batting_standard'})
+                    if batting_table:
+                        break
+
+            if not batting_table:
+                print("Could not find batting table (even in comments)")
+                return None
+
+            # Find the row for the specific year
+            tbody = batting_table.find('tbody')
+            if not tbody:
+                # Sometimes there's no tbody tag
+                rows = batting_table.find_all('tr')
+            else:
+                rows = tbody.find_all('tr')
+
+            for row in rows:
+                # Skip header rows
+                if 'class' in row.attrs and 'thead' in row.attrs.get('class', []):
+                    continue
+
+                year_cell = row.find('th', {'data-stat': 'year_ID'})
+                if not year_cell:
+                    continue
+
+                year_text = year_cell.text.strip()
+
+                if str(year) == year_text:
+                    # Extract stats from this row
+                    stats_dict = {}
+
+                    # Get player name from page
+                    name_tag = soup.find('h1')
+                    if name_tag:
+                        stats_dict['player_name'] = name_tag.text.strip()
+
+                    # Get all stat cells
+                    for cell in row.find_all(['td', 'th']):
+                        stat_name = cell.get('data-stat', '')
+                        stat_value = cell.text.strip()
+                        if stat_name:
+                            stats_dict[stat_name] = stat_value
+
+                    # Convert to our format
+                    stats = self._convert_bbref_stats(stats_dict, year)
+                    stats['player_id'] = player_id
+                    stats['year'] = year
+
+                    return stats
+
+            print(f"Could not find stats row for year {year}")
+            return None
+
+        except Exception as e:
+            print(f"Exception in Baseball Reference scraping: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+    def _convert_bbref_stats(self, bbref_stats: Dict, year: int) -> Dict:
+        """Convert Baseball Reference stat format to our format."""
+
+        def safe_int(val, default=0):
+            try:
+                return int(val) if val and val != '' else default
+            except:
+                return default
+
+        def safe_float(val, default=0.0):
+            try:
+                return float(val) if val and val != '' else default
+            except:
+                return default
+
+        stats = {
+            'player_name': bbref_stats.get('player_name', 'Unknown'),
+            'team': bbref_stats.get('team_ID', 'Unknown'),
+            'league': bbref_stats.get('lg_ID', 'AL'),
+            'G': safe_int(bbref_stats.get('G')),
+            'AB': safe_int(bbref_stats.get('AB')),
+            'PA': safe_int(bbref_stats.get('PA')),
+            'H': safe_int(bbref_stats.get('H')),
+            '2B': safe_int(bbref_stats.get('2B')),
+            '3B': safe_int(bbref_stats.get('3B')),
+            'HR': safe_int(bbref_stats.get('HR')),
+            'R': safe_int(bbref_stats.get('R')),
+            'RBI': safe_int(bbref_stats.get('RBI')),
+            'BB': safe_int(bbref_stats.get('BB')),
+            'SO': safe_int(bbref_stats.get('SO')),
+            'SB': safe_int(bbref_stats.get('SB')),
+            'CS': safe_int(bbref_stats.get('CS')),
+            'BA': safe_float(bbref_stats.get('batting_avg')),
+            'OBP': safe_float(bbref_stats.get('onbase_perc')),
+            'SLG': safe_float(bbref_stats.get('slugging_perc')),
+            'HBP': safe_int(bbref_stats.get('HBP')),
+            'SF': safe_int(bbref_stats.get('SF')) if year >= 1954 else None,
+            'SH': safe_int(bbref_stats.get('SH')),
+            'IBB': safe_int(bbref_stats.get('IBB')) if year >= 1955 else None,
+            'GDP': safe_int(bbref_stats.get('GIDP')),
+            'positions': ['Unknown'],
+            'bats': 'R',
+            'throws': 'R',
+        }
+
+        # Calculate PA if not provided
+        if stats['PA'] == 0:
+            stats['PA'] = self._calculate_pa(stats)
+
+        # Calculate BA/OBP/SLG if not provided
+        if stats['BA'] == 0.0 and stats['AB'] > 0:
+            stats['BA'] = stats['H'] / stats['AB']
+
+        if stats['OBP'] == 0.0 and stats['AB'] > 0:
+            denom = stats['AB'] + stats['BB'] + stats['HBP'] + (stats['SF'] if stats['SF'] else 0)
+            if denom > 0:
+                stats['OBP'] = (stats['H'] + stats['BB'] + stats['HBP']) / denom
+
+        if stats['SLG'] == 0.0 and stats['AB'] > 0:
+            singles = stats['H'] - stats['2B'] - stats['3B'] - stats['HR']
+            tb = singles + (2 * stats['2B']) + (3 * stats['3B']) + (4 * stats['HR'])
+            stats['SLG'] = tb / stats['AB']
+
+        # Track warnings
+        stats['warnings'] = self._generate_warnings(stats, year)
+
+        return stats
 
     def _aggregate_multi_team(self, df: pd.DataFrame) -> pd.Series:
         """Aggregate stats across multiple teams in same season."""
@@ -170,42 +503,6 @@ class PlayerScraper:
                 result['SLG'] = tb / ab
 
         return result
-
-    def _fetch_batting_stats_fallback(self, player_id: str, year: int) -> Optional[Dict]:
-        """Fallback method to fetch batting stats."""
-        try:
-            # Try to use batting_stats for the year and search by name
-            batting = pyb.batting_stats(year, year, qual=0)
-
-            if batting is None or len(batting) == 0:
-                return None
-
-            # Search for player by ID in various ID columns
-            player_data = pd.DataFrame()
-            for id_col in ['IDfg', 'mlbamid', 'bbrefid', 'Name']:
-                if id_col in batting.columns:
-                    if id_col == 'Name':
-                        # Partial name match as last resort
-                        player_data = batting[batting[id_col].str.contains(player_id, case=False, na=False)]
-                    else:
-                        player_data = batting[batting[id_col] == player_id]
-
-                    if len(player_data) > 0:
-                        break
-
-            if len(player_data) == 0:
-                return None
-
-            row = player_data.iloc[0]
-            stats = self._extract_stats_from_row(row, year)
-            stats['player_id'] = player_id
-            stats['year'] = year
-
-            return stats
-
-        except Exception as e:
-            print(f"Fallback also failed: {e}")
-            return None
 
     def _extract_stats_from_row(self, row: pd.Series, year: int) -> Dict:
         """Extract and normalize stats from a pandas row."""
