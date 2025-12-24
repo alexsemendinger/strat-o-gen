@@ -11,6 +11,7 @@ SOM cards have:
 
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
+from fielding_locations import FieldingLocationAssigner
 
 
 # 2d6 probability distribution - how many chances each dice sum has per column
@@ -32,7 +33,7 @@ DICE_WEIGHTS = {
 @dataclass
 class CardResult:
     """A single result on the card (can include d20 splits)."""
-    outcome: str  # 'single', 'double', 'triple', 'homerun', 'walk', 'strikeout', 'out'
+    outcome: str  # 'single', 'double', 'triple', 'homerun', 'walk', 'strikeout', 'out', or specific fielding result
     d20_range: Tuple[int, int] = (1, 20)  # (start, end) inclusive, or None for no split
 
     def __str__(self):
@@ -45,6 +46,12 @@ class CardResult:
 
     def _outcome_name(self) -> str:
         """Format outcome name for display."""
+        # Check if it's already a specific fielding result (e.g., "gb(2B)A")
+        if '(' in self.outcome or self.outcome.startswith('gb') or self.outcome.startswith('fly') or \
+           self.outcome.startswith('line') or self.outcome.startswith('popup'):
+            return self.outcome
+
+        # Standard outcomes
         names = {
             'single': '1B',
             'double': '2B',
@@ -126,6 +133,10 @@ class CardLayout:
             for roll in col.rolls:
                 for result in roll.results:
                     outcome = result.outcome
+                    # Normalize fielding results to 'out' for counting
+                    if outcome.startswith('gb') or outcome.startswith('fly') or \
+                       outcome.startswith('line') or outcome.startswith('popup'):
+                        outcome = 'out'
                     chances = result.get_chances(DICE_WEIGHTS[roll.dice])
                     totals[outcome] = totals.get(outcome, 0) + chances
         return totals
@@ -271,17 +282,23 @@ class CardLayoutGenerator:
     def _fill_remaining_with_outs(columns: List[CardColumn], out_chances: float):
         """
         Fill remaining space with outs, but only up to the specified amount.
+        Uses FieldingLocationAssigner to generate specific fielding locations.
 
         Args:
             columns: Card columns to fill
             out_chances: How many out chances we should have total (out of 108)
         """
+        assigner = FieldingLocationAssigner()
+
         # Calculate how many outs we already have from partial fills
         current_outs = 0
         for col in columns:
             for roll in col.rolls:
                 for result in roll.results:
-                    if result.outcome == 'out':
+                    # Count any fielding result as an out
+                    if result.outcome == 'out' or result.outcome.startswith('gb') or \
+                       result.outcome.startswith('fly') or result.outcome.startswith('line') or \
+                       result.outcome.startswith('popup'):
                         current_outs += result.get_chances(DICE_WEIGHTS[roll.dice])
 
         remaining_outs = out_chances - current_outs
@@ -296,19 +313,21 @@ class CardLayoutGenerator:
                     break
 
                 if not roll.results:
-                    # Entire dice roll is empty
+                    # Entire dice roll is empty - assign a fielding location
                     dice_weight = DICE_WEIGHTS[roll.dice]
                     if remaining_outs >= dice_weight:
                         # Use whole dice roll for outs
-                        roll.results.append(CardResult(outcome='out'))
+                        fielding_result = assigner.generate_out_result()
+                        roll.results.append(CardResult(outcome=fielding_result))
                         remaining_outs -= dice_weight
                     else:
                         # Use partial dice roll with d20 split
                         fraction = remaining_outs / dice_weight
                         d20_size = int(fraction * 20)
                         if d20_size > 0:
+                            fielding_result = assigner.generate_out_result()
                             roll.results.append(CardResult(
-                                outcome='out',
+                                outcome=fielding_result,
                                 d20_range=(1, d20_size)
                             ))
                             actual = (d20_size / 20.0) * dice_weight
@@ -324,8 +343,9 @@ class CardLayoutGenerator:
 
                         if remaining_outs >= available_chances:
                             # Fill the rest of this dice roll
+                            fielding_result = assigner.generate_out_result()
                             roll.results.append(CardResult(
-                                outcome='out',
+                                outcome=fielding_result,
                                 d20_range=(last_end + 1, 20)
                             ))
                             remaining_outs -= available_chances
@@ -336,8 +356,9 @@ class CardLayoutGenerator:
                             if d20_size > 0:
                                 new_end = min(last_end + d20_size, 20)
                                 if new_end > last_end:
+                                    fielding_result = assigner.generate_out_result()
                                     roll.results.append(CardResult(
-                                        outcome='out',
+                                        outcome=fielding_result,
                                         d20_range=(last_end + 1, new_end)
                                     ))
                                     actual = ((new_end - last_end) / 20.0) * dice_weight
