@@ -299,13 +299,27 @@ class CardLayoutGenerator:
         """
         Assign an outcome across the three columns.
 
-        Strategy: Distribute across columns with some variation to avoid
-        identical columns (like real SOM cards).
+        PHASE 2: Strategic column distribution to match real SOM cards.
+
+        Column 1 (Defensive): 70-80% outs/strikeouts, 20-30% offensive
+        Column 2 (Offensive): 60-70% walks/hits, 30-40% outs (already has rare HR/3B)
+        Column 3 (Mixed): 50/50 balance
         """
-        # Split chances across columns with slight variation
-        # Column 1 gets 35%, column 2 gets 30%, column 3 gets 35%
-        # This creates some asymmetry
-        column_weights = [0.35, 0.30, 0.35]
+        # Categorize outcomes
+        offensive_outcomes = {'homerun', 'triple', 'double', 'single', 'walk', 'hbp'}
+        defensive_outcomes = {'strikeout', 'out'}
+
+        if outcome in offensive_outcomes:
+            # Offensive outcomes: heavily favor Column 2
+            # Column 1: 15%, Column 2: 60%, Column 3: 25%
+            column_weights = [0.15, 0.60, 0.25]
+        elif outcome in defensive_outcomes:
+            # Defensive outcomes: heavily favor Column 1
+            # Column 1: 60%, Column 2: 15%, Column 3: 25%
+            column_weights = [0.60, 0.15, 0.25]
+        else:
+            # Unknown outcome type: distribute evenly
+            column_weights = [0.33, 0.34, 0.33]
 
         for col, weight in zip(columns, column_weights):
             chances_for_col = total_chances * weight
