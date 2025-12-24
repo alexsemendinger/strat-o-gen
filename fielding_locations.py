@@ -21,45 +21,45 @@ BATTED_BALL_DISTRIBUTION = {
 # Ground ball distribution by infield position
 # SS gets most (right-handed pull tendency), followed by 2B, 3B, 1B, P
 GROUNDBALL_POSITIONS = {
-    '1B': 0.15,   # First baseman
-    '2B': 0.28,   # Second baseman
-    '3B': 0.20,   # Third baseman
-    'SS': 0.32,   # Shortstop (most ground balls)
-    'P': 0.05,    # Pitcher
+    '1b': 0.15,   # First baseman
+    '2b': 0.28,   # Second baseman
+    '3b': 0.20,   # Third baseman
+    'ss': 0.32,   # Shortstop (most ground balls)
+    'p': 0.05,    # Pitcher
 }
 
 # Fly ball distribution by outfield position
 # CF gets most, followed by LF, RF
 FLYBALL_POSITIONS = {
-    'LF': 0.32,   # Left field
-    'CF': 0.40,   # Center field (most fly balls)
-    'RF': 0.28,   # Right field
+    'lf': 0.32,   # Left field
+    'cf': 0.40,   # Center field (most fly balls)
+    'rf': 0.28,   # Right field
 }
 
 # Line drive distribution (can go anywhere)
 # More to outfield than infield
 LINEDRIVE_POSITIONS = {
-    '1B': 0.08,
-    '2B': 0.10,
-    '3B': 0.08,
-    'SS': 0.10,
-    'LF': 0.20,
-    'CF': 0.22,
-    'RF': 0.18,
-    'P': 0.04,
+    '1b': 0.08,
+    '2b': 0.10,
+    '3b': 0.08,
+    'ss': 0.10,
+    'lf': 0.20,
+    'cf': 0.22,
+    'rf': 0.18,
+    'p': 0.04,
 }
 
 # Popup distribution (mostly infield + catcher)
 POPUP_POSITIONS = {
-    'C': 0.25,    # Catcher
-    '1B': 0.15,
-    '2B': 0.15,
-    '3B': 0.15,
-    'SS': 0.15,
-    'P': 0.10,
-    'LF': 0.02,
-    'CF': 0.02,
-    'RF': 0.01,
+    'c': 0.25,    # Catcher
+    '1b': 0.15,
+    '2b': 0.15,
+    '3b': 0.15,
+    'ss': 0.15,
+    'p': 0.10,
+    'lf': 0.02,
+    'cf': 0.02,
+    'rf': 0.01,
 }
 
 # Ground ball ratings (double-play potential)
@@ -71,8 +71,12 @@ GROUNDBALL_RATINGS = {
 }
 
 # Fly ball ratings (advancement potential)
-# X = standard flyball out
-FLYBALL_RATING = 'X'
+# A = deep (all runners advance), B = medium depth, C = shallow
+FLYBALL_RATINGS = {
+    'A': 0.20,  # 20% deep flies
+    'B': 0.40,  # 40% medium depth
+    'C': 0.40,  # 40% shallow
+}
 
 
 class FieldingLocationAssigner:
@@ -146,26 +150,45 @@ class FieldingLocationAssigner:
 
         return 'B'  # Fallback
 
+    @staticmethod
+    def assign_flyball_rating() -> str:
+        """
+        Randomly assign a fly ball rating (A/B/C).
+
+        Returns:
+            'A', 'B', or 'C'
+        """
+        rand = random.random()
+        cumulative = 0.0
+
+        for rating, prob in FLYBALL_RATINGS.items():
+            cumulative += prob
+            if rand < cumulative:
+                return rating
+
+        return 'B'  # Fallback
+
     @classmethod
     def generate_out_result(cls) -> str:
         """
         Generate a complete out result with fielding location.
 
         Returns:
-            Formatted out string (e.g., "gb(2B)A", "flyB(CF)", "lineout(LF)")
+            Formatted out string (e.g., "groundball (2b)A", "flyball (cf)B", "lineout (lf)")
         """
         out_type = cls.assign_out_type()
         position = cls.assign_position(out_type)
 
         if out_type == 'groundball':
             rating = cls.assign_groundball_rating()
-            return f"gb({position}){rating}"
+            return f"groundball ({position}){rating}"
         elif out_type == 'flyball':
-            return f"fly{FLYBALL_RATING}({position})"
+            rating = cls.assign_flyball_rating()
+            return f"flyball ({position}){rating}"
         elif out_type == 'linedrive':
-            return f"lineout({position})"
+            return f"lineout ({position})"
         elif out_type == 'popup':
-            return f"popup({position})"
+            return f"popout ({position})"
         else:
             return "OUT"  # Fallback
 

@@ -46,19 +46,19 @@ class CardResult:
 
     def _outcome_name(self) -> str:
         """Format outcome name for display."""
-        # Check if it's already a specific fielding result (e.g., "gb(2B)A")
-        if '(' in self.outcome or self.outcome.startswith('gb') or self.outcome.startswith('fly') or \
-           self.outcome.startswith('line') or self.outcome.startswith('popup'):
+        # Check if it's already a specific fielding result (e.g., "groundball (2b)A")
+        if '(' in self.outcome or self.outcome.startswith('groundball') or self.outcome.startswith('flyball') or \
+           self.outcome.startswith('lineout') or self.outcome.startswith('popout'):
             return self.outcome
 
-        # Standard outcomes
+        # Standard outcomes - match real SOM card formatting
         names = {
-            'single': '1B',
-            'double': '2B',
-            'triple': '3B',
-            'homerun': 'HR',
-            'walk': 'BB',
-            'strikeout': 'SO',
+            'single': 'SINGLE',
+            'double': 'DOUBLE',
+            'triple': 'TRIPLE',
+            'homerun': 'HOMERUN',
+            'walk': 'WALK',
+            'strikeout': 'strikeout',
             'out': 'OUT',
             'hbp': 'HBP',
         }
@@ -134,8 +134,8 @@ class CardLayout:
                 for result in roll.results:
                     outcome = result.outcome
                     # Normalize fielding results to 'out' for counting
-                    if outcome.startswith('gb') or outcome.startswith('fly') or \
-                       outcome.startswith('line') or outcome.startswith('popup'):
+                    if outcome.startswith('groundball') or outcome.startswith('flyball') or \
+                       outcome.startswith('lineout') or outcome.startswith('popout'):
                         outcome = 'out'
                     chances = result.get_chances(DICE_WEIGHTS[roll.dice])
                     totals[outcome] = totals.get(outcome, 0) + chances
@@ -253,7 +253,7 @@ class CardLayoutGenerator:
             # Add flyball fallback for rest of d20
             flyball_result = assigner.generate_out_result()
             # Ensure it's a flyball (regenerate if not)
-            while not flyball_result.startswith('fly'):
+            while not flyball_result.startswith('flyball'):
                 flyball_result = assigner.generate_out_result()
 
             dice_9.results.append(CardResult(
@@ -390,9 +390,9 @@ class CardLayoutGenerator:
             for roll in col.rolls:
                 for result in roll.results:
                     # Count any fielding result as an out
-                    if result.outcome == 'out' or result.outcome.startswith('gb') or \
-                       result.outcome.startswith('fly') or result.outcome.startswith('line') or \
-                       result.outcome.startswith('popup'):
+                    if result.outcome == 'out' or result.outcome.startswith('groundball') or \
+                       result.outcome.startswith('flyball') or result.outcome.startswith('lineout') or \
+                       result.outcome.startswith('popout'):
                         current_outs += result.get_chances(DICE_WEIGHTS[roll.dice])
 
         remaining_outs = out_chances - current_outs
