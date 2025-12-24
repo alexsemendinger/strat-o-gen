@@ -54,7 +54,11 @@ class CardResult:
         # Standard outcomes - match real SOM card formatting
         names = {
             'single': 'SINGLE',
+            'single*': 'SINGLE*',
+            'single**': 'SINGLE**',
             'double': 'DOUBLE',
+            'double*': 'DOUBLE*',
+            'double**': 'DOUBLE**',
             'triple': 'TRIPLE',
             'homerun': 'HOMERUN',
             'walk': 'WALK',
@@ -158,8 +162,25 @@ class CardLayoutGenerator:
         'out',
     ]
 
+    @staticmethod
+    def _determine_speed_rating(stats: Dict) -> str:
+        """
+        Determine player speed rating from stolen base stats.
+
+        Returns:
+            'fast' (SB >= 15), 'average' (SB 5-14), or 'slow' (SB < 5)
+        """
+        sb = stats.get('SB', 0)
+        if sb >= 15:
+            return 'fast'
+        elif sb >= 5:
+            return 'average'
+        else:
+            return 'slow'
+
     @classmethod
-    def generate_layout(cls, chances: Dict[str, float], player_name: str, year: int) -> CardLayout:
+    def generate_layout(cls, chances: Dict[str, float], player_name: str, year: int,
+                       player_stats: Dict = None) -> CardLayout:
         """
         Generate a card layout from calculated outcome chances.
 
@@ -167,6 +188,7 @@ class CardLayoutGenerator:
             chances: Dictionary of outcome -> chances (out of 108)
             player_name: Player name for display
             year: Season year
+            player_stats: Optional player stats for baserunning modifiers
 
         Returns:
             CardLayout object with assigned dice rolls
@@ -196,11 +218,61 @@ class CardLayoutGenerator:
         out_chances = remaining.get('out', remaining.get('outs', 0))
         cls._fill_remaining_with_outs(columns, out_chances)
 
+        # PHASE 4: Add baserunning modifiers based on speed
+        if player_stats:
+            cls._add_baserunning_modifiers(columns, player_stats)
+
         return CardLayout(
             player_name=player_name,
             year=year,
             columns=columns
         )
+
+    @classmethod
+    def _add_baserunning_modifiers(cls, columns: List[CardColumn], player_stats: Dict):
+        """
+        Add baserunning modifiers (* and **) to singles and doubles based on speed.
+
+        Fast players (SB >= 15): 50% of singles get **, 50% of doubles get **
+        Average players (SB 5-14): 30% of singles get *
+        Slow players (SB < 5): No modifiers
+        """
+        import random
+
+        speed = cls._determine_speed_rating(player_stats)
+
+        if speed == 'slow':
+            return  # No modifiers for slow players
+
+        # Collect all single and double results
+        single_results = []
+        double_results = []
+
+        for col in columns:
+            for roll in col.rolls:
+                for result in roll.results:
+                    if result.outcome == 'single':
+                        single_results.append(result)
+                    elif result.outcome == 'double':
+                        double_results.append(result)
+
+        # Apply modifiers based on speed
+        if speed == 'fast':
+            # 50% of singles get **
+            num_singles_to_modify = len(single_results) // 2
+            for result in random.sample(single_results, min(num_singles_to_modify, len(single_results))):
+                result.outcome = 'single**'
+
+            # 50% of doubles get **
+            num_doubles_to_modify = len(double_results) // 2
+            for result in random.sample(double_results, min(num_doubles_to_modify, len(double_results))):
+                result.outcome = 'double**'
+
+        elif speed == 'average':
+            # 30% of singles get *
+            num_singles_to_modify = int(len(single_results) * 0.3)
+            for result in random.sample(single_results, min(num_singles_to_modify, len(single_results))):
+                result.outcome = 'single*'
 
     @staticmethod
     def _create_empty_columns() -> List[CardColumn]:
