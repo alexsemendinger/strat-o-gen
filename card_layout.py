@@ -98,7 +98,7 @@ class CardColumn:
     rolls: List[DiceRoll]  # One for each dice value 2-12
 
     def __str__(self):
-        lines = [f"Column {self.column_num} (Control Die {2*self.column_num-1}-{2*self.column_num}):"]
+        lines = [f"Column {self.column_num}:"]
         for roll in self.rolls:
             lines.append(f"  {roll}")
         return '\n'.join(lines)
