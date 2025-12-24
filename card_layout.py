@@ -177,11 +177,15 @@ class CardLayoutGenerator:
         # Track how many chances we've assigned for each outcome
         remaining = chances.copy()
 
-        # Assign outcomes in priority order (except outs, which we do last)
+        # PHASE 1: Pre-process rare outcomes with strategic d20 splits
+        # This ensures HR/3B don't disappear due to rounding
+        cls._assign_rare_outcomes(columns, remaining)
+
+        # Assign outcomes in priority order (except outs and already-handled rare outcomes)
         for outcome in cls.OUTCOME_PRIORITY:
             if outcome == 'out':
                 continue  # Handle outs last
-            if outcome not in remaining or remaining[outcome] <= 0:
+            if outcome not in remaining or remaining[outcome] <= 0.01:
                 continue
 
             # Assign this outcome across the columns
@@ -210,6 +214,87 @@ class CardLayoutGenerator:
         return columns
 
     @classmethod
+    def _assign_rare_outcomes(cls, columns: List[CardColumn], remaining: Dict[str, float]):
+        """
+        Pre-assign rare outcomes using strategic d20 splits.
+
+        Rare outcomes (HR < 3 chances, 3B < 3 chances) need special handling:
+        - HOMERUN 1, flyball 2-20 (gives ~0.2 chances for HR)
+        - TRIPLE 1, SINGLE 2-20 (gives ~0.2 chances for 3B)
+
+        This prevents rare outcomes from disappearing due to rounding.
+        Uses column 2 (middle, offensive column) dice 9 and 10.
+
+        Args:
+            columns: Card columns to assign to
+            remaining: Dictionary of remaining chances (will be modified)
+        """
+        assigner = FieldingLocationAssigner()
+        column_2 = columns[1]  # Middle column (index 1)
+
+        hr_chances = remaining.get('homerun', 0)
+        triple_chances = remaining.get('triple', 0)
+
+        # Handle rare home runs (< 3 chances)
+        if 0 < hr_chances < 3:
+            # Use dice 9 in column 2 (weight = 4)
+            # HOMERUN 1, flyball 2-20
+            dice_9 = next(r for r in column_2.rolls if r.dice == 9)
+
+            # Calculate d20 range for HR (round to nearest)
+            hr_d20_size = max(1, round(hr_chances / 4 * 20))  # 4 is dice weight
+
+            # Add HOMERUN result
+            dice_9.results.append(CardResult(
+                outcome='homerun',
+                d20_range=(1, hr_d20_size)
+            ))
+
+            # Add flyball fallback for rest of d20
+            flyball_result = assigner.generate_out_result()
+            # Ensure it's a flyball (regenerate if not)
+            while not flyball_result.startswith('fly'):
+                flyball_result = assigner.generate_out_result()
+
+            dice_9.results.append(CardResult(
+                outcome=flyball_result,
+                d20_range=(hr_d20_size + 1, 20)
+            ))
+
+            # Deduct from remaining
+            actual_hr = (hr_d20_size / 20.0) * 4
+            remaining['homerun'] = max(0, remaining.get('homerun', 0) - actual_hr)
+
+        # Handle rare triples (< 3 chances)
+        if 0 < triple_chances < 3:
+            # Use dice 10 in column 2 (weight = 3)
+            # TRIPLE 1, SINGLE 2-20
+            dice_10 = next(r for r in column_2.rolls if r.dice == 10)
+
+            # Calculate d20 range for 3B (round to nearest)
+            triple_d20_size = max(1, round(triple_chances / 3 * 20))  # 3 is dice weight
+
+            # Add TRIPLE result
+            dice_10.results.append(CardResult(
+                outcome='triple',
+                d20_range=(1, triple_d20_size)
+            ))
+
+            # Add SINGLE fallback for rest of d20
+            dice_10.results.append(CardResult(
+                outcome='single',
+                d20_range=(triple_d20_size + 1, 20)
+            ))
+
+            # Deduct from remaining
+            actual_triple = (triple_d20_size / 20.0) * 3
+            remaining['triple'] = max(0, remaining.get('triple', 0) - actual_triple)
+
+            # Credit the single chances we added
+            single_chances = ((20 - triple_d20_size) / 20.0) * 3
+            remaining['single'] = remaining.get('single', 0) - single_chances
+
+    @classmethod
     def _assign_outcome(cls, columns: List[CardColumn], outcome: str, total_chances: float):
         """
         Assign an outcome across the three columns.
@@ -232,7 +317,12 @@ class CardLayoutGenerator:
         """
         Assign an outcome to dice rolls within a single column.
 
-        Uses a greedy algorithm: fill dice rolls from most common (7) outward.
+        PHASE 3: Prefer whole dice rolls, avoid d20 splits except strategically.
+
+        Strategy:
+        - If remaining >= 75% of dice weight: use whole dice roll (accept rounding)
+        - If remaining < 0.5: skip (too small, let it round away)
+        - Only use d20 splits when necessary to combine outcomes on same dice
         """
         remaining = target_chances
 
@@ -240,49 +330,39 @@ class CardLayoutGenerator:
         dice_order = [7, 6, 8, 5, 9, 4, 10, 3, 11, 2, 12]
 
         for dice in dice_order:
-            if remaining <= 0.01:  # Close enough
+            if remaining < 0.5:  # Too small, let it round away
                 break
 
             # Find the roll for this dice value
             roll = next(r for r in column.rolls if r.dice == dice)
 
+            # Skip if this roll is already reserved (from rare outcomes)
+            if roll.results:
+                continue
+
             # How many chances does this dice value have?
             dice_weight = DICE_WEIGHTS[dice]
 
-            # How much of this dice roll should we use?
-            if remaining >= dice_weight and not roll.results:
-                # Use the entire dice roll (only if it's currently empty)
+            # Decision: use whole dice roll or skip?
+            if remaining >= dice_weight * 0.75:
+                # Use entire dice roll (accept rounding error)
                 roll.results.append(CardResult(outcome=outcome))
                 remaining -= dice_weight
-            else:
-                # Use a d20 split to take partial chances
-                fraction = remaining / dice_weight
-                d20_size = int(fraction * 20)
-
-                if d20_size > 0:
-                    # Check if this roll already has results
-                    if roll.results:
-                        # Find the end of the last d20 range
-                        last_end = roll.results[-1].d20_range[1]
-                        new_start = last_end + 1
-                        new_end = min(new_start + d20_size - 1, 20)
-                    else:
-                        new_start = 1
-                        new_end = d20_size
-
-                    if new_end >= new_start:
-                        roll.results.append(CardResult(
-                            outcome=outcome,
-                            d20_range=(new_start, new_end)
-                        ))
-                        actual_chances = (new_end - new_start + 1) / 20.0 * dice_weight
-                        remaining -= actual_chances
+            elif remaining >= dice_weight * 0.3:
+                # Partial fill: use what we need, round to whole dice
+                # This will leave remainder for next iteration
+                # Only use d20 if we can get at least 30% of the dice
+                roll.results.append(CardResult(outcome=outcome))
+                remaining -= dice_weight
+            # else: skip this dice, remaining carries forward
 
     @staticmethod
     def _fill_remaining_with_outs(columns: List[CardColumn], out_chances: float):
         """
         Fill remaining space with outs, but only up to the specified amount.
         Uses FieldingLocationAssigner to generate specific fielding locations.
+
+        PHASE 3: Prefer whole dice rolls for outs too.
 
         Args:
             columns: Card columns to fill
@@ -303,66 +383,26 @@ class CardLayoutGenerator:
 
         remaining_outs = out_chances - current_outs
 
-        # Fill empty dice rolls with outs
+        # Fill empty dice rolls with outs (prefer whole dice rolls)
         for col in columns:
-            if remaining_outs <= 0.01:
+            if remaining_outs < 0.5:  # Close enough
                 break
 
             for roll in col.rolls:
-                if remaining_outs <= 0.01:
+                if remaining_outs < 0.5:
                     break
 
                 if not roll.results:
                     # Entire dice roll is empty - assign a fielding location
                     dice_weight = DICE_WEIGHTS[roll.dice]
-                    if remaining_outs >= dice_weight:
+
+                    # Prefer using whole dice roll (accept rounding)
+                    if remaining_outs >= dice_weight * 0.5:
                         # Use whole dice roll for outs
                         fielding_result = assigner.generate_out_result()
                         roll.results.append(CardResult(outcome=fielding_result))
                         remaining_outs -= dice_weight
-                    else:
-                        # Use partial dice roll with d20 split
-                        fraction = remaining_outs / dice_weight
-                        d20_size = int(fraction * 20)
-                        if d20_size > 0:
-                            fielding_result = assigner.generate_out_result()
-                            roll.results.append(CardResult(
-                                outcome=fielding_result,
-                                d20_range=(1, d20_size)
-                            ))
-                            actual = (d20_size / 20.0) * dice_weight
-                            remaining_outs -= actual
-                else:
-                    # Check if there's remaining d20 space
-                    if roll.results[-1].d20_range[1] < 20:
-                        last_end = roll.results[-1].d20_range[1]
-                        available_d20 = 20 - last_end
-
-                        dice_weight = DICE_WEIGHTS[roll.dice]
-                        available_chances = (available_d20 / 20.0) * dice_weight
-
-                        if remaining_outs >= available_chances:
-                            # Fill the rest of this dice roll
-                            fielding_result = assigner.generate_out_result()
-                            roll.results.append(CardResult(
-                                outcome=fielding_result,
-                                d20_range=(last_end + 1, 20)
-                            ))
-                            remaining_outs -= available_chances
-                        else:
-                            # Partial fill
-                            fraction = remaining_outs / dice_weight
-                            d20_size = int(fraction * 20)
-                            if d20_size > 0:
-                                new_end = min(last_end + d20_size, 20)
-                                if new_end > last_end:
-                                    fielding_result = assigner.generate_out_result()
-                                    roll.results.append(CardResult(
-                                        outcome=fielding_result,
-                                        d20_range=(last_end + 1, new_end)
-                                    ))
-                                    actual = ((new_end - last_end) / 20.0) * dice_weight
-                                    remaining_outs -= actual
+                    # else: skip, too small
 
 
 if __name__ == "__main__":
