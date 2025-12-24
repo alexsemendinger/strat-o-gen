@@ -222,7 +222,8 @@ class BatterCardFormulas:
     @staticmethod
     def calculate_single_chances(stats: Dict, pa_eff: int, league_ba: float = 0.250,
                                  hr_chances: float = 0, triple_chances: float = 0,
-                                 double_chances: float = 0) -> float:
+                                 double_chances: float = 0, league_hr_rate: float = 0.025,
+                                 league_2b_rate: float = 0.04, league_3b_rate: float = 0.005) -> float:
         """
         Calculate single chances on batter's card.
 
@@ -233,6 +234,7 @@ class BatterCardFormulas:
             pa_eff: Effective plate appearances
             league_ba: League batting average
             hr_chances, triple_chances, double_chances: Already calculated
+            league_hr_rate, league_2b_rate, league_3b_rate: League XBH rates
 
         Returns:
             Single chances out of 108
@@ -252,9 +254,10 @@ class BatterCardFormulas:
         batter_1b_rate = singles / pa_eff if pa_eff > 0 else 0
         total_1b = batter_1b_rate * 216
 
-        # League singles rate (from BA minus extra base hits)
-        # This is approximate - ideally we'd have league singles directly
-        league_1b_rate = league_ba * 0.65  # Rough estimate: ~65% of hits are singles
+        # League singles rate (hits per PA minus XBH per PA)
+        # BA = H/AB, and AB ≈ PA * 0.85
+        league_hits_per_pa = league_ba * 0.85
+        league_1b_rate = league_hits_per_pa - league_hr_rate - league_2b_rate - league_3b_rate
         pitcher_1b = league_1b_rate * 108
 
         single_chances = total_1b - pitcher_1b
@@ -296,7 +299,9 @@ class BatterCardFormulas:
         triple_chances = cls.calculate_triple_chances(stats, pa_eff, league_avg['3B_per_PA'])
         double_chances = cls.calculate_double_chances(stats, pa_eff, league_avg['2B_per_PA'])
         single_chances = cls.calculate_single_chances(stats, pa_eff, league_avg['BA'],
-                                                      homerun_chances, triple_chances, double_chances)
+                                                      homerun_chances, triple_chances, double_chances,
+                                                      league_avg['HR_per_PA'], league_avg['2B_per_PA'],
+                                                      league_avg['3B_per_PA'])
 
         # Total hit chances
         hit_total = homerun_chances + triple_chances + double_chances + single_chances

@@ -9,8 +9,9 @@ simulation, the formulas are wrong regardless of what they look like.
 """
 
 import random
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 from card_formulas import BatterCardFormulas, PitcherCardFormulas
+from league_averages import LeagueAveragesFetcher
 
 
 class CardSimulator:
@@ -220,6 +221,7 @@ class CardValidator:
         """
         self.simulator = CardSimulator()
         self.num_simulations = num_simulations
+        self.league_fetcher = LeagueAveragesFetcher()
 
     def validate_batter_card(self, original_stats: Dict, batter_chances: Dict,
                            pitcher_chances: Dict = None, tolerance: float = 0.015) -> Dict:
@@ -229,7 +231,7 @@ class CardValidator:
         Args:
             original_stats: The player's actual statistics
             batter_chances: Generated card chances from BatterCardFormulas
-            pitcher_chances: Average pitcher card chances (or None to generate default)
+            pitcher_chances: Average pitcher card chances (or None to generate from era)
             tolerance: Acceptable difference in rate stats (e.g., 0.015 = 1.5%)
 
         Returns:
@@ -237,7 +239,9 @@ class CardValidator:
         """
         # Generate average pitcher card if not provided
         if pitcher_chances is None:
-            pitcher_chances = self._get_average_pitcher_chances()
+            year = original_stats.get('year', 2000)
+            league = original_stats.get('league', 'AL')
+            pitcher_chances = self._get_average_pitcher_chances(year, league)
 
         # Run simulation
         sim_stats = self.simulator.simulate_season(
@@ -295,27 +299,77 @@ class CardValidator:
             'tolerance': tolerance,
         }
 
-    def _get_average_pitcher_chances(self) -> Dict:
+    def _get_average_pitcher_chances(self, year: int, league: str) -> Dict:
         """
-        Generate chances for a league-average pitcher.
+        Generate chances for a league-average pitcher using era-specific data.
 
-        This is a simplified average pitcher using default league rates.
+        IMPORTANT: We do NOT use the Bundy formulas here. The Bundy formulas
+        calculate total chances across both cards (216), but batter formulas
+        already subtract league_rate * 108 from their totals. So for an
+        average pitcher, we directly assign league_rate * 108.
+
+        Args:
+            year: Season year
+            league: 'AL' or 'NL'
+
+        Returns:
+            Average pitcher card chances
         """
-        # Create average pitcher stats
-        avg_pitcher_stats = {
-            'year': 2000,  # Doesn't matter for average
-            'IP': 200.0,
-            'TBF': 850,
-            'H': 212,  # ~.250 BA
-            'BB': 72,  # ~8.5% walk rate
-            'IBB': 5,
-            'SO': 170,  # ~20% K rate
-            'HR': 21,  # ~2.5% HR rate
-            '2B': 0,
-            '3B': 0,
+        # Fetch era-specific league averages
+        league_avg = self.league_fetcher.get_league_averages(year, league)
+
+        if not league_avg:
+            # Fallback to generic defaults if fetch fails
+            print(f"Warning: Could not fetch {league} {year} averages, using defaults")
+            league_avg = {
+                'BA': 0.250,
+                'HR_per_PA': 0.025,
+                'BB_per_PA': 0.085,
+                'K_per_PA': 0.20,
+                '2B_per_PA': 0.04,
+                '3B_per_PA': 0.005,
+                'HBP_per_PA': 0.01,
+            }
+
+        # For an average pitcher, directly calculate chances as league_rate * 108
+        # This matches what batter formulas expect (they do: total - league_rate * 108)
+
+        # Calculate hits on pitcher card
+        # Singles = total hits - XBH
+        ba = league_avg.get('BA', 0.250)
+        hr_per_pa = league_avg.get('HR_per_PA', 0.025)
+        doubles_per_pa = league_avg.get('2B_per_PA', 0.04)
+        triples_per_pa = league_avg.get('3B_per_PA', 0.005)
+
+        # Hits per PA (accounting for walks, HBP, etc.)
+        # BA = H/AB, and AB ≈ PA * 0.85 (rough approximation)
+        hits_per_pa = ba * 0.85
+        singles_per_pa = hits_per_pa - hr_per_pa - doubles_per_pa - triples_per_pa
+
+        # Calculate all non-out chances
+        walk_chances = league_avg.get('BB_per_PA', 0.085) * 108
+        hbp_chances = league_avg.get('HBP_per_PA', 0.01) * 108
+        strikeout_chances = league_avg.get('K_per_PA', 0.20) * 108
+        hr_chances = hr_per_pa * 108
+        triple_chances = triples_per_pa * 108
+        double_chances = doubles_per_pa * 108
+        single_chances = max(0, singles_per_pa * 108)
+
+        # Outs = remaining chances to sum to 108
+        total_non_outs = (walk_chances + hbp_chances + strikeout_chances +
+                         hr_chances + triple_chances + double_chances + single_chances)
+        out_chances = max(0, 108 - total_non_outs)
+
+        return {
+            'walk': walk_chances,
+            'hbp': hbp_chances,
+            'strikeout': strikeout_chances,
+            'homerun': hr_chances,
+            'triple': triple_chances,
+            'double': double_chances,
+            'single': single_chances,
+            'outs': out_chances,
         }
-
-        return PitcherCardFormulas.calculate_pitcher_card_chances(avg_pitcher_stats)
 
     def print_validation_report(self, validation_result: Dict, player_name: str = "Player"):
         """

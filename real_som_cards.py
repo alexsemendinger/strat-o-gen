@@ -28,6 +28,7 @@ tim_raines_2001_card = {
 # For context: Tim Raines 2001 actual stats
 tim_raines_2001_stats = {
     'year': 2001,
+    'league': 'AL',  # American League
     'BA': 0.312,
     'AB': 551,
     'H': 172,
