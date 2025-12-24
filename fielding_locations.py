@@ -169,28 +169,47 @@ class FieldingLocationAssigner:
         return 'B'  # Fallback
 
     @classmethod
-    def generate_out_result(cls) -> str:
+    def generate_out_result(cls, for_pitcher: bool = False) -> str:
         """
         Generate a complete out result with fielding location.
 
+        Args:
+            for_pitcher: If True, use pitcher card format (UPPERCASE, X rating)
+
         Returns:
-            Formatted out string (e.g., "groundball (2b)A", "flyball (cf)B", "lineout (lf)")
+            Formatted out string
+            - Batter: "groundball (2b)A", "flyball (cf)B", "lineout (lf)"
+            - Pitcher: "GROUNDBALL(2b)X", "FLYBALL(cf)X", "lineout (lf)"
         """
         out_type = cls.assign_out_type()
         position = cls.assign_position(out_type)
 
-        if out_type == 'groundball':
-            rating = cls.assign_groundball_rating()
-            return f"groundball ({position}){rating}"
-        elif out_type == 'flyball':
-            rating = cls.assign_flyball_rating()
-            return f"flyball ({position}){rating}"
-        elif out_type == 'linedrive':
-            return f"lineout ({position})"
-        elif out_type == 'popup':
-            return f"popout ({position})"
+        if for_pitcher:
+            # Pitcher card format: UPPERCASE, X rating, no space before position
+            if out_type == 'groundball':
+                return f"GROUNDBALL({position})X"
+            elif out_type == 'flyball':
+                return f"FLYBALL({position})X"
+            elif out_type == 'linedrive':
+                return f"lineout ({position})"
+            elif out_type == 'popup':
+                return f"popout ({position})"
+            else:
+                return "OUT"
         else:
-            return "OUT"  # Fallback
+            # Batter card format: lowercase, A/B/C rating
+            if out_type == 'groundball':
+                rating = cls.assign_groundball_rating()
+                return f"groundball ({position}){rating}"
+            elif out_type == 'flyball':
+                rating = cls.assign_flyball_rating()
+                return f"flyball ({position}){rating}"
+            elif out_type == 'linedrive':
+                return f"lineout ({position})"
+            elif out_type == 'popup':
+                return f"popout ({position})"
+            else:
+                return "OUT"  # Fallback
 
     @classmethod
     def generate_multiple_outs(cls, count: int) -> Dict[str, int]:
