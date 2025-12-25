@@ -499,70 +499,73 @@ class PitcherCardFormulas:
         return max(0.0, hit_chances)
 
     @staticmethod
-    def calculate_double_chances(stats: Dict, tbf: float) -> float:
+    def calculate_double_chances(stats: Dict, tbf: float, league_avg: Dict = None,
+                                 hit_chances: float = 0) -> float:
         """
-        Formula #18: Calculate double chances on pitcher's card.
+        Calculate double chances on pitcher's card.
 
-        sompD = ((2B * 216) / (TBF - IBB)) - 90
-
-        Note: 2B allowed is often not available. Returns 0 if missing.
+        Strategy: Allocate a portion of hit chances to doubles based on
+        league hit distribution (~20% of hits are doubles).
 
         Args:
             stats: Dictionary with pitching stats
             tbf: Total batters faced
+            league_avg: League averages for hit distribution
+            hit_chances: Total hit chances already calculated
 
         Returns:
             Double chances out of 108
         """
-        doubles = stats.get('2B', 0)
-        ibb = stats.get('IBB', 0)
+        # Get league 2B/H ratio
+        if league_avg and league_avg.get('raw'):
+            raw = league_avg['raw']
+            league_2b_ratio = raw.get('2B', 0) / max(1, raw.get('H', 1))
+        else:
+            league_2b_ratio = 0.20  # Default: ~20% of hits are doubles
 
-        if tbf <= ibb or doubles == 0:
-            return 0.0
-
-        tbf_adj = tbf - ibb
-
-        # Formula: ((2B * 216) / (TBF - IBB)) - 90
-        double_chances = ((doubles * 216) / tbf_adj) - 90
+        # Allocate portion of hit chances to doubles
+        double_chances = hit_chances * league_2b_ratio
 
         return max(0.0, double_chances)
 
     @staticmethod
-    def calculate_triple_chances(stats: Dict, tbf: float) -> float:
+    def calculate_triple_chances(stats: Dict, tbf: float, league_avg: Dict = None,
+                                 hit_chances: float = 0) -> float:
         """
-        Formula #19: Calculate triple chances on pitcher's card.
+        Calculate triple chances on pitcher's card.
 
-        sompT = ((3B * 216) / (TBF - IBB)) - 15
-
-        Note: 3B allowed is often not available. Returns 0 if missing.
+        Strategy: Allocate a portion of hit chances to triples based on
+        league hit distribution (~2% of hits are triples).
 
         Args:
             stats: Dictionary with pitching stats
             tbf: Total batters faced
+            league_avg: League averages for hit distribution
+            hit_chances: Total hit chances already calculated
 
         Returns:
             Triple chances out of 108
         """
-        triples = stats.get('3B', 0)
-        ibb = stats.get('IBB', 0)
+        # Get league 3B/H ratio
+        if league_avg and league_avg.get('raw'):
+            raw = league_avg['raw']
+            league_3b_ratio = raw.get('3B', 0) / max(1, raw.get('H', 1))
+        else:
+            league_3b_ratio = 0.02  # Default: ~2% of hits are triples
 
-        if tbf <= ibb or triples == 0:
-            return 0.0
-
-        tbf_adj = tbf - ibb
-
-        # Formula: ((3B * 216) / (TBF - IBB)) - 15
-        triple_chances = ((triples * 216) / tbf_adj) - 15
+        # Allocate portion of hit chances to triples
+        triple_chances = hit_chances * league_3b_ratio
 
         return max(0.0, triple_chances)
 
     @classmethod
-    def calculate_pitcher_card_chances(cls, stats: Dict) -> Dict:
+    def calculate_pitcher_card_chances(cls, stats: Dict, league_avg: Dict = None) -> Dict:
         """
         Calculate all outcome chances for a pitcher's card.
 
         Args:
             stats: Dictionary of pitching stats from StatsFetcher
+            league_avg: League averages for estimating 2B/3B from hits
 
         Returns:
             Dictionary with chances for each outcome (out of 108)
@@ -575,11 +578,15 @@ class PitcherCardFormulas:
         strikeout_chances = cls.calculate_strikeout_chances(stats, tbf)
         homerun_chances = cls.calculate_homerun_chances(stats, tbf)
         hit_chances = cls.calculate_hit_chances(stats, tbf, walk_chances)
-        double_chances = cls.calculate_double_chances(stats, tbf)
-        triple_chances = cls.calculate_triple_chances(stats, tbf)
+
+        # Distribute hits into 2B, 3B, 1B based on league ratios
+        double_chances = cls.calculate_double_chances(stats, tbf, league_avg, hit_chances)
+        triple_chances = cls.calculate_triple_chances(stats, tbf, league_avg, hit_chances)
+
+        # Track if we estimated 2B/3B (always true for pitchers now)
+        estimated_xbh = True
 
         # Singles are hits minus extra base hits
-        # For now, we'll calculate this after we have the total
         single_chances = hit_chances - double_chances - triple_chances - homerun_chances
         single_chances = max(0.0, single_chances)
 
@@ -587,7 +594,6 @@ class PitcherCardFormulas:
         outcome_chances = walk_chances + strikeout_chances + homerun_chances + hit_chances
 
         # Remaining chances are outs (fielding chances)
-        # Pitcher cards traditionally have 30 fielding chances
         out_chances = 108.0 - outcome_chances
 
         return {
@@ -601,11 +607,11 @@ class PitcherCardFormulas:
             'hit_total': hit_chances,
             'outs': out_chances,
             'total': outcome_chances,
-            'warnings': cls._generate_warnings(stats, out_chances)
+            'warnings': cls._generate_warnings(stats, out_chances, estimated_xbh)
         }
 
     @staticmethod
-    def _generate_warnings(stats: Dict, out_chances: float) -> list:
+    def _generate_warnings(stats: Dict, out_chances: float, estimated_xbh: bool = False) -> list:
         """Generate warnings about the card generation."""
         warnings = []
 
@@ -615,11 +621,9 @@ class PitcherCardFormulas:
         if year < 1955:
             warnings.append('IBB not tracked before 1955 (treated as 0)')
 
-        # Missing data
-        if stats.get('2B', 0) == 0:
-            warnings.append('2B allowed not available (double chances may be underestimated)')
-        if stats.get('3B', 0) == 0:
-            warnings.append('3B allowed not available (triple chances may be underestimated)')
+        # Missing data - only warn if we didn't estimate
+        if estimated_xbh:
+            warnings.append('2B/3B estimated from league hit distribution')
 
         # Out chances warning
         if out_chances < 0:

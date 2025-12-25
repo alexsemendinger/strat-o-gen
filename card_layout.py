@@ -118,11 +118,13 @@ class CardLayout:
     player_name: str
     year: int
     columns: List[CardColumn]
+    card_type: str = 'batter'  # 'batter' or 'pitcher'
 
     def __str__(self):
+        card_label = "PITCHING CARD" if self.card_type == 'pitcher' else "BATTING CARD"
         lines = [
             "=" * 70,
-            f"{self.player_name} - {self.year}",
+            f"{self.player_name} - {self.year} {card_label}",
             "=" * 70,
         ]
         for col in self.columns:
@@ -180,7 +182,7 @@ class CardLayoutGenerator:
 
     @classmethod
     def generate_layout(cls, chances: Dict[str, float], player_name: str, year: int,
-                       player_stats: Dict = None) -> CardLayout:
+                       player_stats: Dict = None, card_type: str = 'batter') -> CardLayout:
         """
         Generate a card layout from calculated outcome chances.
 
@@ -189,19 +191,20 @@ class CardLayoutGenerator:
             player_name: Player name for display
             year: Season year
             player_stats: Optional player stats for baserunning modifiers
+            card_type: 'batter' (columns 1-2-3) or 'pitcher' (columns 4-5-6)
 
         Returns:
             CardLayout object with assigned dice rolls
         """
         # Initialize columns with empty dice rolls
-        columns = cls._create_empty_columns()
+        columns = cls._create_empty_columns(card_type)
 
         # Track how many chances we've assigned for each outcome
         remaining = chances.copy()
 
         # PHASE 1: Pre-process rare outcomes with strategic d20 splits
         # This ensures HR/3B don't disappear due to rounding
-        cls._assign_rare_outcomes(columns, remaining)
+        cls._assign_rare_outcomes(columns, remaining, card_type)
 
         # Assign outcomes in priority order (except outs and already-handled rare outcomes)
         for outcome in cls.OUTCOME_PRIORITY:
@@ -216,16 +219,17 @@ class CardLayoutGenerator:
 
         # Fill any remaining space with outs (up to the specified amount)
         out_chances = remaining.get('out', remaining.get('outs', 0))
-        cls._fill_remaining_with_outs(columns, out_chances)
+        cls._fill_remaining_with_outs(columns, out_chances, card_type)
 
-        # PHASE 4: Add baserunning modifiers based on speed
-        if player_stats:
+        # PHASE 4: Add baserunning modifiers based on speed (batters only)
+        if player_stats and card_type == 'batter':
             cls._add_baserunning_modifiers(columns, player_stats)
 
         return CardLayout(
             player_name=player_name,
             year=year,
-            columns=columns
+            columns=columns,
+            card_type=card_type
         )
 
     @classmethod
@@ -275,10 +279,16 @@ class CardLayoutGenerator:
                 result.outcome = 'single*'
 
     @staticmethod
-    def _create_empty_columns() -> List[CardColumn]:
-        """Create 3 empty columns with unassigned dice rolls."""
+    def _create_empty_columns(card_type: str = 'batter') -> List[CardColumn]:
+        """Create 3 empty columns with unassigned dice rolls.
+
+        Args:
+            card_type: 'batter' for columns 1-2-3, 'pitcher' for columns 4-5-6
+        """
         columns = []
-        for col_num in range(1, 4):
+        # Batter cards use columns 1-2-3, pitcher cards use 4-5-6
+        start_col = 4 if card_type == 'pitcher' else 1
+        for col_num in range(start_col, start_col + 3):
             rolls = []
             for dice in range(2, 13):
                 rolls.append(DiceRoll(dice=dice, results=[]))
@@ -286,7 +296,8 @@ class CardLayoutGenerator:
         return columns
 
     @classmethod
-    def _assign_rare_outcomes(cls, columns: List[CardColumn], remaining: Dict[str, float]):
+    def _assign_rare_outcomes(cls, columns: List[CardColumn], remaining: Dict[str, float],
+                              card_type: str = 'batter'):
         """
         Pre-assign rare outcomes using strategic d20 splits.
 
@@ -295,13 +306,15 @@ class CardLayoutGenerator:
         - TRIPLE 1, SINGLE 2-20 (gives ~0.2 chances for 3B)
 
         This prevents rare outcomes from disappearing due to rounding.
-        Uses column 2 (middle, offensive column) dice 9 and 10.
+        Uses column 2/5 (middle, offensive column) dice 9 and 10.
 
         Args:
             columns: Card columns to assign to
             remaining: Dictionary of remaining chances (will be modified)
+            card_type: 'batter' or 'pitcher' (affects out format)
         """
         assigner = FieldingLocationAssigner()
+        is_pitcher = card_type == 'pitcher'
         column_2 = columns[1]  # Middle column (index 1)
 
         hr_chances = remaining.get('homerun', 0)
@@ -323,10 +336,11 @@ class CardLayoutGenerator:
             ))
 
             # Add flyball fallback for rest of d20
-            flyball_result = assigner.generate_out_result()
+            flyball_result = assigner.generate_out_result(for_pitcher=is_pitcher)
             # Ensure it's a flyball (regenerate if not)
-            while not flyball_result.startswith('flyball'):
-                flyball_result = assigner.generate_out_result()
+            flyball_prefix = 'FLYBALL' if is_pitcher else 'flyball'
+            while not flyball_result.startswith(flyball_prefix):
+                flyball_result = assigner.generate_out_result(for_pitcher=is_pitcher)
 
             dice_9.results.append(CardResult(
                 outcome=flyball_result,
@@ -403,92 +417,62 @@ class CardLayoutGenerator:
         """
         Assign an outcome to dice rolls within a single column.
 
-        PHASE 3: Prefer whole dice rolls, avoid d20 splits except strategically.
-
         Strategy:
-        - If remaining >= 75% of dice weight: use whole dice roll (accept rounding)
-        - If remaining < 0.5: skip (too small, let it round away)
-        - Only use d20 splits when necessary to combine outcomes on same dice
+        - Only assign a whole dice roll if remaining >= dice_weight
+          (never overassign - this prevents the massive error we saw before)
+        - If remaining < dice_weight for all remaining dice, stop
+        - Leftover chances will be absorbed by outs or other rounding
         """
         remaining = target_chances
 
-        # Prefer dice rolls near 7 (most common)
+        # Order dice from largest to smallest weight for greedy assignment
+        # This minimizes leftover remainder
         dice_order = [7, 6, 8, 5, 9, 4, 10, 3, 11, 2, 12]
 
         for dice in dice_order:
-            if remaining < 0.5:  # Too small, let it round away
+            if remaining < 1:  # Less than 1 chance left, stop
                 break
 
             # Find the roll for this dice value
             roll = next(r for r in column.rolls if r.dice == dice)
 
-            # Skip if this roll is already reserved (from rare outcomes)
+            # Skip if this roll is already reserved
             if roll.results:
                 continue
 
-            # How many chances does this dice value have?
             dice_weight = DICE_WEIGHTS[dice]
 
-            # Decision: use whole dice roll or skip?
-            if remaining >= dice_weight * 0.75:
-                # Use entire dice roll (accept rounding error)
+            # Only assign if we have enough chances to fill this dice
+            # (no overassignment allowed)
+            if remaining >= dice_weight:
                 roll.results.append(CardResult(outcome=outcome))
                 remaining -= dice_weight
-            elif remaining >= dice_weight * 0.3:
-                # Partial fill: use what we need, round to whole dice
-                # This will leave remainder for next iteration
-                # Only use d20 if we can get at least 30% of the dice
-                roll.results.append(CardResult(outcome=outcome))
-                remaining -= dice_weight
-            # else: skip this dice, remaining carries forward
 
     @staticmethod
-    def _fill_remaining_with_outs(columns: List[CardColumn], out_chances: float):
+    def _fill_remaining_with_outs(columns: List[CardColumn], out_chances: float,
+                                  card_type: str = 'batter'):
         """
-        Fill remaining space with outs, but only up to the specified amount.
-        Uses FieldingLocationAssigner to generate specific fielding locations.
+        Fill ALL remaining empty dice slots with outs.
 
-        PHASE 3: Prefer whole dice rolls for outs too.
+        A SOM card must have exactly 108 chances total. After assigning hits,
+        walks, strikeouts etc., we fill every remaining empty slot with an out.
+        The out_chances parameter is informational but we don't cap at it.
 
         Args:
             columns: Card columns to fill
-            out_chances: How many out chances we should have total (out of 108)
+            out_chances: Target out chances (informational, not a hard cap)
+            card_type: 'batter' or 'pitcher' (affects out format)
         """
         assigner = FieldingLocationAssigner()
+        is_pitcher = card_type == 'pitcher'
 
-        # Calculate how many outs we already have from partial fills
-        current_outs = 0
+        # Fill ALL empty dice rolls with outs to complete the card
         for col in columns:
             for roll in col.rolls:
-                for result in roll.results:
-                    # Count any fielding result as an out
-                    if result.outcome == 'out' or result.outcome.startswith('groundball') or \
-                       result.outcome.startswith('flyball') or result.outcome.startswith('lineout') or \
-                       result.outcome.startswith('popout'):
-                        current_outs += result.get_chances(DICE_WEIGHTS[roll.dice])
-
-        remaining_outs = out_chances - current_outs
-
-        # Fill empty dice rolls with outs (prefer whole dice rolls)
-        for col in columns:
-            if remaining_outs < 0.5:  # Close enough
-                break
-
-            for roll in col.rolls:
-                if remaining_outs < 0.5:
-                    break
-
                 if not roll.results:
-                    # Entire dice roll is empty - assign a fielding location
-                    dice_weight = DICE_WEIGHTS[roll.dice]
-
-                    # Prefer using whole dice roll (accept rounding)
-                    if remaining_outs >= dice_weight * 0.5:
-                        # Use whole dice roll for outs
-                        fielding_result = assigner.generate_out_result()
-                        roll.results.append(CardResult(outcome=fielding_result))
-                        remaining_outs -= dice_weight
-                    # else: skip, too small
+                    # Empty slot - fill with a fielding out
+                    fielding_result = assigner.generate_out_result(for_pitcher=is_pitcher)
+                    roll.results.append(CardResult(outcome=fielding_result))
 
 
 if __name__ == "__main__":
