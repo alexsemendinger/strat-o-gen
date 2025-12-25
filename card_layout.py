@@ -325,6 +325,252 @@ class CardLayout:
                     totals[outcome] = totals.get(outcome, 0) + chances
         return totals
 
+    def to_html(self) -> str:
+        """Generate HTML formatted card that looks like a real Strat-O-Matic card."""
+        stats = self.player_stats or {}
+
+        # Build the HTML
+        html = ['<div class="som-card">']
+
+        # === HEADER SECTION ===
+        html.append('<div class="som-header">')
+        if self.card_type == 'pitcher':
+            html.extend(self._html_pitcher_header())
+        else:
+            html.extend(self._html_batter_header())
+        html.append('</div>')
+
+        # === CARD LABEL ===
+        card_label = "PITCHING CARD" if self.card_type == 'pitcher' else "BATTING CARD"
+        team = stats.get('team', '')
+        league = stats.get('league', '')
+        team_str = f"{team} ({league})" if league else team
+
+        html.append('<div class="som-card-label">')
+        html.append(f'<span class="label-left">{card_label}</span>')
+        html.append(f'<span class="label-right">{team_str}</span>')
+        html.append('</div>')
+
+        # === COLUMN HEADERS ===
+        html.append('<div class="som-columns-header">')
+        for col in self.columns:
+            html.append(f'<div class="som-col-header">{col.column_num}</div>')
+        html.append('</div>')
+
+        # === DICE RESULTS TABLE ===
+        html.append('<div class="som-columns">')
+
+        # Create three column divs
+        for col_idx, col in enumerate(self.columns):
+            html.append('<div class="som-column">')
+            for roll in col.rolls:
+                html.append(self._html_dice_roll(roll))
+            html.append('</div>')
+
+        html.append('</div>')
+
+        # === STATS SECTION ===
+        html.append('<div class="som-stats">')
+        html.extend(self._html_stats_section())
+        html.append('</div>')
+
+        html.append('</div>')
+
+        return '\n'.join(html)
+
+    def _html_pitcher_header(self) -> List[str]:
+        """Generate HTML for pitcher card header."""
+        stats = self.player_stats or {}
+        html = []
+
+        name = self.player_name.upper()
+        pitcher_type = "relief" if stats.get('GS', 0) < stats.get('G', 1) / 2 else "starter"
+
+        html.append('<div class="som-name-row">')
+        html.append(f'<span class="som-player-name">{name}</span>')
+        html.append(f'<span class="som-position">pitcher</span>')
+        html.append(f'<span class="som-type">{pitcher_type}</span>')
+        html.append('</div>')
+
+        return html
+
+    def _html_batter_header(self) -> List[str]:
+        """Generate HTML for batter card header."""
+        stats = self.player_stats or {}
+        html = []
+
+        name = self.player_name.upper()
+
+        # Determine speed rating for display
+        sb = stats.get('SB', 0)
+        if sb >= 20:
+            stealing = "stealing-A"
+            running = f"running 1-{min(20, sb)}"
+        elif sb >= 10:
+            stealing = "stealing-B"
+            running = f"running 1-{min(15, sb)}"
+        elif sb >= 5:
+            stealing = "stealing-C"
+            running = ""
+        else:
+            stealing = ""
+            running = ""
+
+        html.append('<div class="som-name-row">')
+        html.append(f'<span class="som-player-name">{name}</span>')
+        if stealing:
+            html.append(f'<span class="som-rating">{stealing}</span>')
+        if running:
+            html.append(f'<span class="som-rating">{running}</span>')
+        html.append('</div>')
+
+        return html
+
+    def _html_dice_roll(self, roll: DiceRoll) -> str:
+        """Generate HTML for a single dice roll result."""
+        if not roll.results:
+            return f'<div class="som-roll"><span class="dice">{roll.dice}</span>-[EMPTY]</div>'
+
+        lines = []
+        first = True
+
+        for result in roll.results:
+            outcome_name = result._outcome_name()
+
+            # Determine if this is an "out" type result (lowercase) or hit (uppercase)
+            is_positive = outcome_name.isupper() and outcome_name not in ['OUT']
+            outcome_class = "positive" if is_positive else "negative"
+
+            if result.d20_range == (1, 20):
+                # No split
+                if first:
+                    lines.append(
+                        f'<div class="som-roll">'
+                        f'<span class="dice">{roll.dice}</span>-'
+                        f'<span class="{outcome_class}">{outcome_name}</span>'
+                        f'</div>'
+                    )
+                else:
+                    lines.append(
+                        f'<div class="som-roll-cont">'
+                        f'<span class="{outcome_class}">{outcome_name}</span>'
+                        f'</div>'
+                    )
+            else:
+                # d20 split
+                start, end = result.d20_range
+                range_str = str(start) if start == end else f"{start}-{end}"
+
+                if first:
+                    lines.append(
+                        f'<div class="som-roll">'
+                        f'<span class="dice">{roll.dice}</span>-'
+                        f'<span class="{outcome_class}">{outcome_name}</span>'
+                        f'</div>'
+                    )
+                    lines.append(f'<div class="som-roll-split">{range_str}</div>')
+                else:
+                    lines.append(
+                        f'<div class="som-roll-cont">'
+                        f'<span class="{outcome_class}">{outcome_name}</span>'
+                        f'</div>'
+                    )
+                    lines.append(f'<div class="som-roll-split">{range_str}</div>')
+
+            first = False
+
+        return '\n'.join(lines)
+
+    def _html_stats_section(self) -> List[str]:
+        """Generate HTML for stats section."""
+        html = []
+        stats = self.player_stats or {}
+
+        if self.card_type == 'pitcher':
+            html.append(f'<div class="som-stats-title">{self.year} PITCHING RECORD</div>')
+            html.append('<table class="som-stats-table">')
+
+            # Row 1 headers
+            html.append('<tr class="stat-header">')
+            for h in ['W', 'L', 'ERA', 'STARTS', 'SAVES']:
+                html.append(f'<th>{h}</th>')
+            html.append('</tr>')
+
+            # Row 1 values
+            w = stats.get('W', 0)
+            l = stats.get('L', 0)
+            era = stats.get('ERA', 0)
+            gs = stats.get('GS', 0)
+            sv = stats.get('SV', 0)
+
+            html.append('<tr>')
+            html.append(f'<td>{w}</td><td>{l}</td><td>{era:.2f}</td><td>{gs}</td><td>{sv}</td>')
+            html.append('</tr>')
+
+            # Row 2 headers
+            html.append('<tr class="stat-header">')
+            for h in ['IP', 'HITS', 'BB', 'SO', 'HR']:
+                html.append(f'<th>{h}</th>')
+            html.append('</tr>')
+
+            # Row 2 values
+            ip = stats.get('IP', 0)
+            h_val = stats.get('H', 0)
+            bb = stats.get('BB', 0)
+            so = stats.get('SO', 0)
+            hr = stats.get('HR', 0)
+
+            html.append('<tr>')
+            html.append(f'<td>{ip:.0f}</td><td>{h_val}</td><td>{bb}</td><td>{so}</td><td>{hr}</td>')
+            html.append('</tr>')
+
+            html.append('</table>')
+
+        else:  # batter
+            html.append(f'<div class="som-stats-title">{self.year} BATTING RECORD</div>')
+            html.append('<table class="som-stats-table">')
+
+            # Row 1 headers
+            html.append('<tr class="stat-header">')
+            for h in ['AVG', 'AB', '2B', '3B', 'HR', 'RBI']:
+                html.append(f'<th>{h}</th>')
+            html.append('</tr>')
+
+            # Row 1 values
+            avg = stats.get('AVG', stats.get('BA', 0))
+            ab = stats.get('AB', 0)
+            doubles = stats.get('2B', 0)
+            triples = stats.get('3B', 0)
+            hr = stats.get('HR', 0)
+            rbi = stats.get('RBI', 0)
+
+            avg_str = f"{avg:.3f}" if isinstance(avg, float) else str(avg)
+            html.append('<tr>')
+            html.append(f'<td>{avg_str}</td><td>{ab}</td><td>{doubles}</td><td>{triples}</td><td>{hr}</td><td>{rbi}</td>')
+            html.append('</tr>')
+
+            # Row 2 headers
+            html.append('<tr class="stat-header">')
+            for h in ['BB', 'SO', 'SB', 'CS', 'SLG%', 'OBP%']:
+                html.append(f'<th>{h}</th>')
+            html.append('</tr>')
+
+            # Row 2 values
+            bb = stats.get('BB', 0)
+            so = stats.get('SO', 0)
+            sb = stats.get('SB', 0)
+            cs = stats.get('CS', 0)
+            slg = stats.get('SLG', 0)
+            obp = stats.get('OBP', 0)
+
+            html.append('<tr>')
+            html.append(f'<td>{bb}</td><td>{so}</td><td>{sb}</td><td>{cs}</td><td>{slg:.3f}</td><td>{obp:.3f}</td>')
+            html.append('</tr>')
+
+            html.append('</table>')
+
+        return html
+
 
 class CardLayoutGenerator:
     """Generates card layouts from calculated chances."""

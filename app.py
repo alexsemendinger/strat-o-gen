@@ -239,27 +239,6 @@ INDEX_HTML = """
             display: block;
         }
 
-        .card-header {
-            text-align: center;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px 8px 0 0;
-            margin-bottom: 0;
-        }
-
-        .card-content {
-            background: #1a1a2e;
-            color: #eee;
-            padding: 20px;
-            border-radius: 0 0 8px 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.4;
-            white-space: pre;
-            overflow-x: auto;
-        }
-
         .new-card-btn {
             margin-top: 20px;
             background: #28a745;
@@ -267,6 +246,152 @@ INDEX_HTML = """
 
         .new-card-btn:hover {
             box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        /* Strat-O-Matic Card Styles */
+        .som-card {
+            background: #f5f5f0;
+            border: 2px solid #333;
+            border-radius: 4px;
+            font-family: 'Arial Narrow', Arial, sans-serif;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .som-header {
+            padding: 8px 12px;
+            border-bottom: 1px solid #999;
+        }
+
+        .som-name-row {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .som-player-name {
+            font-weight: bold;
+            font-size: 18px;
+            color: #000;
+        }
+
+        .som-position, .som-type, .som-rating {
+            font-size: 12px;
+            color: #333;
+        }
+
+        .som-card-label {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: #e8e8e0;
+            border-bottom: 1px solid #999;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .som-columns-header {
+            display: flex;
+            background: #d0d0c8;
+            border-bottom: 2px solid #333;
+        }
+
+        .som-col-header {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 4px;
+            border-right: 1px solid #999;
+        }
+
+        .som-col-header:last-child {
+            border-right: none;
+        }
+
+        .som-columns {
+            display: flex;
+            min-height: 300px;
+        }
+
+        .som-column {
+            flex: 1;
+            padding: 6px 8px;
+            border-right: 1px solid #ccc;
+            font-size: 12px;
+        }
+
+        .som-column:last-child {
+            border-right: none;
+        }
+
+        .som-roll {
+            margin: 2px 0;
+            line-height: 1.3;
+        }
+
+        .som-roll .dice {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .som-roll-cont {
+            margin-left: 16px;
+            line-height: 1.3;
+        }
+
+        .som-roll-split {
+            margin-left: 20px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .som-roll .positive {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .som-roll .negative,
+        .som-roll-cont .negative {
+            color: #444;
+        }
+
+        .som-stats {
+            border-top: 2px solid #333;
+            padding: 10px;
+            background: #e8e8e0;
+        }
+
+        .som-stats-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #999;
+            padding-bottom: 4px;
+        }
+
+        .som-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .som-stats-table th {
+            background: #d0d0c8;
+            padding: 3px 6px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #999;
+        }
+
+        .som-stats-table td {
+            padding: 3px 6px;
+            text-align: center;
+            border: 1px solid #999;
+            background: #f5f5f0;
         }
     </style>
 </head>
@@ -319,10 +444,7 @@ INDEX_HTML = """
         </div>
 
         <div class="card-result" id="cardResult">
-            <div class="card-header">
-                <h2 id="cardTitle"></h2>
-            </div>
-            <div class="card-content" id="cardContent"></div>
+            <div id="cardContent"></div>
             <button type="button" class="new-card-btn" onclick="resetForm()">Generate Another Card</button>
         </div>
 
@@ -384,7 +506,7 @@ INDEX_HTML = """
 
                 if (data.disambiguation) {
                     showDisambiguation(data.players);
-                } else if (data.card) {
+                } else if (data.card_html) {
                     showCard(data);
                 }
             } catch (err) {
@@ -416,9 +538,7 @@ INDEX_HTML = """
         }
 
         function showCard(data) {
-            document.getElementById('cardTitle').textContent =
-                `${data.player_name} - ${data.year} ${data.card_type.toUpperCase()}`;
-            document.getElementById('cardContent').textContent = data.card;
+            document.getElementById('cardContent').innerHTML = data.card_html;
             cardResult.classList.add('active');
             form.style.display = 'none';
         }
@@ -521,11 +641,11 @@ def generate_batter_card(player_id: str, year: int):
         player_stats=stats, card_type='batter'
     )
 
-    # Format card as text
-    card_text = str(layout)
+    # Format card as HTML
+    card_html = layout.to_html()
 
     return jsonify({
-        'card': card_text,
+        'card_html': card_html,
         'player_name': player_name,
         'year': year,
         'card_type': 'batter'
@@ -554,14 +674,14 @@ def generate_pitcher_card(player_id: str, year: int):
     player_name = stats.get('name', player_id)
     layout = CardLayoutGenerator.generate_layout(
         chances, player_name, year,
-        card_type='pitcher'
+        player_stats=stats, card_type='pitcher'
     )
 
-    # Format card as text
-    card_text = str(layout)
+    # Format card as HTML
+    card_html = layout.to_html()
 
     return jsonify({
-        'card': card_text,
+        'card_html': card_html,
         'player_name': player_name,
         'year': year,
         'card_type': 'pitcher'
