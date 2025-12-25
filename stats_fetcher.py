@@ -24,6 +24,105 @@ class StatsFetcher:
             'User-Agent': 'Mozilla/5.0 (Baseball Card Generator)'
         })
 
+    def search_player(self, name: str) -> list:
+        """
+        Search for a player by name and return matching player IDs.
+
+        Args:
+            name: Player name to search for (e.g., "Mike Trout", "Babe Ruth")
+
+        Returns:
+            List of dicts with 'id', 'name', 'years' for each matching player
+        """
+        try:
+            # URL encode the search query
+            search_url = f"{self.base_url}/search/search.fcgi?search={requests.utils.quote(name)}"
+            print(f"Searching: {search_url}")
+
+            response = self.session.get(search_url, timeout=10, allow_redirects=False)
+
+            # If we get a redirect, it means there's an exact match
+            if response.status_code in (301, 302):
+                location = response.headers.get('Location', '')
+                # Extract player ID from URL like /players/t/troutmi01.shtml
+                match = re.search(r'/players/\w/(\w+)\.shtml', location)
+                if match:
+                    player_id = match.group(1)
+                    # Fetch the player page to get full name
+                    player_name = self._get_player_name(player_id)
+                    return [{'id': player_id, 'name': player_name or name, 'years': ''}]
+
+            # Otherwise, parse the search results page
+            response = self.session.get(search_url, timeout=10)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+            results = []
+
+            # Look for player search results in the search results div
+            search_results = soup.find('div', {'id': 'players'})
+            if search_results:
+                for item in search_results.find_all('div', class_='search-item'):
+                    link = item.find('a')
+                    if link:
+                        href = link.get('href', '')
+                        match = re.search(r'/players/\w/(\w+)\.shtml', href)
+                        if match:
+                            player_id = match.group(1)
+                            player_name = link.text.strip()
+                            # Get years from the item text
+                            years_elem = item.find('div', class_='search-item-url')
+                            years = ''
+                            if years_elem:
+                                years_text = years_elem.text
+                                years_match = re.search(r'\((\d{4}-\d{4}|\d{4})\)', years_text)
+                                if years_match:
+                                    years = years_match.group(1)
+                            results.append({'id': player_id, 'name': player_name, 'years': years})
+
+            # Alternative: look for direct links in the results
+            if not results:
+                for link in soup.find_all('a', href=re.compile(r'/players/\w/\w+\.shtml')):
+                    href = link.get('href', '')
+                    match = re.search(r'/players/\w/(\w+)\.shtml', href)
+                    if match:
+                        player_id = match.group(1)
+                        player_name = link.text.strip()
+                        if player_name and player_id not in [r['id'] for r in results]:
+                            results.append({'id': player_id, 'name': player_name, 'years': ''})
+
+            return results[:10]  # Limit to top 10 results
+
+        except requests.RequestException as e:
+            print(f"Network error searching for {name}: {e}")
+            return []
+        except Exception as e:
+            print(f"Error searching for {name}: {e}")
+            return []
+
+    def _get_player_name(self, bbref_id: str) -> Optional[str]:
+        """Get a player's full name from their player page."""
+        try:
+            first_letter = bbref_id[0].lower()
+            url = f"{self.base_url}/players/{first_letter}/{bbref_id}.shtml"
+            response = self.session.get(url, timeout=10)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            # Try to find the player name in the h1 tag
+            h1 = soup.find('h1')
+            if h1:
+                # The h1 usually contains a span with the name
+                name_span = h1.find('span')
+                if name_span:
+                    return name_span.text.strip()
+                return h1.text.strip()
+
+            return None
+        except Exception:
+            return None
+
     def get_stats(self, bbref_id: str, year: int, stat_type: str = 'batting') -> Optional[Dict]:
         """
         Fetch statistics for a specific player and year.
