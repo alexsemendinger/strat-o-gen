@@ -211,7 +211,7 @@ def generate_pitcher_card(bbref_id: str, year: int):
     player_name = stats.get('name', bbref_id)
     layout = CardLayoutGenerator.generate_layout(
         chances, player_name, year,
-        card_type='pitcher'
+        player_stats=stats, card_type='pitcher'
     )
 
     # Display

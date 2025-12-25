@@ -119,18 +119,196 @@ class CardLayout:
     year: int
     columns: List[CardColumn]
     card_type: str = 'batter'  # 'batter' or 'pitcher'
+    player_stats: Dict = None  # Original stats for display
 
     def __str__(self):
-        card_label = "PITCHING CARD" if self.card_type == 'pitcher' else "BATTING CARD"
-        lines = [
-            "=" * 70,
-            f"{self.player_name} - {self.year} {card_label}",
-            "=" * 70,
-        ]
-        for col in self.columns:
-            lines.append("")
-            lines.append(str(col))
+        """Format card to look like a real Strat-O-Matic card."""
+        lines = []
+        col_width = 20  # Width for each column
+
+        # === HEADER SECTION ===
+        if self.card_type == 'pitcher':
+            lines.extend(self._format_pitcher_header())
+        else:
+            lines.extend(self._format_batter_header())
+
+        # === COLUMN HEADERS ===
+        col_nums = [str(col.column_num) for col in self.columns]
+        header_line = "".join(c.center(col_width) for c in col_nums)
+        lines.append(header_line)
+        lines.append("-" * (col_width * 3))
+
+        # === DICE ROLL RESULTS (side by side) ===
+        # For each dice value 2-12, show all three columns
+        for dice_idx in range(11):  # 11 dice values (2-12)
+            dice_val = dice_idx + 2
+
+            # Get the formatted lines for each column's dice roll
+            col_lines = []
+            max_lines = 1
+
+            for col in self.columns:
+                roll = col.rolls[dice_idx]
+                formatted = self._format_dice_roll(roll)
+                col_lines.append(formatted)
+                max_lines = max(max_lines, len(formatted))
+
+            # Pad shorter columns to match the longest
+            for i in range(len(col_lines)):
+                while len(col_lines[i]) < max_lines:
+                    col_lines[i].append("")
+
+            # Print each line across all columns
+            for line_idx in range(max_lines):
+                row = ""
+                for col_idx in range(3):
+                    cell = col_lines[col_idx][line_idx]
+                    row += cell.ljust(col_width)
+                lines.append(row.rstrip())
+
+        # === STATS SECTION ===
+        lines.append("")
+        lines.extend(self._format_stats_section())
+
         return '\n'.join(lines)
+
+    def _format_pitcher_header(self) -> List[str]:
+        """Format header for pitcher cards."""
+        lines = []
+        stats = self.player_stats or {}
+
+        # Line 1: Name, position rating, type
+        name = self.player_name.upper()
+        pos_rating = f"pitcher-{stats.get('pitcher_rating', '?')}" if stats.get('pitcher_rating') else "pitcher"
+        pitcher_type = "relief" if stats.get('GS', 0) < stats.get('G', 1) / 2 else "starter"
+
+        lines.append(f"{name:<30} {pos_rating:<15} {pitcher_type}")
+        lines.append("")
+
+        # Line 2: PITCHING CARD with team
+        team = stats.get('team', 'TEAM')
+        league = stats.get('league', '')
+        team_str = f"{team} ({league})" if league else team
+        lines.append(f"PITCHING CARD{' ' * 20}{team_str}")
+        lines.append("")
+
+        return lines
+
+    def _format_batter_header(self) -> List[str]:
+        """Format header for batter cards."""
+        lines = []
+        stats = self.player_stats or {}
+
+        # Line 1: Name with positions and ratings
+        name = self.player_name.upper()
+        lines.append(name)
+
+        # Team line
+        team = stats.get('team', 'TEAM')
+        league = stats.get('league', '')
+        team_str = f"{team} ({league})" if league else team
+        lines.append(team_str)
+        lines.append("")
+
+        return lines
+
+    def _format_dice_roll(self, roll: DiceRoll) -> List[str]:
+        """Format a dice roll result for display, returns list of lines."""
+        if not roll.results:
+            return [f"{roll.dice}-[EMPTY]"]
+
+        lines = []
+        first = True
+
+        for result in roll.results:
+            outcome_name = result._outcome_name()
+
+            if result.d20_range == (1, 20):
+                # No split - single result for this dice
+                if first:
+                    lines.append(f"{roll.dice}-{outcome_name}")
+                else:
+                    lines.append(f"  {outcome_name}")
+            else:
+                # d20 split - show range
+                start, end = result.d20_range
+                if start == end:
+                    range_str = str(start)
+                else:
+                    range_str = f"{start}-{end}"
+
+                if first:
+                    lines.append(f"{roll.dice}-{outcome_name}")
+                    lines.append(f"  {range_str}")
+                else:
+                    lines.append(f"  {outcome_name}")
+                    lines.append(f"  {range_str}")
+
+            first = False
+
+        return lines
+
+    def _format_stats_section(self) -> List[str]:
+        """Format the stats section at the bottom of the card."""
+        lines = []
+        stats = self.player_stats or {}
+
+        if self.card_type == 'pitcher':
+            lines.append(f"{self.year} PITCHING RECORD")
+            lines.append("-" * 54)
+
+            # Row 1: W, L, ERA, STARTS, SAVES
+            w = stats.get('W', 0)
+            l = stats.get('L', 0)
+            era = stats.get('ERA', 0)
+            gs = stats.get('GS', 0)
+            sv = stats.get('SV', 0)
+
+            lines.append(f"{'W':^9}{'L':^9}{'ERA':^9}{'STARTS':^9}{'SAVES':^9}")
+            lines.append(f"{w:^9}{l:^9}{era:^9.2f}{gs:^9}{sv:^9}")
+            lines.append("")
+
+            # Row 2: IP, HITS ALLOWED, BB, SO, HOMERUNS ALLOWED
+            ip = stats.get('IP', 0)
+            h = stats.get('H', 0)
+            bb = stats.get('BB', 0)
+            so = stats.get('SO', 0)
+            hr = stats.get('HR', 0)
+
+            lines.append(f"{'IP':^9}{'HITS':^9}{'BB':^9}{'SO':^9}{'HR':^9}")
+            lines.append(f"{ip:^9.0f}{h:^9}{bb:^9}{so:^9}{hr:^9}")
+
+        else:  # batter
+            lines.append(f"{self.year} BATTING RECORD")
+            lines.append("-" * 54)
+
+            # Row 1: AVG, AB, 2B, 3B, HR, RBI
+            avg = stats.get('AVG', stats.get('BA', 0))
+            ab = stats.get('AB', 0)
+            doubles = stats.get('2B', 0)
+            triples = stats.get('3B', 0)
+            hr = stats.get('HR', 0)
+            rbi = stats.get('RBI', 0)
+
+            lines.append(f"{'AVG':^9}{'AB':^9}{'2B':^9}{'3B':^9}{'HR':^9}{'RBI':^9}")
+            if isinstance(avg, float):
+                lines.append(f"{avg:^9.3f}{ab:^9}{doubles:^9}{triples:^9}{hr:^9}{rbi:^9}")
+            else:
+                lines.append(f"{avg:^9}{ab:^9}{doubles:^9}{triples:^9}{hr:^9}{rbi:^9}")
+            lines.append("")
+
+            # Row 2: BB, SO, SB, CS, SLG%, ON BASE%
+            bb = stats.get('BB', 0)
+            so = stats.get('SO', 0)
+            sb = stats.get('SB', 0)
+            cs = stats.get('CS', 0)
+            slg = stats.get('SLG', 0)
+            obp = stats.get('OBP', 0)
+
+            lines.append(f"{'BB':^9}{'SO':^9}{'SB':^9}{'CS':^9}{'SLG%':^9}{'OBP%':^9}")
+            lines.append(f"{bb:^9}{so:^9}{sb:^9}{cs:^9}{slg:^9.3f}{obp:^9.3f}")
+
+        return lines
 
     def get_outcome_totals(self) -> Dict[str, float]:
         """Calculate total chances for each outcome across all columns."""
@@ -229,7 +407,8 @@ class CardLayoutGenerator:
             player_name=player_name,
             year=year,
             columns=columns,
-            card_type=card_type
+            card_type=card_type,
+            player_stats=player_stats
         )
 
     @classmethod
