@@ -88,8 +88,13 @@ def generate_pitcher_card(bbref_id: str, year: int):
         print(f"Error: Could not fetch pitching stats for {bbref_id} in {year}")
         return
 
+    # Get league averages for estimating 2B/3B from hits
+    league = stats.get('league', 'AL')
+    league_fetcher = LeagueAveragesFetcher()
+    league_avg = league_fetcher.get_league_averages(year, league)
+
     # Calculate card chances using pitcher formulas
-    chances = PitcherCardFormulas.calculate_pitcher_card_chances(stats)
+    chances = PitcherCardFormulas.calculate_pitcher_card_chances(stats, league_avg)
 
     # Generate layout (card_type='pitcher' for columns 4-5-6)
     player_name = stats.get('name', bbref_id)
