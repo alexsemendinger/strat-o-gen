@@ -109,19 +109,21 @@ class StatsFetcher:
             response.raise_for_status()
 
             soup = BeautifulSoup(response.text, 'html.parser')
-
-            # Try to find the player name in the h1 tag
-            h1 = soup.find('h1')
-            if h1:
-                # The h1 usually contains a span with the name
-                name_span = h1.find('span')
-                if name_span:
-                    return name_span.text.strip()
-                return h1.text.strip()
-
-            return None
+            return self._get_player_name_from_soup(soup)
         except Exception:
             return None
+
+    def _get_player_name_from_soup(self, soup) -> Optional[str]:
+        """Extract player name from a parsed player page."""
+        # Try to find the player name in the h1 tag
+        h1 = soup.find('h1')
+        if h1:
+            # The h1 usually contains a span with the name
+            name_span = h1.find('span')
+            if name_span:
+                return name_span.text.strip()
+            return h1.text.strip()
+        return None
 
     def get_stats(self, bbref_id: str, year: int, stat_type: str = 'batting') -> Optional[Dict]:
         """
@@ -195,6 +197,11 @@ class StatsFetcher:
 
             # Extract stats from the row
             stats = self._extract_stats_from_row(stats_row, year)
+
+            # Add player name from the page
+            player_name = self._get_player_name_from_soup(soup)
+            if player_name:
+                stats['name'] = player_name
 
             return stats
 
@@ -329,6 +336,11 @@ class StatsFetcher:
 
             # Extract stats from the row
             stats = self._extract_pitching_stats_from_row(stats_row, year)
+
+            # Add player name from the page
+            player_name = self._get_player_name_from_soup(soup)
+            if player_name:
+                stats['name'] = player_name
 
             return stats
 
