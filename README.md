@@ -17,33 +17,27 @@ Generate statistically accurate, game-usable Strat-O-Matic baseball cards from h
 
 ### Windows
 
-1. Double-click `start_windows.bat`
+**First-time setup:** See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for detailed instructions.
+
+**Daily use:**
+1. Double-click `Start Strat-O-Gen.vbs`
 2. The application will open in your browser automatically
 
-### Mac
+### Mac / Linux
 
-1. Double-click `start_mac.command`
-2. If prompted, allow the script to run in Security & Privacy settings
-3. The application will open in your browser automatically
-
-### Linux
-
-1. Run `./start_linux.sh` from terminal
-2. The application will open in your browser automatically
-
-Or manually:
 ```bash
+pip install -r requirements.txt
 python3 app.py
 ```
 
-Then visit: http://localhost:5000
+Then visit: http://localhost:5001
 
 ## Requirements
 
 - Python 3.10 or later
 - Internet connection (for first-time data fetching)
 
-Dependencies are automatically installed by the launcher scripts.
+Install dependencies with: `pip install -r requirements.txt`
 
 ## Manual Installation
 
@@ -108,16 +102,18 @@ The generator always works, but older years come with appropriate warnings about
 ```
 strat-o-gen/
 ├── app.py                  # Flask web application
-├── scraper.py              # Data fetching (pybaseball wrapper)
-├── card_engine.py          # Card generation formulas
-├── card_renderer.py        # HTML/PDF rendering
-├── config.py               # Configuration parameters
+├── generate_card.py        # Command-line interface
+├── stats_fetcher.py        # Data fetching (pybaseball wrapper)
+├── card_formulas.py        # Bundy formulas for card generation
+├── card_layout.py          # Card grid generation
+├── league_averages.py      # League average handling
 ├── requirements.txt        # Python dependencies
-├── start_windows.bat       # Windows launcher
-├── start_mac.command       # Mac launcher
-├── start_linux.sh          # Linux launcher
+├── Start Strat-O-Gen.vbs   # Windows launcher (double-click this)
+├── start_windows.bat       # Windows batch script
+├── WINDOWS_SETUP.md        # Windows setup guide
 └── data/
-    └── cache/              # Cached player data
+    ├── cache/              # Cached player data
+    └── league_averages/    # Cached league averages
 ```
 
 ## Formula Basis
@@ -153,7 +149,7 @@ This generator uses community-researched formulas (primarily the "Bundy formulas
 ### Server won't start
 - Ensure Python 3.10+ is installed
 - Try manual installation: `pip install -r requirements.txt`
-- Check port 5000 isn't already in use
+- Check port 5001 isn't already in use
 
 ## Credits
 
