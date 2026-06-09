@@ -1,0 +1,79 @@
+CLAY KIRBY
+2 pitcher-starter
+relief
+
+PITCHING CARD
+CINCINNATI REDS
+
+Column 4
+2-GROUND-
+  BALL(2b) X
+3-GROUND-
+  BALL(1b) X
+4-flyball (rf) B
+5-popout (ss)
+6-flyball (rf) B
+7-WALK
+8-flyball (cf) B
+9-flyball (lf) C
+10-FLYBALL
+  (cf) X
+11-GROUND-
+  BALL(p) X
+12-CATCHER'S
+  CARD X
+
+Column 5
+2-strikeout
+3-GROUND-
+  BALL(ss) X
+4-TRIPLE
+  1-11
+  DOUBLE
+  12-20
+5-HOMERUN
+6-GROUND-
+  BALL(ss) X
+7-strikeout
+8-GROUND-
+  BALL(2b) X
+9-groundball
+  (2b) C
+10-GROUND-
+  BALL(3b) X
+11-CATCHER'S
+  CARD X
+12-WALK
+
+Column 6
+2-groundball
+  (1b) C
+3-FLYBALL
+  (rf) X
+4-flyball (cf) B
+5-DOUBLE
+6-DOUBLE**
+  1-14
+  SINGLE**
+  15-20
+7-SINGLE
+8-SINGLE*
+  1-4
+  lineout (3b)
+  5-20
+9-WALK
+10-WALK
+11-FLYBALL
+  (lf) X
+12-groundball
+  (1b) C
+
+1975 PITCHING RECORD
+WON               10
+LOST              6
+E.R.A.            4.70
+INNINGS PITCHED  111
+HITS ALLOWED      113
+WALKS ALLOWED     54
+STRIKEOUTS        48
+HOMERUNS ALLOWED  13

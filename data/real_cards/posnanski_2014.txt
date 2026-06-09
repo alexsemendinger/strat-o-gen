@@ -1,0 +1,84 @@
+JOE POSNANSKI
+3rd base-1
+1st base-2
+stealing-B
+running 1-14
+
+KANSAS CITY
+
+Column 1
+2-flyball (rf)B
+3-groundball
+  (2b)B
+4-groundball
+  (3b)A
+5-SINGLE
+6-groundball
+  (3b)A
+7-SINGLE**
+8-groundball
+  (ss)A++
+9-groundball
+  (ss)A++
+10-groundball
+  (ss)A
+11-groundball
+  (ss)A++
+12-flyball (lf)B
+  plus injury
+
+Column 2
+2-lineout (2b)
+  into as many
+  outs as
+  possible
+3-WALK
+4-SINGLE*
+5-flyball (cf)B
+6-flyball (lf)B
+7-SINGLE**
+8-SINGLE*
+9-WALK
+10-groundball
+  (p)B
+11-WALK
+12-WALK
+
+Column 3
+2-WALK
+3-SINGLE*
+  1-14
+  lineout (3b)
+  15-20
+4-WALK
+5-HOMERUN
+  1-11
+  TRIPLE
+  12-20
+6-popout (ss)
+7-SINGLE
+8-DOUBLE**
+  1-17
+  SINGLE**
+  18-20
+9-HOMERUN
+10-TRIPLE
+  1
+  DOUBLE
+  2-20
+11-SINGLE
+12-flyball (lf)A
+
+2014 BATTING RECORD
+AVG     .390
+AB      619
+2B      40
+3B      8
+HR      30
+RBI     118
+BB      66
+SO      54
+SB      12
+CS      6
+SLG%    .625
+ONBASE% .454

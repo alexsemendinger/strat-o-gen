@@ -1,0 +1,73 @@
+DALE MURPHY
+catcher-3
+stealing-E
+running 1-10
+
+ATLANTA BRAVES
+
+Column 1
+2-foulout (c)
+3-popout (ss)
+4-popout (3b)
+5-groundball
+  (ss) B++
+6-groundball
+  (3b) B
+7-groundball
+  (3b) B
+8-groundball
+  (ss) B
+9-flyball (cf) B
+10-popout (ss)
+11-popout (2b)
+  plus injury
+12-groundball
+  (3b) B
+
+Column 2
+2-flyball (rf) B
+3-popout (3b)
+4-WALK
+5-SINGLE*
+  1-8
+  lineout (2b)
+  9-20
+6-SINGLE**
+7-DOUBLE**
+  1-4
+  SINGLE**
+  5-20
+8-DOUBLE
+9-DOUBLE
+10-DOUBLE
+11-groundball
+  (2b) B
+12-lineout (3b)
+  into as many
+  outs as
+  possible
+
+Column 3
+2-strikeout
+3-groundball
+  (ss) B++
+4-groundball
+  (p) B
+5-flyball (lf) B
+6-strikeout
+7-strikeout
+8-WALK
+9-WALK
+10-groundball
+  (ss) B
+11-flyball (lf) B
+12-WALK
+
+1976 BATTING RECORD
+AT BATS     65
+DOUBLES     6
+TRIPLES     0
+HOMERUNS    0
+AVERAGE     .262
+WALKS       7
+STRIKEOUTS  9

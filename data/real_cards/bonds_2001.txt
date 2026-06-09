@@ -1,0 +1,76 @@
+BARRY BONDS
+leftfield-2
+stealing-B
+running 1-14
+
+SAN FRANCISCO
+
+Column 1
+2-WALK
+3-WALK
+4-HOMERUN
+5-HOMERUN
+6-HOMERUN
+7-HOMERUN
+8-HOMERUN
+  1-16
+  DOUBLE
+  17-20
+9-strikeout
+10-TRIPLE
+  1
+  DOUBLE
+  2-20
+11-DOUBLE
+  1-18
+  flyball (rf)B
+  19-20
+12-lineout (1b)
+  into as many
+  outs as
+  possible
+
+Column 2
+2-flyball (cf)A
+  plus injury
+3-groundball
+  (2b)A
+4-groundball
+  (2b)A
+5-strikeout
+6-WALK
+7-groundball
+  (2b)B++
+8-flyball (rf)B
+9-strikeout
+10-flyball (cf)B
+11-flyball (rf)B
+12-WALK
+
+Column 3
+2-WALK
+3-WALK
+4-WALK
+5-groundball
+  (1b)B
+6-WALK
+7-WALK
+8-WALK
+9-WALK
+10-WALK
+11-WALK
+12-WALK
+
+2001 BATTING RECORD
+AVG     .328
+AB      476
+2B      32
+3B      2
+HR      73
+RBI     137
+BB      177
+SO      93
+SB      13
+CS      3
+SLG%    .863
+ONBASE% .515

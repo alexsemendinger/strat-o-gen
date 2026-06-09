@@ -1,0 +1,84 @@
+YOENIS CESPEDES
+leftfield-2
+centerfield-3
+stealing-D
+running 1-13
+
+NEW YORK (NL)
+
+Column 1
+2-flyball(lf)A
+3-groundball
+  (2b)A
+4-groundball
+  (ss)A
+5-WALK
+6-SINGLE*
+  1-3
+  lineout(3b)
+  4-20
+7-flyball(lf)B
+8-WALK
+9-strikeout
+10-groundball
+  (3b)A
+11-popout(ss)
+  plus injury
+12-groundball
+  (ss)A++
+
+Column 2
+2-groundball
+  (3b)A
+3-groundball
+  (ss)A++
+4-HOMERUN
+5-HOMERUN
+6-HOMERUN
+  1-10
+  DOUBLE
+  11-20
+7-DOUBLE**
+  1-8
+  SINGLE**
+  9-20
+8-SINGLE
+9-strikeout
+10-SINGLE
+11-SINGLE
+12-lineout(2b)
+  into as many
+  outs as
+  possible
+
+Column 3
+2-flyball(cf)B
+3-groundball
+  (3b)A
+4-flyball(cf)B
+5-strikeout
+6-strikeout
+7-groundball
+  (3b)A
+8-groundball
+  (ss)A
+9-strikeout
+10-groundball
+  (ss)A++
+11-groundball
+  (p)A
+12-flyball(lf)B
+
+2016 BATTING RECORD
+AVG       .280
+AB        479
+2B        25
+3B        1
+HR        31
+RBI       86
+BB        51
+SO        108
+SB        3
+CS        1
+SLG%      .530
+ONBASE%   .354

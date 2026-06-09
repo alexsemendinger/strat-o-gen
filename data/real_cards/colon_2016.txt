@@ -1,0 +1,84 @@
+BARTOLO COLON
+pitcher-1
+batting # 6
+starter
+
+PITCHING CARD
+NEW YORK (NL)
+
+Column 4
+2-flyball(lf)B
+3-FLYBALL
+  (rf)X
+4-FLYBALL
+  (cf)X
+5-groundball
+  (2b)C
+6-GROUND-
+  BALL(2b)X
+7-SINGLE*
+  1-14
+  lineout(ss)
+  15-20
+8-SINGLE
+9-SINGLE
+10-GROUND-
+  BALL(3b)X
+11-FLYBALL
+  (lf)X
+12-GROUND-
+  BALL(2b)X
+
+Column 5
+2-TRIPLE
+  1
+  DOUBLE
+  2-20
+3-GROUND-
+  BALL(1b)X
+4-GROUND-
+  BALL(ss)X
+5-GROUND-
+  BALL(ss)X
+6-flyball(rf)B
+7-strikeout
+8-flyball(cf)B
+9-HOMERUN
+  1-18
+  TRIPLE
+  19-20
+10-CATCHER'S
+  CARD X
+11-GROUND-
+  BALL(p)X
+12-popout(2b)
+
+Column 6
+2-popout(2b)
+3-groundball
+  (p)B
+4-lineout(1b)
+5-flyball(lf)C
+6-popout(ss)
+7-strikeout
+8-popout(1b)
+9-DOUBLE**
+  1-15
+  SINGLE**
+  16-20
+10-flyball(cf)B
+11-groundball
+  (1b)C
+12-flyball(rf)B
+
+2016 PITCHING RECORD
+W                 15
+L                 8
+ERA               3.43
+STARTS            33
+SAVES             0
+IP                192
+HITS ALLOWED      200
+BB                32
+SO                128
+HOMERUNS ALLOWED  24

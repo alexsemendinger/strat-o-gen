@@ -1,0 +1,81 @@
+EDDIE MURRAY
+firstbase-4
+leftfield-4
+stealing-E
+running 1-11
+
+BALTIMORE ORIOLES
+
+Column 1
+2-groundball
+  (ss) A
+3-groundball
+  (1b) A
+4-flyball (cf) B
+5-groundball
+  (3b) A
+6-popout (3b)
+7-HOMERUN
+8-HOMERUN
+  1
+  flyball (lf) B
+  2-20
+9-DOUBLE
+10-DOUBLE**
+  1-4
+  SINGLE**
+  5-20
+11-groundball
+  (1b) A
+12-foulout (c)
+  plus injury
+
+Column 2
+2-lineout (2b)
+  into as many
+  outs as
+  possible
+3-flyball (cf) B
+4-SINGLE
+5-SINGLE**
+6-SINGLE*
+  1-8
+  lineout (1b)
+  9-20
+7-strikeout
+8-WALK
+9-SINGLE
+10-SINGLE
+11-groundball
+  (2b) A++
+12-flyball (rf) B
+
+Column 3
+2-groundball
+  (3b) A
+3-groundball
+  (2b) A
+4-groundball
+  (ss) A
+5-strikeout
+6-strikeout
+7-groundball
+  (ss) A
+8-strikeout
+9-groundball
+  (2b) A++
+10-groundball
+  (p) A
+11-groundball
+  (3b) A
+12-groundball
+  (ss) A
+
+1977 BATTING RECORD
+AT BATS     611
+DOUBLES     29
+TRIPLES     2
+HOMERUNS    27
+AVERAGE     .283
+WALKS       48
+STRIKEOUTS  104
