@@ -104,8 +104,13 @@ cards have exactly the same behavior.
 
 Other simplifications:
 - No lefty/righty platoon splits (basic-game style cards).
-- Fielding ratings default to average (3) — basic season stats can't
-  measure defense well.
+- Fielding ratings (1-5 per position, printed on the card header) are
+  computed from range factor, fielding percentage, and catcher
+  caught-stealing rates vs same-position/same-season peers, blended over
+  the prior two seasons and shrunk for small samples. Calibrated against
+  the 20 ratings printed on the fixture cards (10 exact, 19 within ±1).
+  Box-score stats can't see range a fielder never reaches or scouting
+  judgment, so expect occasional ±1 disagreement with official cards.
 - HBP isn't placed on cards (matching all 14 fixture cards).
 - Errors/X-chart resolution assumes league-average defense.
 
@@ -122,6 +127,7 @@ stratogen/
   generate.py           Chance targets, clamping/redistribution, card layout
   benchmark.py          Scoring vs the real-card fixtures
   ratings.py            Stealing/running ratings (fitted to real cards)
+  fielding.py           Fielding ratings 1-5 (calibrated to real cards)
   render.py             HTML card rendering
 data/
   lahman/               Bundled Lahman database (gzipped CSVs)
@@ -137,7 +143,9 @@ was actually built.
 
 Download the new CSV release from https://sabr.org/lahman-database/ (every
 January), gzip `Batting.csv`, `Pitching.csv`, `People.csv`, `Teams.csv`,
-`Fielding.csv`, and replace the files in `data/lahman/`.
+`Fielding.csv`, and replace the files in `data/lahman/`. `Appearances.csv`
+and `FieldingOFsplit.csv` aren't in the CSV release; export them from the
+Access (.mdb) release with mdbtools (`mdb-export lahman.mdb Appearances`).
 
 ## Credits
 

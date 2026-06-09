@@ -13,6 +13,7 @@ import argparse
 import sys
 
 from stratogen.card_text import render_card
+from stratogen.fielding import position_ratings, rate_position
 from stratogen.generate import (
     average_batter_chances, average_pitcher_chances,
     generate_batter_card, generate_pitcher_card,
@@ -50,13 +51,16 @@ def main() -> int:
     if args.pitcher:
         stats = db.pitching_season(hit.player_id, args.year)
         league = db.league_batting(args.year, stats["league"])
-        card, warnings = generate_pitcher_card(stats, league)
+        card, warnings = generate_pitcher_card(
+            stats, league,
+            fielding_rating=rate_position(db, hit.player_id, args.year, "P") or 3)
         opposing = average_batter_chances(league)
     else:
         stats = db.batting_season(hit.player_id, args.year)
         league = db.league_batting(args.year, stats["league"])
         card, warnings = generate_batter_card(
-            stats, league, positions=db.positions(hit.player_id, args.year))
+            stats, league,
+            position_ratings=position_ratings(db, hit.player_id, args.year))
         opposing = average_pitcher_chances(league)
 
     print(render_card(card))

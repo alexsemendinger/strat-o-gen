@@ -37,7 +37,7 @@ cover 1-20 with no gaps/overlaps, rows 2-12 all present).
 | `posnanski_2014.txt` | batter | "Joe Posnanski" — promotional/custom card with a fictional stat line (.390, 2014 KC). Presumably made with SOM's real card process, so still usable as card-vs-printed-stats ground truth. |
 | `raines_hero.txt` | batter | Tim Raines "SOM Baseball Hero" commemorative; no year printed and the stat line doesn't exactly match any single real season. Treat with extra suspicion. |
 | `colon_2016.txt` | pitcher | Bartolo Colon 2016 |
-| `kirby_1975.txt` | pitcher | Clay Kirby 1975 |
+| `kirby_1975.txt` | pitcher | Clay Kirby 1975. The header reads "2 pitcher-starter"; if that leading 2 is a fielding rating it disagrees with his stats (3 E in 19 chances in 1975, 10 E in 1974) — either a generous official rating or the digit means something else. Treated as a known outlier in `tests/test_fielding.py`. |
 | `ryan_1972.txt` | pitcher | Nolan Ryan 1972 (157 BB, 329 SO) |
 | `seaver_1969.txt` | pitcher | Tom Seaver 1969 |
 

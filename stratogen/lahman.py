@@ -30,6 +30,10 @@ _PITCHING_FIELDS = ["W", "L", "G", "GS", "CG", "SHO", "SV", "IPouts", "H", "ER",
                     "SH", "SF", "GIDP"]
 
 
+# Fielding stats kept per position (stints summed)
+_FIELDING_STATS = ["G", "GS", "InnOuts", "PO", "A", "E", "DP", "PB", "SB", "CS"]
+
+
 def _norm_name(s: str) -> str:
     s = unicodedata.normalize("NFKD", s)
     s = "".join(c for c in s if not unicodedata.combining(c))
@@ -67,7 +71,8 @@ class LahmanDB:
         self._name_index: dict[str, list[str]] | None = None
         self._batting: dict[tuple[str, int], list[dict]] | None = None
         self._pitching: dict[tuple[str, int], list[dict]] | None = None
-        self._fielding: dict[tuple[str, int], dict[str, int]] | None = None
+        self._fielding: dict[tuple[str, int], dict[str, dict]] | None = None
+        self._fielding_peers: dict[tuple[int, str], list[dict]] = {}
         self._team_names: dict[tuple[int, str], str] | None = None
         self._league_totals: dict[tuple[int, str], dict] = {}
 
@@ -121,14 +126,47 @@ class LahmanDB:
         self._pitching = dict(table)
 
     def _load_fielding(self):
+        """Per-position fielding stats per player-season.
+
+        OF is stored both combined ('OF', from Fielding.csv) and as corners
+        ('LF'/'CF'/'RF', from FieldingOFsplit.csv, 1891+). Each entry maps
+        stat name -> summed value, plus 'lg'.
+        """
         if self._fielding is not None:
             return
-        table: dict[tuple[str, int], dict[str, int]] = defaultdict(
-            lambda: defaultdict(int))
+        table: dict[tuple[str, int], dict[str, dict]] = {}
+
+        def add(pid: str, year: int, pos: str, row: dict):
+            entry = table.setdefault((pid, year), {}).setdefault(
+                pos, {s: 0 for s in _FIELDING_STATS})
+            for s in _FIELDING_STATS:
+                entry[s] += _int_or_none(row.get(s, "")) or 0
+            entry["lg"] = row.get("lgID") or entry.get("lg") or "?"
+
         for row in self._rows("Fielding"):
-            g = _int_or_none(row.get("G", "")) or 0
-            table[(row["playerID"], int(row["yearID"]))][row["POS"]] += g
-        self._fielding = {k: dict(v) for k, v in table.items()}
+            add(row["playerID"], int(row["yearID"]), row["POS"], row)
+        for row in self._rows("FieldingOFsplit"):
+            add(row["playerID"], int(row["yearID"]), row["POS"], row)
+        self._fielding = table
+
+    def fielding_by_position(self, player_id: str, year: int) -> dict[str, dict]:
+        """{position: fielding stats} for the season ('OF' combined plus
+        'LF'/'CF'/'RF' corners where the era has them)."""
+        self._load_fielding()
+        return self._fielding.get((player_id, year), {})
+
+    def fielding_peers(self, year: int, pos: str) -> list[dict]:
+        """All player fielding lines at a position in one season (for
+        rating a player against contemporaries)."""
+        self._load_fielding()
+        key = (year, pos)
+        if key not in self._fielding_peers:
+            peers = []
+            for (pid, y), positions in self._fielding.items():
+                if y == year and pos in positions:
+                    peers.append(positions[pos])
+            self._fielding_peers[key] = peers
+        return self._fielding_peers[key]
 
     def _load_teams(self):
         if self._team_names is not None:
@@ -244,10 +282,19 @@ class LahmanDB:
         return stats
 
     def positions(self, player_id: str, year: int) -> list[tuple[str, int]]:
-        """[(position, games)] for the season, most games first."""
-        self._load_fielding()
-        pos = self._fielding.get((player_id, year), {})
-        return sorted(pos.items(), key=lambda kv: -kv[1])
+        """[(position, games)] for the season, most games first.
+
+        Outfield is broken into LF/CF/RF when the era's data allows
+        (1891+); otherwise the combined 'OF' is reported.
+        """
+        by_pos = self.fielding_by_position(player_id, year)
+        corners = {p: s for p, s in by_pos.items() if p in ("LF", "CF", "RF")}
+        out = []
+        for pos, stats in by_pos.items():
+            if pos == "OF" and corners:
+                continue  # corners supersede the combined row
+            out.append((pos, stats.get("G", 0)))
+        return sorted(out, key=lambda kv: -kv[1])
 
     # --- league averages ---------------------------------------------------
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from flask import Flask, jsonify, request
 
+from stratogen.fielding import position_ratings, rate_position
 from stratogen.generate import (
     average_batter_chances, average_pitcher_chances,
     generate_batter_card, generate_pitcher_card,
@@ -279,7 +280,9 @@ def api_generate():
             if stats is None:
                 return jsonify(error=f"{name} has no pitching record in {year}."), 404
             league = db.league_batting(year, stats["league"])
-            card, warnings = generate_pitcher_card(stats, league)
+            card, warnings = generate_pitcher_card(
+                stats, league,
+                fielding_rating=rate_position(db, player_id, year, "P") or 3)
             opposing = average_batter_chances(league)
         else:
             stats = db.batting_season(player_id, year)
@@ -293,7 +296,8 @@ def api_generate():
                     f"Try another season.")), 400
             league = db.league_batting(year, stats["league"])
             card, warnings = generate_batter_card(
-                stats, league, positions=db.positions(player_id, year))
+                stats, league,
+                position_ratings=position_ratings(db, player_id, year))
             if pa < WARN_PA:
                 warnings.append(
                     f"only {pa:.0f} plate appearances — small samples make "

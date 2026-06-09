@@ -89,5 +89,9 @@ def test_unknown_league_raises():
 
 
 def test_positions():
+    # outfield corners are split out (FieldingOFsplit covers 1891+)
     pos = db.positions("mayswi01", 1965)
-    assert pos[0][0] == "OF"
+    assert pos[0][0] == "CF"
+    # pre-1891 only the combined OF exists
+    pos_1875 = db.positions("orourji01", 1875)
+    assert any(p == "OF" for p, _ in pos_1875)

@@ -469,9 +469,13 @@ def _missing_data_warnings(stats: dict) -> list[str]:
 
 
 def generate_batter_card(stats: dict, league: dict,
-                         positions: list[tuple[str, int]] | None = None,
+                         position_ratings: list[tuple[str, int, int]] | None = None,
                          ) -> tuple[Card, list[str]]:
-    """Generate a batter card. Returns (card, warnings)."""
+    """Generate a batter card. Returns (card, warnings).
+
+    `position_ratings` is [(position, fielding rating, games)] from
+    stratogen.fielding.position_ratings().
+    """
     targets, warnings = batter_chance_targets(stats, league)
     warnings = (list(league.get("warnings", []))
                 + _missing_data_warnings(stats) + warnings)
@@ -480,12 +484,13 @@ def generate_batter_card(stats: dict, league: dict,
         name=stats.get("name", "UNKNOWN").upper(),
         year=stats.get("year"), team=stats.get("team"),
         stats=_batting_display_stats(stats),
-        header_lines=ratings.batter_header_lines(stats, positions or []),
+        header_lines=ratings.batter_header_lines(stats, position_ratings or []),
     )
     return card, warnings
 
 
-def generate_pitcher_card(stats: dict, league: dict) -> tuple[Card, list[str]]:
+def generate_pitcher_card(stats: dict, league: dict,
+                          fielding_rating: int = 3) -> tuple[Card, list[str]]:
     targets, warnings = pitcher_chance_targets(stats, league)
     warnings = (list(league.get("warnings", []))
                 + _missing_data_warnings(stats) + warnings)
@@ -494,6 +499,6 @@ def generate_pitcher_card(stats: dict, league: dict) -> tuple[Card, list[str]]:
         name=stats.get("name", "UNKNOWN").upper(),
         year=stats.get("year"), team=stats.get("team"),
         stats=_pitching_display_stats(stats),
-        header_lines=ratings.pitcher_header_lines(stats),
+        header_lines=ratings.pitcher_header_lines(stats, fielding_rating),
     )
     return card, warnings

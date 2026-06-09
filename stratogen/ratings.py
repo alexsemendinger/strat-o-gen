@@ -50,17 +50,24 @@ def running_rating(stats: dict) -> int:
     return max(8, min(17, score))
 
 
-def batter_header_lines(stats: dict, positions: list[tuple[str, int]]) -> list[str]:
-    """Rating lines under the player name, in the printed card style."""
-    pos_names = {"P": "pitcher", "C": "catcher", "1B": "firstbase",
-                 "2B": "2nd base", "3B": "3rd base", "SS": "shortstop",
-                 "LF": "leftfield", "CF": "centerfield", "RF": "rightfield",
-                 "OF": "outfield", "DH": "dh"}
+_POS_NAMES = {"P": "pitcher", "C": "catcher", "1B": "firstbase",
+              "2B": "2nd base", "3B": "3rd base", "SS": "shortstop",
+              "LF": "leftfield", "CF": "centerfield", "RF": "rightfield",
+              "OF": "outfield", "DH": "dh"}
+
+
+def batter_header_lines(stats: dict,
+                        position_ratings: list[tuple[str, int, int]],
+                        ) -> list[str]:
+    """Rating lines under the player name, in the printed card style.
+
+    `position_ratings` is [(position, fielding rating 1-5, games)], e.g.
+    from stratogen.fielding.position_ratings(). Without it, positions are
+    omitted entirely rather than guessed.
+    """
     lines = []
-    for pos, _games in positions[:3]:
-        name = pos_names.get(pos, pos.lower())
-        # Fielding quality isn't derivable from basic stats; use average (3).
-        lines.append(f"{name}-3")
+    for pos, rating, _games in position_ratings[:3]:
+        lines.append(f"{_POS_NAMES.get(pos, pos.lower())}-{rating}")
     if not lines:
         lines.append("dh")
     lines.append(f"stealing-{stealing_rating(stats.get('SB', 0) or 0, stats.get('CS', 0) or 0)}")
@@ -68,7 +75,7 @@ def batter_header_lines(stats: dict, positions: list[tuple[str, int]]) -> list[s
     return lines
 
 
-def pitcher_header_lines(stats: dict) -> list[str]:
+def pitcher_header_lines(stats: dict, fielding_rating: int = 3) -> list[str]:
     games = stats.get("G", 0) or 0
     starts = stats.get("GS", 0) or 0
     role = []
@@ -80,4 +87,4 @@ def pitcher_header_lines(stats: dict) -> list[str]:
         role.append("relief")
         if starts >= 5:
             role.append("starter")
-    return ["pitcher-3"] + role
+    return [f"pitcher-{fielding_rating}"] + role
