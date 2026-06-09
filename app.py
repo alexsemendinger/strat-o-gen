@@ -1,709 +1,275 @@
-"""Flask web application for Strat-O-Matic Card Generator.
+"""Strat-O-Matic Card Maker — local web app.
 
-Uses the same stats fetching and card generation as the CLI.
+Run:  python app.py   then open http://localhost:5001
+
+Everything is offline: player statistics and league averages come from the
+bundled Lahman database (1871-2025). The only dependency is Flask.
 """
 
-import os
-from pathlib import Path
-from flask import Flask, render_template_string, request, jsonify
+from __future__ import annotations
 
-from stats_fetcher import StatsFetcher
-from card_formulas import BatterCardFormulas, PitcherCardFormulas
-from league_averages import LeagueAveragesFetcher
-from card_layout import CardLayoutGenerator
+from flask import Flask, jsonify, request
+
+from stratogen.generate import (
+    average_batter_chances, average_pitcher_chances,
+    generate_batter_card, generate_pitcher_card,
+)
+from stratogen.lahman import default_db
+from stratogen.render import CARD_CSS, accuracy_rows, card_to_html
+from stratogen.simulate import effective_pa
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'strat-o-matic-dev-key')
+MIN_PA = 50          # below this, refuse (a card would be meaningless)
+WARN_PA = 150        # below this, generate but warn
 
-# Initialize components
-fetcher = StatsFetcher()
-league_fetcher = LeagueAveragesFetcher()
-
-# Create data directories
-Path('data').mkdir(exist_ok=True)
-Path('data/cache').mkdir(parents=True, exist_ok=True)
-
-# Configuration
-MIN_YEAR = 1901
-MAX_YEAR = 2025
-MIN_PLATE_APPEARANCES = 50
-
-
-INDEX_HTML = """
-<!DOCTYPE html>
-<html>
+PAGE = """<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Strat-O-Matic Card Maker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 32px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 8px;
-        }
-
-        .radio-group label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: normal;
-            cursor: pointer;
-        }
-
-        .radio-group input[type="radio"] {
-            width: auto;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error {
-            background-color: #fee;
-            border: 1px solid #fcc;
-            color: #c33;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .error.active {
-            display: block;
-        }
-
-        .disambiguation {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .disambiguation.active {
-            display: block;
-        }
-
-        .player-option {
-            padding: 12px;
-            margin: 8px 0;
-            background-color: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .player-option:hover {
-            border-color: #667eea;
-            background-color: #f0f4ff;
-        }
-
-        .info {
-            text-align: center;
-            margin-top: 30px;
-            color: #666;
-            font-size: 12px;
-        }
-
-        .year-info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        /* Card display styles */
-        .card-result {
-            display: none;
-            margin-top: 30px;
-        }
-
-        .card-result.active {
-            display: block;
-        }
-
-        .new-card-btn {
-            margin-top: 20px;
-            background: #28a745;
-        }
-
-        .new-card-btn:hover {
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-        }
-
-        /* Strat-O-Matic Card Styles */
-        .som-card {
-            background: #f5f5f0;
-            border: 2px solid #333;
-            border-radius: 4px;
-            font-family: 'Arial Narrow', Arial, sans-serif;
-            max-width: 480px;
-            margin: 0 auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .som-header {
-            padding: 8px 12px;
-            border-bottom: 1px solid #999;
-        }
-
-        .som-name-row {
-            display: flex;
-            align-items: baseline;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .som-player-name {
-            font-weight: bold;
-            font-size: 18px;
-            color: #000;
-        }
-
-        .som-position, .som-type, .som-rating {
-            font-size: 12px;
-            color: #333;
-        }
-
-        .som-card-label {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 12px;
-            background: #e8e8e0;
-            border-bottom: 1px solid #999;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .som-columns-header {
-            display: flex;
-            background: #d0d0c8;
-            border-bottom: 2px solid #333;
-        }
-
-        .som-col-header {
-            flex: 1;
-            text-align: center;
-            font-weight: bold;
-            font-size: 16px;
-            padding: 4px;
-            border-right: 1px solid #999;
-        }
-
-        .som-col-header:last-child {
-            border-right: none;
-        }
-
-        .som-columns {
-            display: flex;
-            min-height: 300px;
-        }
-
-        .som-column {
-            flex: 1;
-            padding: 6px 8px;
-            border-right: 1px solid #ccc;
-            font-size: 12px;
-        }
-
-        .som-column:last-child {
-            border-right: none;
-        }
-
-        .som-roll {
-            margin: 2px 0;
-            line-height: 1.3;
-        }
-
-        .som-roll .dice {
-            font-weight: bold;
-            color: #000;
-        }
-
-        .som-roll-cont {
-            margin-left: 16px;
-            line-height: 1.3;
-        }
-
-        .som-roll-split {
-            margin-left: 20px;
-            font-size: 11px;
-            color: #555;
-        }
-
-        .som-roll .positive {
-            font-weight: bold;
-            color: #000;
-        }
-
-        .som-roll .negative,
-        .som-roll-cont .negative {
-            color: #444;
-        }
-
-        .som-stats {
-            border-top: 2px solid #333;
-            padding: 10px;
-            background: #e8e8e0;
-        }
-
-        .som-stats-title {
-            text-align: center;
-            font-weight: bold;
-            font-size: 13px;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #999;
-            padding-bottom: 4px;
-        }
-
-        .som-stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-        }
-
-        .som-stats-table th {
-            background: #d0d0c8;
-            padding: 3px 6px;
-            text-align: center;
-            font-weight: bold;
-            border: 1px solid #999;
-        }
-
-        .som-stats-table td {
-            padding: 3px 6px;
-            text-align: center;
-            border: 1px solid #999;
-            background: #f5f5f0;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strat-O-Matic Card Maker</title>
+<style>
+body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; margin:0;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; }
+.container { max-width:760px; margin:0 auto; padding:30px 16px; }
+.panel { background:white; border-radius:10px; padding:24px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25); margin-bottom:20px; }
+h1 { margin:0 0 4px; color:#333; }
+.subtitle { color:#666; margin:0 0 20px; }
+label { display:block; font-weight:bold; color:#333; margin:12px 0 4px; }
+input[type=text], input[type=number] { width:100%; box-sizing:border-box;
+  padding:10px; font-size:16px; border:2px solid #ddd; border-radius:6px; }
+input:focus { outline:none; border-color:#667eea; }
+.row { display:flex; gap:12px; }
+.row > div { flex:1; }
+button { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white;
+  font-size:16px; font-weight:bold; border:none; border-radius:6px;
+  padding:12px 22px; cursor:pointer; margin-top:14px; }
+button:disabled { background:#ccc; cursor:default; }
+button.secondary { background:#e8e8f4; color:#333; }
+.error { background:#fee; color:#c33; border-radius:6px; padding:10px 14px;
+  margin-top:12px; display:none; }
+.warnings { background:#fff8e1; color:#7a5d00; border-radius:6px;
+  padding:10px 14px; margin:12px 0; font-size:14px; }
+.warnings ul { margin:4px 0 0 18px; padding:0; }
+.candidates { margin-top:10px; }
+.candidate { border:2px solid #ddd; border-radius:6px; padding:10px 12px;
+  margin-bottom:8px; cursor:pointer; }
+.candidate:hover, .candidate.active { border-color:#667eea; background:#f0f4ff; }
+.candidate .meta { color:#666; font-size:13px; }
+.kind-toggle { margin-top:10px; }
+.kind-toggle label { display:inline; font-weight:normal; margin-right:16px; }
+.accuracy { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
+.accuracy th, .accuracy td { border:1px solid #ccc; padding:5px 10px;
+  text-align:center; }
+.accuracy th { background:#f0f0f8; }
+h3 { color:#333; margin:18px 0 4px; }
+.note { color:#666; font-size:13px; }
+#spinner { display:none; color:#666; margin-top:10px; }
+__CARD_CSS__
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Strat-O-Matic Card Maker</h1>
-        <p class="subtitle">Generate game-usable baseball cards from historical player statistics</p>
-
-        <form id="cardForm">
-            <div class="form-group">
-                <label for="playerName">Player Name</label>
-                <input type="text" id="playerName" name="playerName" required
-                       placeholder="e.g., Babe Ruth, Mike Trout, Nolan Ryan">
-            </div>
-
-            <div class="form-group">
-                <label for="year">Year</label>
-                <input type="number" id="year" name="year" required
-                       min="1901" max="2025" placeholder="e.g., 1927">
-                <div class="year-info">Supports years 1901-2025</div>
-            </div>
-
-            <div class="form-group">
-                <label>Card Type</label>
-                <div class="radio-group">
-                    <label>
-                        <input type="radio" name="cardType" value="batter" checked>
-                        Batter
-                    </label>
-                    <label>
-                        <input type="radio" name="cardType" value="pitcher">
-                        Pitcher
-                    </label>
-                </div>
-            </div>
-
-            <button type="submit" id="generateBtn">Generate Card</button>
-        </form>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 15px; color: #666;">Generating card...</p>
-        </div>
-
-        <div class="error" id="error"></div>
-
-        <div class="disambiguation" id="disambiguation">
-            <h3 style="margin-bottom: 15px; color: #333;">Multiple players found. Please select:</h3>
-            <div id="playerOptions"></div>
-        </div>
-
-        <div class="card-result" id="cardResult">
-            <div id="cardContent"></div>
-            <button type="button" class="new-card-btn" onclick="resetForm()">Generate Another Card</button>
-        </div>
-
-        <div class="info">
-            Supports players from 1901-2025 | Generated cards use community Bundy formulas
-        </div>
+<div class="container">
+  <div class="panel">
+    <h1>Strat-O-Matic Card Maker</h1>
+    <p class="subtitle">Make a game-usable card for any player, 1871&ndash;2025</p>
+    <div class="row">
+      <div>
+        <label for="name">Player name</label>
+        <input type="text" id="name" placeholder="e.g. Babe Ruth, Nolan Ryan" autofocus>
+      </div>
+      <div style="max-width:140px">
+        <label for="year">Year</label>
+        <input type="number" id="year" min="1871" max="2025" placeholder="1927">
+      </div>
     </div>
+    <div class="kind-toggle" id="kindToggle" style="display:none">
+      <label><input type="radio" name="kind" value="batter" checked> Batter card</label>
+      <label><input type="radio" name="kind" value="pitcher"> Pitcher card</label>
+    </div>
+    <button id="searchBtn">Find player</button>
+    <div id="spinner">Working&hellip;</div>
+    <div class="error" id="error"></div>
+    <div class="candidates" id="candidates"></div>
+  </div>
+  <div id="result"></div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let chosen = null;
 
-    <script>
-        const form = document.getElementById('cardForm');
-        const loading = document.getElementById('loading');
-        const error = document.getElementById('error');
-        const disambiguation = document.getElementById('disambiguation');
-        const generateBtn = document.getElementById('generateBtn');
-        const cardResult = document.getElementById('cardResult');
+function showError(msg) { const e = $('error'); e.textContent = msg;
+  e.style.display = msg ? 'block' : 'none'; }
 
-        let currentYear = null;
-        let currentCardType = null;
+async function search() {
+  showError(''); $('result').innerHTML = ''; $('candidates').innerHTML = '';
+  $('kindToggle').style.display = 'none'; chosen = null;
+  const name = $('name').value.trim();
+  if (!name) { showError('Enter a player name.'); return; }
+  $('spinner').style.display = 'block';
+  try {
+    const r = await fetch('/api/search?name=' + encodeURIComponent(name));
+    const data = await r.json();
+    if (!r.ok) { showError(data.error); return; }
+    if (data.players.length === 0) {
+      showError('No player found by that name. Check the spelling (last name alone works too).');
+      return;
+    }
+    if (data.players.length === 1) { pick(data.players[0], null); return; }
+    for (const p of data.players) {
+      const div = document.createElement('div');
+      div.className = 'candidate';
+      div.innerHTML = '<b>' + p.name + '</b> <span class="meta">' + p.meta + '</span>';
+      div.onclick = () => pick(p, div);
+      $('candidates').appendChild(div);
+    }
+  } finally { $('spinner').style.display = 'none'; }
+}
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+function pick(p, div) {
+  chosen = p;
+  if (div) {
+    for (const el of document.querySelectorAll('.candidate')) el.classList.remove('active');
+    div.classList.add('active');
+  }
+  const kinds = [];
+  if (p.can_bat) kinds.push('batter');
+  if (p.can_pitch) kinds.push('pitcher');
+  if (kinds.length === 2) {
+    $('kindToggle').style.display = 'block';
+  } else {
+    $('kindToggle').style.display = 'none';
+    document.querySelector('input[name=kind][value=' + (kinds[0] || 'batter') + ']').checked = true;
+  }
+  generate();
+}
 
-            const playerName = document.getElementById('playerName').value;
-            const year = document.getElementById('year').value;
-            const cardType = document.querySelector('input[name="cardType"]:checked').value;
+async function generate() {
+  if (!chosen) return;
+  showError(''); $('result').innerHTML = '';
+  const year = parseInt($('year').value, 10);
+  if (!year) { showError('Enter a year.'); return; }
+  const kind = document.querySelector('input[name=kind]:checked').value;
+  $('spinner').style.display = 'block';
+  try {
+    const r = await fetch('/api/generate', { method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ player_id: chosen.player_id, year: year, kind: kind })});
+    const data = await r.json();
+    if (!r.ok) { showError(data.error); return; }
+    let htmlOut = '';
+    if (data.warnings.length) {
+      htmlOut += '<div class="panel"><div class="warnings"><b>Heads up:</b><ul>'
+        + data.warnings.map(w => '<li>' + w + '</li>').join('') + '</ul></div></div>';
+    }
+    htmlOut += '<div class="panel">' + data.card_html
+      + '<button onclick="window.print()" class="secondary">Print card</button>'
+      + '<h3>How well does this card match the real season?</h3>'
+      + '<p class="note">What the card produces over the same plate appearances, versus what actually happened:</p>'
+      + '<table class="accuracy"><tr><th></th><th>Actual ' + data.year + '</th><th>This card</th></tr>'
+      + data.accuracy.map(r2 => '<tr><td style="text-align:left">' + r2[0] + '</td><td>'
+          + r2[1] + '</td><td>' + r2[2] + '</td></tr>').join('')
+      + '</table></div>';
+    $('result').innerHTML = htmlOut;
+  } finally { $('spinner').style.display = 'none'; }
+}
 
-            currentYear = parseInt(year);
-            currentCardType = cardType;
-
-            await generateCard(playerName, currentYear, cardType);
-        });
-
-        async function generateCard(playerNameOrId, year, cardType, isId = false) {
-            // Hide previous messages
-            error.classList.remove('active');
-            disambiguation.classList.remove('active');
-            cardResult.classList.remove('active');
-            loading.classList.add('active');
-            generateBtn.disabled = true;
-
-            try {
-                const body = isId
-                    ? { player_id: playerNameOrId, year: year, card_type: cardType }
-                    : { player_name: playerNameOrId, year: year, card_type: cardType };
-
-                const response = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(body)
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to generate card');
-                }
-
-                if (data.disambiguation) {
-                    showDisambiguation(data.players);
-                } else if (data.card_html) {
-                    showCard(data);
-                }
-            } catch (err) {
-                error.textContent = err.message;
-                error.classList.add('active');
-            } finally {
-                loading.classList.remove('active');
-                generateBtn.disabled = false;
-            }
-        }
-
-        function showDisambiguation(players) {
-            const optionsDiv = document.getElementById('playerOptions');
-            optionsDiv.innerHTML = '';
-
-            players.forEach(player => {
-                const option = document.createElement('div');
-                option.className = 'player-option';
-                const yearsStr = player.years ? ` (${player.years})` : '';
-                option.innerHTML = `
-                    <strong>${player.name}</strong>${yearsStr}<br>
-                    <small>ID: ${player.id}</small>
-                `;
-                option.onclick = () => generateCard(player.id, currentYear, currentCardType, true);
-                optionsDiv.appendChild(option);
-            });
-
-            disambiguation.classList.add('active');
-        }
-
-        function showCard(data) {
-            document.getElementById('cardContent').innerHTML = data.card_html;
-            cardResult.classList.add('active');
-            form.style.display = 'none';
-        }
-
-        function resetForm() {
-            cardResult.classList.remove('active');
-            form.style.display = 'block';
-            document.getElementById('playerName').value = '';
-            document.getElementById('year').value = '';
-        }
-    </script>
+$('searchBtn').onclick = search;
+$('name').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+$('year').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+for (const el of document.querySelectorAll('input[name=kind]'))
+  el.addEventListener('change', generate);
+</script>
 </body>
 </html>
-"""
+""".replace("__CARD_CSS__", CARD_CSS)
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    """Render the main page."""
-    return render_template_string(INDEX_HTML)
+    return PAGE
 
 
-@app.route('/api/generate', methods=['POST'])
-def generate_card():
-    """Generate a card from player name/ID and year."""
-    data = request.get_json()
-
-    player_name = data.get('player_name')
-    player_id = data.get('player_id')
-    year = data.get('year')
-    card_type = data.get('card_type', 'batter')
-
-    if not year:
-        return jsonify({'error': 'Year is required'}), 400
-
-    if year < MIN_YEAR or year > MAX_YEAR:
-        return jsonify({'error': f'Year must be between {MIN_YEAR} and {MAX_YEAR}'}), 400
-
-    # If we have a player_id, use it directly
-    if player_id:
-        return generate_card_for_player(player_id, year, card_type)
-
-    # Otherwise, search for the player
-    if not player_name:
-        return jsonify({'error': 'Player name or ID is required'}), 400
-
-    # Search for players
-    players = fetcher.search_player(player_name)
-
-    if not players:
-        return jsonify({'error': f'No players found matching "{player_name}"'}), 404
-
-    # If multiple players found, return disambiguation
-    if len(players) > 1:
-        return jsonify({
-            'disambiguation': True,
-            'players': players
-        })
-
-    # Single player found, generate card
-    return generate_card_for_player(players[0]['id'], year, card_type)
-
-
-def generate_card_for_player(player_id: str, year: int, card_type: str = 'batter'):
-    """Generate card for a specific player and year."""
-    if card_type == 'pitcher':
-        return generate_pitcher_card(player_id, year)
-    else:
-        return generate_batter_card(player_id, year)
-
-
-def generate_batter_card(player_id: str, year: int):
-    """Generate a batter card."""
-    # Fetch player stats
-    stats = fetcher.get_batting_stats(player_id, year)
-
-    if not stats:
-        return jsonify({'error': f'No batting statistics found for player in {year}'}), 404
-
-    # Check minimum PA
-    if stats.get('PA', 0) < MIN_PLATE_APPEARANCES:
-        return jsonify({
-            'error': f'Player has insufficient plate appearances ({stats.get("PA", 0)} PA, minimum {MIN_PLATE_APPEARANCES})'
-        }), 400
-
-    # Get league averages
-    league = stats.get('league', 'AL')
-    league_avg = league_fetcher.get_league_averages(year, league)
-
-    if not league_avg:
-        return jsonify({'error': 'Failed to fetch league averages'}), 500
-
-    # Calculate card chances
-    chances = BatterCardFormulas.calculate_batter_card_chances(stats, league_avg)
-
-    # Generate layout
-    player_name = stats.get('name', player_id)
-    layout = CardLayoutGenerator.generate_layout(
-        chances, player_name, year,
-        player_stats=stats, card_type='batter'
-    )
-
-    # Format card as HTML
-    card_html = layout.to_html()
-
-    return jsonify({
-        'card_html': card_html,
-        'player_name': player_name,
-        'year': year,
-        'card_type': 'batter'
-    })
-
-
-def generate_pitcher_card(player_id: str, year: int):
-    """Generate a pitcher card."""
-    # Fetch player stats
-    stats = fetcher.get_pitching_stats(player_id, year)
-
-    if not stats:
-        return jsonify({'error': f'No pitching statistics found for player in {year}'}), 404
-
-    # Get league averages
-    league = stats.get('league', 'AL')
-    league_avg = league_fetcher.get_league_averages(year, league)
-
-    if not league_avg:
-        return jsonify({'error': 'Failed to fetch league averages'}), 500
-
-    # Calculate card chances
-    chances = PitcherCardFormulas.calculate_pitcher_card_chances(stats, league_avg)
-
-    # Generate layout
-    player_name = stats.get('name', player_id)
-    layout = CardLayoutGenerator.generate_layout(
-        chances, player_name, year,
-        player_stats=stats, card_type='pitcher'
-    )
-
-    # Format card as HTML
-    card_html = layout.to_html()
-
-    return jsonify({
-        'card_html': card_html,
-        'player_name': player_name,
-        'year': year,
-        'card_type': 'pitcher'
-    })
-
-
-@app.route('/api/search', methods=['GET'])
-def search_players():
-    """Search for players by name."""
-    name = request.args.get('name', '')
+@app.route("/api/search")
+def api_search():
+    name = (request.args.get("name") or "").strip()
     if not name:
-        return jsonify({'error': 'Name parameter is required'}), 400
+        return jsonify(error="missing name"), 400
+    db = default_db()
+    players = []
+    for hit in db.search_players(name):
+        span = ""
+        if hit.first_year:
+            span = f"{hit.first_year}–{hit.last_year}"
+        kinds = []
+        if hit.batting_years:
+            kinds.append("batted")
+        if len(hit.pitching_years) > 2 or len(hit.pitching_years) > len(hit.batting_years) // 2:
+            kinds.append("pitched")
+        players.append({
+            "player_id": hit.player_id,
+            "name": hit.name,
+            "meta": f"{span} · bats {hit.bats}/throws {hit.throws}"
+                    + (f" · {', '.join(kinds)}" if kinds else ""),
+            "can_bat": bool(hit.batting_years),
+            "can_pitch": bool(hit.pitching_years),
+        })
+    return jsonify(players=players)
 
-    players = fetcher.search_player(name)
-    return jsonify({'players': players})
+
+@app.route("/api/generate", methods=["POST"])
+def api_generate():
+    payload = request.get_json(silent=True) or {}
+    player_id = payload.get("player_id")
+    year = payload.get("year")
+    kind = payload.get("kind", "batter")
+    if not player_id or not isinstance(year, int):
+        return jsonify(error="player and year are required"), 400
+
+    db = default_db()
+    name = db.player_name(player_id)
+    try:
+        if kind == "pitcher":
+            stats = db.pitching_season(player_id, year)
+            if stats is None:
+                return jsonify(error=f"{name} has no pitching record in {year}."), 404
+            league = db.league_batting(year, stats["league"])
+            card, warnings = generate_pitcher_card(stats, league)
+            opposing = average_batter_chances(league)
+        else:
+            stats = db.batting_season(player_id, year)
+            if stats is None:
+                return jsonify(error=f"{name} has no batting record in {year}."), 404
+            pa = effective_pa(stats)
+            if pa < MIN_PA:
+                return jsonify(error=(
+                    f"{name} only had {pa:.0f} plate appearances in {year} — "
+                    f"not enough to make a meaningful card (minimum {MIN_PA}). "
+                    f"Try another season.")), 400
+            league = db.league_batting(year, stats["league"])
+            card, warnings = generate_batter_card(
+                stats, league, positions=db.positions(player_id, year))
+            if pa < WARN_PA:
+                warnings.append(
+                    f"only {pa:.0f} plate appearances — small samples make "
+                    f"streaky cards")
+            opposing = average_pitcher_chances(league)
+    except (ValueError, KeyError) as exc:
+        return jsonify(error=str(exc)), 400
+
+    return jsonify(
+        card_html=card_to_html(card),
+        warnings=warnings,
+        accuracy=accuracy_rows(card, stats, opposing),
+        year=year,
+        name=name,
+    )
 
 
-if __name__ == '__main__':
-    host = os.environ.get('HOST', '0.0.0.0')
-    port = int(os.environ.get('PORT', 5001))
-    debug = os.environ.get('DEBUG', 'true').lower() == 'true'
+if __name__ == "__main__":
+    import webbrowser
+    import threading
 
-    print(f"Starting Strat-O-Matic Card Maker on http://{host}:{port}")
-    print(f"Supports years {MIN_YEAR}-{MAX_YEAR}")
-    app.run(host=host, port=port, debug=debug)
+    threading.Timer(1.5, lambda: webbrowser.open("http://localhost:5001")).start()
+    app.run(host="127.0.0.1", port=5001, debug=False)

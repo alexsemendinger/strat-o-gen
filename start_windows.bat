@@ -1,53 +1,50 @@
 @echo off
-REM Strat-O-Matic Card Generator - Windows Launcher
-REM This script starts the Flask server and opens the browser
+REM Strat-O-Matic Card Maker - Windows launcher
+REM Starts the server; the app opens your browser automatically.
 
-setlocal EnableDelayedExpansion
-
-REM Change to the script's directory (in case launched from elsewhere)
+setlocal
 cd /d "%~dp0"
 
-REM Configuration
-set PORT=5001
-set URL=http://localhost:%PORT%
-
 echo ========================================
-echo   Strat-O-Matic Card Generator
+echo   Strat-O-Matic Card Maker
 echo ========================================
 echo.
 
-REM Check if Python is available
-python --version >nul 2>&1
-if %ERRORLEVEL% neq 0 (
+REM Find Python (try the py launcher first, then python)
+set PY=py -3
+%PY% --version >nul 2>&1
+if errorlevel 1 (
+    set PY=python
+    %PY% --version >nul 2>&1
+)
+if errorlevel 1 (
     echo ERROR: Python is not installed or not in PATH.
     echo.
-    echo Please install Python 3.10 or later from:
-    echo   https://www.python.org/downloads/
-    echo.
-    echo IMPORTANT: During installation, check "Add Python to PATH"
+    echo Install Python 3.10+ from https://www.python.org/downloads/
+    echo IMPORTANT: check "Add Python to PATH" during installation.
     echo.
     pause
     exit /b 1
 )
 
-echo Python found. Starting server...
-echo.
-echo The app will open in your browser at: %URL%
+REM Install Flask on first run (the only dependency)
+%PY% -c "import flask" >nul 2>&1
+if errorlevel 1 (
+    echo First-time setup: installing Flask...
+    %PY% -m pip install --user flask
+)
+
+echo Starting... the app will open in your browser shortly.
+echo If it doesn't, go to:  http://localhost:5001
 echo.
 echo ----------------------------------------
 echo   Keep this window open while using
-echo   the app. Close it to stop the server.
+echo   the app. Close it to stop.
 echo ----------------------------------------
 echo.
 
-REM Start the browser after a short delay (give server time to start)
-REM Using start /b to run in background
-start "" cmd /c "timeout /t 2 /nobreak >nul && start %URL%"
+%PY% app.py
 
-REM Start the Flask server (this will block until Ctrl+C or window close)
-python app.py
-
-REM If we get here, the server stopped
 echo.
 echo Server stopped.
 pause
