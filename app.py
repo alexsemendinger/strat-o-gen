@@ -29,51 +29,93 @@ PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Strat-O-Matic Card Maker</title>
 <style>
-body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; margin:0;
-  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; }
-.container { max-width:760px; margin:0 auto; padding:30px 16px; }
-.panel { background:white; border-radius:10px; padding:24px;
-  box-shadow:0 8px 24px rgba(0,0,0,0.25); margin-bottom:20px; }
-h1 { margin:0 0 4px; color:#333; }
-.subtitle { color:#666; margin:0 0 20px; }
-label { display:block; font-weight:bold; color:#333; margin:12px 0 4px; }
+:root {
+  --navy:#1e2d4f; --navy-dark:#16223d; --brick:#9e3a2f; --ink:#2c2a25;
+  --paper:#faf6ea; --paper-dark:#f1ead7; --field:#fffdf6;
+  --rule:#d6cab0; --rule-dark:#b9ab8c; --muted:#7d7259;
+}
+body { font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+  margin:0; color:var(--ink); min-height:100vh;
+  background-color:#ece4d2;
+  background-image:repeating-linear-gradient(90deg,
+    rgba(30,45,79,0.04) 0, rgba(30,45,79,0.04) 1px, transparent 1px, transparent 28px); }
+.container { max-width:760px; margin:0 auto; padding:34px 16px; }
+.panel { background:var(--paper); border:1px solid var(--rule-dark);
+  border-radius:4px; padding:26px 28px; margin-bottom:22px;
+  box-shadow:0 1px 0 #fff inset, 0 3px 10px rgba(44,42,37,0.18);
+  outline:1px solid var(--rule); outline-offset:-5px; }
+.masthead { text-align:center; margin-bottom:18px; }
+h1 { margin:0; color:var(--navy); font-size:30px; font-weight:normal;
+  text-transform:uppercase; letter-spacing:.08em; }
+h1 .star { color:var(--brick); font-size:.55em; vertical-align:.35em;
+  padding:0 .5em; }
+.subtitle { color:var(--muted); font-style:italic; margin:6px 0 0;
+  font-size:15px; }
+.masthead::after { content:""; display:block; width:200px; margin:14px auto 0;
+  border-top:1px solid var(--brick); border-bottom:1px solid var(--brick);
+  height:3px; }
+label { display:block; color:var(--navy); margin:12px 0 5px; font-size:13px;
+  text-transform:uppercase; letter-spacing:.08em; }
 input[type=text], input[type=number] { width:100%; box-sizing:border-box;
-  padding:10px; font-size:16px; border:2px solid #ddd; border-radius:6px; }
-input:focus { outline:none; border-color:#667eea; }
-.row { display:flex; gap:12px; }
+  padding:10px 12px; font-size:17px; font-family:inherit; color:var(--ink);
+  background:var(--field); border:1px solid var(--rule-dark); border-radius:3px;
+  box-shadow:0 1px 2px rgba(44,42,37,0.08) inset; }
+input:focus { outline:none; border-color:var(--navy);
+  box-shadow:0 0 0 1px var(--navy); }
+.row { display:flex; gap:14px; }
 .row > div { flex:1; }
-button { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white;
-  font-size:16px; font-weight:bold; border:none; border-radius:6px;
-  padding:12px 22px; cursor:pointer; margin-top:14px; }
-button:disabled { background:#ccc; cursor:default; }
-button.secondary { background:#e8e8f4; color:#333; }
-.error { background:#fee; color:#c33; border-radius:6px; padding:10px 14px;
-  margin-top:12px; display:none; }
-.warnings { background:#fff8e1; color:#7a5d00; border-radius:6px;
-  padding:10px 14px; margin:12px 0; font-size:14px; }
+button { background:var(--navy); color:#f5efdf; font-family:inherit;
+  font-size:14px; text-transform:uppercase; letter-spacing:.1em;
+  border:1px solid var(--navy-dark); border-radius:3px; padding:11px 24px;
+  cursor:pointer; margin-top:16px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset, 0 2px 4px rgba(44,42,37,0.25); }
+button:hover { background:var(--navy-dark); }
+button:disabled { background:#a9a290; border-color:#948d7b; cursor:default; }
+button.secondary { background:var(--paper-dark); color:var(--navy);
+  border:1px solid var(--rule-dark); box-shadow:none; }
+button.secondary:hover { background:#e7dec6; }
+.error { background:#f4e2dd; color:#7e2c22; border:1px solid #c79289;
+  border-left:4px solid var(--brick); border-radius:3px; padding:10px 14px;
+  margin-top:14px; display:none; }
+.warnings { background:#f6ecd2; color:#6d5520; border:1px solid #d6c08c;
+  border-left:4px solid #b08c3a; border-radius:3px; padding:10px 14px;
+  margin:12px 0; font-size:14px; }
 .warnings ul { margin:4px 0 0 18px; padding:0; }
-.candidates { margin-top:10px; }
-.candidate { border:2px solid #ddd; border-radius:6px; padding:10px 12px;
-  margin-bottom:8px; cursor:pointer; }
-.candidate:hover, .candidate.active { border-color:#667eea; background:#f0f4ff; }
-.candidate .meta { color:#666; font-size:13px; }
-.kind-toggle { margin-top:10px; }
-.kind-toggle label { display:inline; font-weight:normal; margin-right:16px; }
-.accuracy { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
-.accuracy th, .accuracy td { border:1px solid #ccc; padding:5px 10px;
-  text-align:center; }
-.accuracy th { background:#f0f0f8; }
-h3 { color:#333; margin:18px 0 4px; }
-.note { color:#666; font-size:13px; }
-#spinner { display:none; color:#666; margin-top:10px; }
+.candidates { margin-top:14px; }
+.candidate { border:1px solid var(--rule-dark); background:var(--field);
+  border-radius:3px; padding:10px 14px; margin-bottom:8px; cursor:pointer; }
+.candidate:hover, .candidate.active { border-color:var(--navy);
+  background:var(--paper-dark); box-shadow:2px 0 0 var(--brick) inset; }
+.candidate b { color:var(--navy); }
+.candidate .meta { color:var(--muted); font-size:13px; font-style:italic; }
+.kind-toggle { margin-top:12px; }
+.kind-toggle label { display:inline; margin-right:18px; font-size:14px;
+  text-transform:none; letter-spacing:normal; color:var(--ink); }
+.kind-toggle input { accent-color:var(--brick); }
+.accuracy { width:100%; border-collapse:collapse; font-size:14px;
+  margin-top:8px; background:var(--field); }
+.accuracy th, .accuracy td { border:1px solid var(--rule-dark);
+  padding:6px 12px; text-align:center; }
+.accuracy th { background:var(--navy); color:#f5efdf; font-weight:normal;
+  text-transform:uppercase; letter-spacing:.06em; font-size:12px; }
+.accuracy tr:nth-child(even) td { background:var(--paper-dark); }
+h3 { color:var(--navy); margin:22px 0 4px; font-weight:normal; font-size:16px;
+  text-transform:uppercase; letter-spacing:.07em;
+  border-bottom:1px solid var(--rule-dark); padding-bottom:4px; }
+.note { color:var(--muted); font-size:13px; font-style:italic; }
+#spinner { display:none; color:var(--muted); font-style:italic; margin-top:12px; }
+.footer { text-align:center; color:var(--muted); font-size:12px;
+  font-style:italic; margin:6px 0 24px; }
 __CARD_CSS__
 </style>
 </head>
 <body>
 <div class="container">
   <div class="panel">
-    <h1>Strat-O-Matic Card Maker</h1>
-    <p class="subtitle">Make a game-usable card for any player, 1871&ndash;2025</p>
+    <div class="masthead">
+      <h1>Strat-O-Matic<span class="star">&#9733;</span>Card Maker</h1>
+      <p class="subtitle">A game-usable card for any player, 1871&ndash;2025</p>
+    </div>
     <div class="row">
       <div>
         <label for="name">Player name</label>
@@ -94,6 +136,8 @@ __CARD_CSS__
     <div class="candidates" id="candidates"></div>
   </div>
   <div id="result"></div>
+  <div class="footer">An independent fan project &mdash; not affiliated with
+    the Strat-O-Matic Game Company</div>
 </div>
 <script>
 const $ = id => document.getElementById(id);
