@@ -11,36 +11,39 @@ from .simulate import (
 )
 
 CARD_CSS = """
-/* Real SOM cards are portrait, ~2.6in x 4.1in (height ~1.6x width):
-   keep the card narrow and give the columns room to run tall. */
+/* Real SOM cards are portrait, ~2.6in x 4.1in (height ~1.6x width), with
+   type large enough that entries fill the column width and wrap. Height
+   comes mostly from the content itself at this type size. */
 .som-card { background:#f5f5f0; border:2px solid #333; border-radius:4px;
-  font-family:'Arial Narrow',Arial,sans-serif; max-width:400px; margin:0 auto;
+  font-family:'Arial Narrow',Arial,sans-serif; max-width:420px; margin:0 auto;
   box-shadow:0 4px 12px rgba(0,0,0,0.3); }
-.som-header { padding:8px 12px; border-bottom:1px solid #999; }
-.som-player-name { font-weight:bold; font-size:17px; color:#000; }
-.som-ratings { font-size:11px; color:#333; }
-.som-card-label { display:flex; justify-content:space-between; padding:5px 12px;
-  background:#e8e8e0; border-bottom:1px solid #999; font-size:11px; font-weight:bold; }
+.som-header { padding:10px 12px; border-bottom:1px solid #999; }
+.som-player-name { font-weight:bold; font-size:21px; color:#000; }
+.som-ratings { font-size:14px; color:#333; }
+.som-card-label { display:flex; justify-content:space-between; padding:6px 12px;
+  background:#e8e8e0; border-bottom:1px solid #999; font-size:14px; font-weight:bold; }
 .som-columns-header { display:flex; background:#d0d0c8; border-bottom:2px solid #333; }
-.som-col-header { flex:1; text-align:center; font-weight:bold; font-size:14px;
-  padding:3px; border-right:1px solid #999; }
+.som-col-header { flex:1; text-align:center; font-weight:bold; font-size:17px;
+  padding:4px; border-right:1px solid #999; }
 .som-col-header:last-child { border-right:none; }
 .som-columns { display:flex; min-height:430px; }
-.som-column { flex:1; padding:6px 6px; border-right:1px solid #ccc; font-size:11px; }
+.som-column { flex:1; padding:8px 7px; border-right:1px solid #ccc;
+  font-size:15px; }
 .som-column:last-child { border-right:none; }
-.som-roll { margin:3px 0; line-height:1.25; }
+.som-roll { margin:4px 0; line-height:1.2; }
 .som-roll .dice { font-weight:bold; color:#000; }
 .som-roll .positive { font-weight:bold; color:#000; }
 .som-roll .negative { color:#444; }
-.som-roll-split { margin-left:14px; font-size:10px; color:#555; }
-.som-injury { margin-left:14px; font-size:10px; font-style:italic; color:#555; }
-.som-stats { border-top:2px solid #333; padding:8px; background:#e8e8e0; }
-.som-stats-title { text-align:center; font-weight:bold; font-size:12px;
-  margin-bottom:6px; border-bottom:1px solid #999; padding-bottom:3px; }
-.som-stats-table { width:100%; border-collapse:collapse; font-size:10px; }
-.som-stats-table th { background:#d0d0c8; padding:2px 4px; text-align:center;
+.som-roll-split { margin-left:16px; font-size:14px; color:#555;
+  line-height:1.2; }
+.som-injury { margin-left:16px; font-size:13px; font-style:italic; color:#555; }
+.som-stats { border-top:2px solid #333; padding:10px; background:#e8e8e0; }
+.som-stats-title { text-align:center; font-weight:bold; font-size:15px;
+  margin-bottom:7px; border-bottom:1px solid #999; padding-bottom:4px; }
+.som-stats-table { width:100%; border-collapse:collapse; font-size:13px; }
+.som-stats-table th { background:#d0d0c8; padding:3px 5px; text-align:center;
   font-weight:bold; border:1px solid #999; }
-.som-stats-table td { padding:2px 4px; text-align:center; border:1px solid #999;
+.som-stats-table td { padding:3px 5px; text-align:center; border:1px solid #999;
   background:#f5f5f0; }
 @media print {
   body * { visibility:hidden; }
