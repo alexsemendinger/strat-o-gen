@@ -50,11 +50,21 @@ def test_generate_pitcher_card(client):
     assert "PITCHING CARD" in data["card_html"]
 
 
-def test_generate_wrong_year_is_friendly(client):
+def test_generate_wrong_year_offers_valid_years(client):
     resp = client.post("/api/generate", json={
         "player_id": "ruthba01", "year": 1990, "kind": "batter"})
     assert resp.status_code == 404
-    assert "no batting record" in resp.get_json()["error"]
+    data = resp.get_json()
+    assert "no batting record" in data["error"]
+    assert 1927 in data["years"]  # clickable seasons for the UI
+    assert 1990 not in data["years"]
+
+
+def test_search_includes_years_for_chips(client):
+    resp = client.get("/api/search?name=Babe Ruth")
+    player = resp.get_json()["players"][0]
+    assert 1927 in player["batting_years"]
+    assert 1916 in player["pitching_years"]
 
 
 def test_random_player_always_generates(client):
@@ -72,10 +82,21 @@ def test_random_player_always_generates(client):
         assert "som-card" in gen.get_json()["card_html"]
 
 
-def test_generate_tiny_sample_rejected(client):
-    # Ruth's final season fragment: 1935, 92 PA — generates with warning;
-    # use a sub-50-PA season instead: his 1914 cup of coffee (10 AB).
+def test_generate_tiny_sample_works_with_visible_warning(client):
+    """Even a 10-AB cup of coffee makes a card (SOM prints these too —
+    see the Bartolo Colon 2016 batting card). The small-sample note goes
+    in the warnings panel, never on the card itself."""
     resp = client.post("/api/generate", json={
         "player_id": "ruthba01", "year": 1914, "kind": "batter"})
-    assert resp.status_code == 400
-    assert "not enough" in resp.get_json()["error"]
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert any("small sample" in w for w in data["warnings"])
+    assert "small sample" not in data["card_html"]
+
+
+def test_colon_2016_batting_card_generates(client):
+    """The fixture photo that motivated this: .083, 12 AB, one homer."""
+    resp = client.post("/api/generate", json={
+        "player_id": "colonba01", "year": 2016, "kind": "batter"})
+    assert resp.status_code == 200
+    assert "BARTOLO COLON" in resp.get_json()["card_html"]

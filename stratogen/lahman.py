@@ -256,6 +256,14 @@ class LahmanDB:
         self._load_people()
         return self._people.get(player_id, {}).get("name", player_id)
 
+    def batting_years(self, player_id: str) -> list[int]:
+        self._load_batting()
+        return self._batting_years.get(player_id, [])
+
+    def pitching_years(self, player_id: str) -> list[int]:
+        self._load_pitching()
+        return self._pitching_years.get(player_id, [])
+
     def player_info(self, player_id: str) -> dict:
         self._load_people()
         return dict(self._people.get(player_id, {}))
