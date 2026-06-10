@@ -14,6 +14,7 @@ from __future__ import annotations
 import csv
 import gzip
 import io
+import random
 import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
@@ -74,6 +75,7 @@ class LahmanDB:
         self._fielding: dict[tuple[str, int], dict[str, dict]] | None = None
         self._fielding_peers: dict[tuple[int, str], list[dict]] = {}
         self._team_names: dict[tuple[int, str], str] | None = None
+        self._random_pool: list[tuple[str, int, str]] | None = None
         self._league_totals: dict[tuple[int, str], dict] = {}
 
     def _rows(self, table: str):
@@ -295,6 +297,34 @@ class LahmanDB:
                 continue  # corners supersede the combined row
             out.append((pos, stats.get("G", 0)))
         return sorted(out, key=lambda kv: -kv[1])
+
+    # --- random pick --------------------------------------------------------
+
+    def random_season(self, rng: random.Random | None = None,
+                      ) -> tuple[str, int, str]:
+        """A uniformly random substantial player-season.
+
+        Returns (player_id, year, kind) where kind is 'batter' or
+        'pitcher'. Only meaty seasons qualify (roughly 150+ PA batting,
+        200+ batters faced pitching) so the result always generates a
+        warning-free card.
+        """
+        if self._random_pool is None:
+            self._load_batting()
+            self._load_pitching()
+            pool: list[tuple[str, int, str]] = []
+            for (pid, year), rows in self._batting.items():
+                pa = sum((_int_or_none(r.get("AB", "")) or 0)
+                         + (_int_or_none(r.get("BB", "")) or 0) for r in rows)
+                if pa >= 150:
+                    pool.append((pid, year, "batter"))
+            for (pid, year), rows in self._pitching.items():
+                bfp = sum(_int_or_none(r.get("BFP", "")) or 0 for r in rows)
+                ipouts = sum(_int_or_none(r.get("IPouts", "")) or 0 for r in rows)
+                if bfp >= 200 or (bfp == 0 and ipouts >= 150):
+                    pool.append((pid, year, "pitcher"))
+            self._random_pool = pool
+        return (rng or random).choice(self._random_pool)
 
     # --- league averages ---------------------------------------------------
 

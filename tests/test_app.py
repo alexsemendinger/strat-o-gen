@@ -57,6 +57,21 @@ def test_generate_wrong_year_is_friendly(client):
     assert "no batting record" in resp.get_json()["error"]
 
 
+def test_random_player_always_generates(client):
+    """The random picker must only return seasons that generate cleanly."""
+    for _ in range(5):
+        resp = client.get("/api/random")
+        pick = resp.get_json()
+        assert resp.status_code == 200
+        assert pick["kind"] in ("batter", "pitcher")
+        assert (pick["can_bat"] if pick["kind"] == "batter" else pick["can_pitch"])
+        gen = client.post("/api/generate", json={
+            "player_id": pick["player_id"], "year": pick["year"],
+            "kind": pick["kind"]})
+        assert gen.status_code == 200, (pick, gen.get_json())
+        assert "som-card" in gen.get_json()["card_html"]
+
+
 def test_generate_tiny_sample_rejected(client):
     # Ruth's final season fragment: 1935, 92 PA — generates with warning;
     # use a sub-50-PA season instead: his 1914 cup of coffee (10 AB).
