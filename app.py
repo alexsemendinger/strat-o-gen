@@ -1,10 +1,16 @@
 """Strat-O-Matic Card Maker — local web app.
 
-Run:  python app.py   then open http://localhost:5001
+Run:  uv run app.py      (uv provisions Flask automatically)
+ or:  python3 app.py     (needs: python3 -m pip install flask)
+then open http://localhost:5001
 
 Everything is offline: player statistics and league averages come from the
 bundled Lahman database (1871-2025). The only dependency is Flask.
 """
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["flask>=2.0"]
+# ///
 
 from __future__ import annotations
 
