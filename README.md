@@ -9,11 +9,20 @@ era, fully offline.
 **Windows:** double-click `Start Strat-O-Gen.vbs` (first time: see
 [WINDOWS_SETUP.md](WINDOWS_SETUP.md)).
 
-**Mac / Linux:**
+**Mac / Linux (with [uv](https://docs.astral.sh/uv/) — easiest):**
 ```bash
-pip install flask
-python3 app.py          # opens http://localhost:5001 in your browser
+uv run app.py        # uv reads the script's dependency metadata and
+                     # provisions Flask itself; no venv, no pip
 ```
+
+**Mac / Linux (plain Python):**
+```bash
+python3 -m pip install flask     # 'python3 -m pip' ensures pip and python3
+python3 app.py                   # match; bare 'pip' may be a different Python
+```
+If pip refuses with an "externally managed environment" error (newer
+Homebrew/Debian Pythons), use uv above, or
+`python3 -m pip install --user flask`.
 
 **Command line:**
 ```bash
@@ -82,7 +91,7 @@ actual season line:
 
 Run the suite:
 ```bash
-pip install pytest
+python3 -m pip install pytest
 python3 -m pytest
 ```
 
