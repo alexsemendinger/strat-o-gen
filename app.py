@@ -148,6 +148,7 @@ __CARD_CSS__
       <label><input type="radio" name="kind" value="pitcher"> Pitcher card</label>
     </div>
     <button id="searchBtn">Find player</button>
+    <button id="randomBtn" class="secondary" title="Any substantial season, 1871&ndash;2025">Random player</button>
     <div id="spinner">Working&hellip;</div>
     <div class="error" id="error"></div>
     <div class="candidates" id="candidates"></div>
@@ -236,7 +237,23 @@ async function generate() {
   } finally { $('spinner').style.display = 'none'; }
 }
 
+async function randomPick() {
+  showError(''); $('result').innerHTML = ''; $('candidates').innerHTML = '';
+  $('spinner').style.display = 'block';
+  try {
+    const r = await fetch('/api/random');
+    const p = await r.json();
+    if (!r.ok) { showError(p.error); return; }
+    $('name').value = p.name;
+    $('year').value = p.year;
+    document.querySelector('input[name=kind][value=' + p.kind + ']').checked = true;
+    pick({ player_id: p.player_id, name: p.name,
+           can_bat: p.can_bat, can_pitch: p.can_pitch }, null);
+  } finally { $('spinner').style.display = 'none'; }
+}
+
 $('searchBtn').onclick = search;
+$('randomBtn').onclick = randomPick;
 $('name').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
 $('year').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
 for (const el of document.querySelectorAll('input[name=kind]'))
@@ -277,6 +294,21 @@ def api_search():
             "can_pitch": bool(hit.pitching_years),
         })
     return jsonify(players=players)
+
+
+@app.route("/api/random")
+def api_random():
+    """A random substantial player-season, ready to generate."""
+    db = default_db()
+    player_id, year, kind = db.random_season()
+    return jsonify(
+        player_id=player_id,
+        name=db.player_name(player_id),
+        year=year,
+        kind=kind,
+        can_bat=db.batting_season(player_id, year) is not None,
+        can_pitch=db.pitching_season(player_id, year) is not None,
+    )
 
 
 @app.route("/api/generate", methods=["POST"])

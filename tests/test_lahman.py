@@ -88,6 +88,19 @@ def test_unknown_league_raises():
         db.league_batting(1927, "XX")
 
 
+def test_random_season_is_substantial():
+    import random as random_module
+    rng = random_module.Random(7)
+    for _ in range(20):
+        pid, year, kind = db.random_season(rng)
+        if kind == "batter":
+            stats = db.batting_season(pid, year)
+            assert stats["AB"] + stats["BB"] >= 150, (pid, year)
+        else:
+            stats = db.pitching_season(pid, year)
+            assert stats["TBF"] >= 200 or stats["IP"] >= 50, (pid, year)
+
+
 def test_positions():
     # outfield corners are split out (FieldingOFsplit covers 1891+)
     pos = db.positions("mayswi01", 1965)
