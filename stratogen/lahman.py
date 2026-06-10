@@ -174,9 +174,23 @@ class LahmanDB:
         if self._team_names is not None:
             return
         names = {}
+        league_rg: dict[tuple[int, str], list[int]] = {}
         for row in self._rows("Teams"):
-            names[(int(row["yearID"]), row["teamID"])] = row["name"]
+            year = int(row["yearID"])
+            names[(year, row["teamID"])] = row["name"]
+            acc = league_rg.setdefault((year, row["lgID"]), [0, 0])
+            acc[0] += _int_or_none(row.get("R", "")) or 0
+            acc[1] += _int_or_none(row.get("G", "")) or 0
+        self._league_rg = league_rg
         self._team_names = names
+
+    def league_runs_per_game(self, year: int, league: str) -> float:
+        """Actual league runs per team-game (for game-dynamics validation)."""
+        self._load_teams()
+        runs, games = self._league_rg.get((year, league), (0, 0))
+        if not games:
+            raise KeyError(f"no team data for {league} {year}")
+        return runs / games
 
     def search_players(self, query: str, limit: int = 25) -> list[PlayerHit]:
         """Find players by full name, last name, or substring."""

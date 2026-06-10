@@ -98,6 +98,101 @@ def test_pre_ibb_era_league_warning_passes_through():
     assert any("IBB" in w or "SF" in w for w in warnings)
 
 
+def _text_share(card, base, suffix):
+    """Chance-weighted share of `base` outcomes carrying `suffix`."""
+    from stratogen.model import DICE_WEIGHTS
+    total = match = 0.0
+    for _c, d, s in card.iter_splits():
+        if s.text.startswith(base):
+            w = DICE_WEIGHTS[d] * s.fraction
+            total += w
+            if s.text == base + suffix:
+                match += w
+    return match / total if total else 0.0
+
+
+def _card_for(pid, year):
+    stats = db.batting_season(pid, year)
+    league = db.league_batting(year, stats["league"])
+    card, _ = generate_batter_card(stats, league)
+    return card
+
+
+def test_hit_symbols_track_player_power():
+    """Hard contact (McGwire) earns more automatic-two-base ** singles;
+    soft contact (Vince Coleman) earns more one-base * singles."""
+    mcgwire = _card_for("mcgwima01", 1998)   # ISO ~.450
+    coleman = _card_for("colemvi01", 1987)   # ISO ~.070
+    assert _text_share(mcgwire, "SINGLE", "**") > _text_share(coleman, "SINGLE", "**")
+    assert _text_share(coleman, "SINGLE", "*") > _text_share(mcgwire, "SINGLE", "*")
+
+
+def test_dp_letters_track_gidp_tendency():
+    """Jim Rice (36 GIDP in 1984) gets more double-play A groundouts than
+    a fast low-GIDP runner."""
+    rice = _card_for("riceji01", 1984)
+    coleman = _card_for("colemvi01", 1987)
+
+    def gb_a_share(card):
+        from stratogen.model import DICE_WEIGHTS
+        a = total = 0.0
+        for _c, d, s in card.iter_splits():
+            if s.text.startswith("groundball"):
+                w = DICE_WEIGHTS[d] * s.fraction
+                total += w
+                if s.text.rstrip("+").endswith("A"):
+                    a += w
+        return a / total if total else 0.0
+
+    assert gb_a_share(rice) > gb_a_share(coleman)
+
+
+def test_plus_plus_tracks_speed_and_stays_off_pitcher_cards():
+    coleman = _card_for("colemvi01", 1987)   # extremely fast
+    fielder = _card_for("fieldce01", 1991)   # Cecil Fielder, not fast
+    def pp(card):
+        return sum(1 for _c, _d, s in card.iter_splits() if s.text.endswith("++"))
+    assert pp(coleman) > pp(fielder)
+
+    stats = db.pitching_season("ryanno01", 1974)
+    league = db.league_batting(1974, stats["league"])
+    pitcher_card, _ = generate_pitcher_card(stats, league)
+    assert pp(pitcher_card) == 0  # rulebook 6.1: ++ is batter-cards-only
+
+
+def test_stealing_rating_capped_when_cs_untracked():
+    """Pre-1951 runners must not get AA off volume alone (CS unknown)."""
+    from stratogen.ratings import stealing_rating
+    cobb = db.batting_season("cobbty01", 1911)   # 83 SB, CS not tracked
+    assert "CS" in cobb["missing"]
+    assert stealing_rating(cobb["SB"], cobb["CS"], cs_missing=True) == "A"
+    # measured elite seasons still earn AA
+    assert stealing_rating(60, 9) == "AA"  # Raines fixture
+    # and the card carries a warning
+    league = db.league_batting(1911, "AL")
+    _card, warnings = generate_batter_card(cobb, league)
+    assert any("stealing rating estimated" in w for w in warnings)
+
+
+def test_strikeouts_and_walks_spread_across_columns():
+    """No single column may hoard a category (real cards mix them)."""
+    from stratogen.model import DICE_WEIGHTS, SO, WALK
+    for pid, year in [("judgeaa01", 2022), ("mcgwima01", 1998),
+                      ("bondsba01", 2001)]:
+        card = _card_for(pid, year)
+        for cat in (SO, WALK):
+            per_col = {}
+            for col, d, s in card.iter_splits():
+                if s.category == cat:
+                    per_col[col] = per_col.get(col, 0.0) + DICE_WEIGHTS[d] * s.fraction
+            total = sum(per_col.values())
+            if total >= 9:  # only meaningful with a real allocation
+                # 0.72 allows extreme cards (Bonds's 41 walk chances crowd
+                # the board) while still catching one-column hoarding —
+                # the old layout put 87% of Judge's strikeouts in column 1.
+                assert max(per_col.values()) <= 0.72 * total, (pid, cat, per_col)
+
+
 def test_monte_carlo_agrees_with_exact_rates():
     """The Monte Carlo simulator and the closed-form expectation must agree
     (sanity check that both read the cards the same way)."""
