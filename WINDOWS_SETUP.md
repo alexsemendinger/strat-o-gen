@@ -55,8 +55,10 @@ just need a few seconds.
 ### "No module named flask"
 Open Command Prompt in the app folder and run:
 ```
-pip install flask
+python -m pip install flask
 ```
+(`python -m pip` makes sure pip installs into the same Python that runs
+the app.)
 
 ### Port already in use
 Another program is using port 5001. Restart the computer, or edit the last

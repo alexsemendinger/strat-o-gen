@@ -11,8 +11,8 @@ era, fully offline.
 
 **Mac / Linux:**
 ```bash
-pip install flask
-python3 app.py          # opens http://localhost:5001 in your browser
+python3 -m pip install flask     # 'python3 -m pip' ensures pip and python3
+python3 app.py                   # match; bare 'pip' may be a different Python
 ```
 
 **Command line:**
@@ -82,7 +82,7 @@ actual season line:
 
 Run the suite:
 ```bash
-pip install pytest
+python3 -m pip install pytest
 python3 -m pytest
 ```
 

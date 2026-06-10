@@ -8,7 +8,17 @@ bundled Lahman database (1871-2025). The only dependency is Flask.
 
 from __future__ import annotations
 
-from flask import Flask, jsonify, request
+import sys
+
+try:
+    from flask import Flask, jsonify, request
+except ModuleNotFoundError:
+    sys.exit(
+        "Flask isn't installed for this Python interpreter.\n"
+        "Install it with THIS python so pip and python match:\n\n"
+        f"    {sys.executable} -m pip install flask\n\n"
+        "(A bare 'pip install flask' may target a different Python "
+        "installation on your machine.)")
 
 from stratogen.fielding import position_ratings, rate_position
 from stratogen.generate import (
