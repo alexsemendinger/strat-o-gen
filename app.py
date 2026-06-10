@@ -15,6 +15,7 @@ bundled Lahman database (1871-2025). The only dependency is Flask.
 from __future__ import annotations
 
 import sys
+import threading
 
 try:
     from flask import Flask, jsonify, request
@@ -131,7 +132,7 @@ __CARD_CSS__
   <div class="panel">
     <div class="masthead">
       <h1>Strat-O-Matic<span class="star">&#9733;</span>Card Maker</h1>
-      <p class="subtitle">A game-usable card for any player, 1871&ndash;2025</p>
+      <p class="subtitle">A game-usable card for any player, 1871&ndash;__MAX_YEAR__</p>
     </div>
     <div class="row">
       <div>
@@ -140,7 +141,7 @@ __CARD_CSS__
       </div>
       <div style="max-width:140px">
         <label for="year">Year</label>
-        <input type="number" id="year" min="1871" max="2025" placeholder="1927">
+        <input type="number" id="year" min="1871" max="__MAX_YEAR__" placeholder="1927">
       </div>
     </div>
     <div class="kind-toggle" id="kindToggle" style="display:none">
@@ -148,7 +149,7 @@ __CARD_CSS__
       <label><input type="radio" name="kind" value="pitcher"> Pitcher card</label>
     </div>
     <button id="searchBtn">Find player</button>
-    <button id="randomBtn" class="secondary" title="Any substantial season, 1871&ndash;2025">Random player</button>
+    <button id="randomBtn" class="secondary" title="Any substantial season, 1871&ndash;__MAX_YEAR__">Random player</button>
     <div id="spinner">Working&hellip;</div>
     <div class="error" id="error"></div>
     <div class="candidates" id="candidates"></div>
@@ -264,9 +265,24 @@ for (const el of document.querySelectorAll('input[name=kind]'))
 """.replace("__CARD_CSS__", CARD_CSS)
 
 
+_warmed = threading.Event()
+
+
+def warm_in_background():
+    """Parse the data files while the user is still typing, so the first
+    search and first card are instant."""
+    def _warm():
+        default_db().warm()
+        _warmed.set()
+    threading.Thread(target=_warm, daemon=True).start()
+
+
 @app.route("/")
 def index():
-    return PAGE
+    # The year bound comes from the data when it's loaded (so a new
+    # season's files are picked up automatically); 2025 until then.
+    max_year = default_db().max_year() if _warmed.is_set() else 2025
+    return PAGE.replace("__MAX_YEAR__", str(max_year))
 
 
 @app.route("/api/search")
@@ -365,7 +381,7 @@ def api_generate():
 
 if __name__ == "__main__":
     import webbrowser
-    import threading
 
+    warm_in_background()
     threading.Timer(1.5, lambda: webbrowser.open("http://localhost:5001")).start()
     app.run(host="127.0.0.1", port=5001, debug=False)
