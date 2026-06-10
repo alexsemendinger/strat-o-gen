@@ -223,17 +223,89 @@ _X_CELLS = [(4, 7), (4, 9), (5, 6), (5, 10), (5, 12), (6, 8), (6, 5), (6, 3)]
 assert sum(DICE_WEIGHTS[d] for _, d in _X_CELLS) == X_CHANCES_PER_PITCHER_CARD
 
 
+def _spread_cells(columns: tuple[int, ...], phase: int) -> list[tuple[int, int]]:
+    """Round-robin cells across columns with staggered row order.
+
+    The placement loop breaks weight ties by list order, so an order that
+    rotates columns spreads a category over the whole card instead of
+    stacking it in one column (real cards mix strikeouts/walks/outs across
+    all three columns).
+    """
+    rotated = []
+    for i, col in enumerate(columns):
+        offset = (phase + i * 4) % len(_CENTER_OUT)
+        seq = _CENTER_OUT[offset:] + _CENTER_OUT[:offset]
+        rotated.append([(col, d) for d in seq])
+    return [cell for trio in zip(*rotated) for cell in trio]
+
+
 def _preferred_cells(columns: tuple[int, ...]) -> dict[str, list[tuple[int, int]]]:
-    """Cell preference order per category (column, dice_sum)."""
+    """Cell preference order per category (column, dice_sum).
+
+    Hits stay clustered in one column (real cards do this — Mays's HRs all
+    sit in column 3); strikeouts and walks spread across columns.
+    """
     a, b, c = columns
     hits = ([(b, d) for d in _CENTER_OUT] + [(c, d) for d in _CENTER_OUT]
             + [(a, d) for d in _CENTER_OUT])
-    walks = ([(c, d) for d in _CENTER_OUT] + [(a, d) for d in _CENTER_OUT]
-             + [(b, d) for d in _CENTER_OUT])
-    strikeouts = ([(a, d) for d in _CENTER_OUT] + [(c, d) for d in _CENTER_OUT]
-                  + [(b, d) for d in _CENTER_OUT])
     return {HR: hits, TRIPLE: hits, DOUBLE: hits, SINGLE: hits,
-            WALK: walks, SO: strikeouts}
+            WALK: _spread_cells((c, a, b), 2),
+            SO: _spread_cells((a, c, b), 0)}
+
+
+# League-typical fallback when no player profile is available
+_DEFAULT_PROFILE = {"single_2star": 0.30, "single_star": 0.17,
+                    "double_2star": 0.32, "gb_a": 0.45, "plus_plus": 1}
+
+
+def hit_profile(stats: dict, pa: float | None = None) -> dict:
+    """How this player's hits and outs should read, beyond raw frequencies.
+
+    In play, ** means runners automatically advance two bases, * pins them
+    to one, and no asterisk allows a running gamble — so the mix matters.
+    Hard contact (isolated power) drives the ** share; soft contact drives
+    the * share; GIDP tendency drives the groundball-A (double play) share;
+    speed drives the count of ++ groundouts (which favor the offense when
+    the infield is in or a runner is held).
+    """
+    ab = stats.get("AB", 0) or 1
+    iso = (stats.get("2B", 0) + 2 * stats.get("3B", 0)
+           + 3 * stats.get("HR", 0)) / ab
+    pa = pa or effective_pa(stats) or 1
+
+    def clamp(v, lo, hi):
+        return max(lo, min(hi, v))
+
+    gidp = stats.get("GIDP", 0) or 0
+    gidp_missing = "GIDP" in (stats.get("missing") or []) or (
+        gidp == 0 and "GIDP" not in stats)
+    speed = ratings.running_rating(stats)  # 8 (slow) .. 17 (fast)
+    return {
+        "single_2star": clamp(0.10 + 1.6 * iso, 0.10, 0.55),
+        "single_star": clamp(0.32 - 1.1 * iso, 0.05, 0.32),
+        "double_2star": clamp(0.15 + 1.2 * iso, 0.15, 0.55),
+        "gb_a": _DEFAULT_PROFILE["gb_a"] if gidp_missing
+                else clamp(0.20 + 16.0 * gidp / pa, 0.18, 0.75),
+        "plus_plus": 3 if speed >= 15 else (2 if speed >= 13 else 1),
+    }
+
+
+def pitcher_hit_profile(stats: dict, league: dict) -> dict:
+    """Hits allowed read like league-average contact; ++ never appears on
+    pitcher cards (rulebook 6.1: batters' cards only)."""
+    raw = league.get("raw") or {}
+    ab = raw.get("AB", 0) or 1
+    iso = (raw.get("2B", 0) + 2 * raw.get("3B", 0) + 3 * raw.get("HR", 0)) / ab
+    tbf = stats.get("TBF", 0) or 1
+    gidp = stats.get("GIDP", 0) or 0
+    profile = dict(_DEFAULT_PROFILE)
+    profile["single_2star"] = max(0.10, min(0.55, 0.10 + 1.6 * iso))
+    profile["single_star"] = max(0.05, min(0.32, 0.32 - 1.1 * iso))
+    profile["double_2star"] = max(0.15, min(0.55, 0.15 + 1.2 * iso))
+    if gidp:
+        profile["gb_a"] = max(0.18, min(0.75, 0.20 + 16.0 * gidp / tbf))
+    profile["plus_plus"] = 0
+    return profile
 
 
 class _OutFlavors:
@@ -242,16 +314,19 @@ class _OutFlavors:
     _GB_POS = ["ss", "3b", "2b", "1b", "p"]
     _FB_POS = ["lf", "cf", "rf"]
 
-    def __init__(self, rng: random.Random, card_type: str):
+    def __init__(self, rng: random.Random, card_type: str, profile: dict):
         self.rng = rng
         self.card_type = card_type
+        self.profile = profile
 
     def next(self) -> str:
         roll = self.rng.random()
         if roll < 0.45:
             pos = self.rng.choice(self._GB_POS)
-            rating = self.rng.choices(["A", "A++", "B", "C"],
-                                      weights=[40, 12, 38, 10])[0]
+            gb_a = self.profile["gb_a"]
+            rating = self.rng.choices(
+                ["A", "B", "C"],
+                weights=[gb_a, 0.78 * (1 - gb_a), 0.22 * (1 - gb_a)])[0]
             return f"groundball ({pos}){rating}"
         if roll < 0.75:
             pos = self.rng.choice(self._FB_POS)
@@ -270,35 +345,50 @@ class _OutFlavors:
 
 
 class _HitVariants:
-    """Cycle hit texts through */** variants like real cards."""
+    """Player-aware */** mix on hit texts (see hit_profile).
 
-    def __init__(self, rng: random.Random):
-        self.rng = rng
-        self._singles = ["SINGLE", "SINGLE*", "SINGLE**"]
-        self._doubles = ["DOUBLE", "DOUBLE**", "DOUBLE"]
-        self._i1 = self._i2 = 0
+    Variants are allocated by largest-deficit quota over the chances
+    actually placed, so the card's realized mix matches the profile even
+    when a player has only a couple of single chances to spread around.
+    """
 
-    def text(self, cat: str) -> str:
-        if cat == SINGLE:
-            self._i1 += 1
-            return self._singles[(self._i1 - 1) % 3]
-        if cat == DOUBLE:
-            self._i2 += 1
-            return self._doubles[(self._i2 - 1) % 3]
+    def __init__(self, rng: random.Random, profile: dict):
+        p = profile
+        self._shares = {
+            SINGLE: {"SINGLE**": p["single_2star"], "SINGLE*": p["single_star"],
+                     "SINGLE": 1.0 - p["single_2star"] - p["single_star"]},
+            DOUBLE: {"DOUBLE**": p["double_2star"],
+                     "DOUBLE": 1.0 - p["double_2star"]},
+        }
+        self._placed = {SINGLE: {t: 0.0 for t in self._shares[SINGLE]},
+                        DOUBLE: {t: 0.0 for t in self._shares[DOUBLE]}}
+
+    def text(self, cat: str, amount: float = 1.0) -> str:
+        if cat in self._shares:
+            placed = self._placed[cat]
+            total = sum(placed.values()) + amount
+            deficit = {t: self._shares[cat][t] * total - placed[t]
+                       for t in placed}
+            choice = max(deficit, key=deficit.get)
+            placed[choice] += amount
+            return choice
         return {HR: "HOMERUN", TRIPLE: "TRIPLE", WALK: "WALK", SO: "strikeout"}[cat]
 
 
 def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                 year: int | None, team: str | None, stats: dict,
-                header_lines: list[str], seed_extra: str = "") -> Card:
+                header_lines: list[str], profile: dict | None = None,
+                seed_extra: str = "") -> Card:
     """Place chance targets on a 3x11 grid deterministically.
 
     The same player/year always produces the same card (the RNG that picks
-    cosmetic out locations is seeded from name+year).
+    cosmetic out locations is seeded from name+year). `profile` (see
+    hit_profile) controls the */**/++/DP-letter mix.
     """
+    profile = profile or dict(_DEFAULT_PROFILE)
     rng = random.Random(f"{name}|{year}|{card_type}|{seed_extra}")
-    flavors = _OutFlavors(rng, card_type)
-    variants = _HitVariants(rng)
+    flavors = _OutFlavors(rng, card_type, profile)
+    variants = _HitVariants(rng, profile)
     columns = PITCHER_COLUMNS if card_type == "pitcher" else BATTER_COLUMNS
     prefs = _preferred_cells(columns)
 
@@ -358,7 +448,7 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                         best_w = w
             if cell is None:
                 break
-            assign_full(cell, variants.text(cat))
+            assign_full(cell, variants.text(cat, best_w))
             t -= best_w
         if t > _EPSILON:
             # One d20 split; among cells that approximate the remainder
@@ -376,11 +466,12 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                     best = (key, cand, r)
             if best is not None:
                 _key, cell, r = best
+                amount = DICE_WEIGHTS[cell[1]] * min(r, 20) / 20.0
                 if r >= 20:
-                    assign_full(cell, variants.text(cat))
+                    assign_full(cell, variants.text(cat, amount))
                 else:
-                    assign_split(cell, variants.text(cat), r)
-                t -= DICE_WEIGHTS[cell[1]] * min(r, 20) / 20.0
+                    assign_split(cell, variants.text(cat, amount), r)
+                t -= amount
         if t > _EPSILON:
             # Safety net for very crowded cards: continue this category in
             # the unused d20 tails of earlier splits.
@@ -393,9 +484,10 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                 start = open_tail(cell)
                 avail_slots = 21 - start
                 want_slots = min(avail_slots, max(1, round(20.0 * t / w)))
+                amount = w * want_slots / 20.0
                 placed[cell].append(
-                    (variants.text(cat), start, start + want_slots - 1))
-                t -= w * want_slots / 20.0
+                    (variants.text(cat, amount), start, start + want_slots - 1))
+                t -= amount
 
     # Outs fill every remaining cell and every open tail.
     for cell in list(free):
@@ -413,13 +505,15 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
 
     card = Card(name=name, card_type=card_type, team=team, year=year,
                 header_lines=header_lines, stats=stats, columns=card_columns)
-    _decorate(card, rng)
+    _decorate(card, rng, profile)
     return card
 
 
-def _decorate(card: Card, rng: random.Random) -> None:
+def _decorate(card: Card, rng: random.Random, profile: dict) -> None:
     """Batter-card flourishes seen on every real card: exactly one
-    'plus injury' result and one max-effort lineout."""
+    'plus injury' result, one max-effort lineout, and a speed-dependent
+    number of ++ groundouts (which favor the offense when the infield is
+    in or a runner is being held)."""
     if card.card_type != "batter":
         return
     out_cells = [(col, d) for col, d, s in card.iter_splits()
@@ -435,6 +529,11 @@ def _decorate(card: Card, rng: random.Random) -> None:
             card.columns[col][d] = [
                 Split(lo=1, hi=20,
                       text=f"lineout ({pos}) into as many outs as possible")]
+    gb_splits = [s for _, _, s in card.iter_splits()
+                 if s.text.startswith("groundball") and not s.text.endswith("++")]
+    rng.shuffle(gb_splits)
+    for split in gb_splits[: profile.get("plus_plus", 0)]:
+        split.text += "++"
 
 
 # --- top-level API -----------------------------------------------------------
@@ -463,9 +562,14 @@ def _pitching_display_stats(stats: dict) -> dict:
 
 
 def _missing_data_warnings(stats: dict) -> list[str]:
-    notable = {"IBB", "SF", "HBP", "CS", "SO", "TBF", "IP"}
-    return [f"{f} not tracked for this season (treated as 0)"
-            for f in stats.get("missing", []) if f in notable]
+    notable = {"IBB", "SF", "HBP", "SO", "TBF", "IP"}
+    warnings = [f"{f} not tracked for this season (treated as 0)"
+                for f in stats.get("missing", []) if f in notable]
+    if "CS" in stats.get("missing", []) and (stats.get("SB") or 0) > 0:
+        warnings.append(
+            "caught-stealing not tracked this season: stealing rating "
+            "estimated from steal volume (capped at A)")
+    return warnings
 
 
 def generate_batter_card(stats: dict, league: dict,
@@ -485,6 +589,7 @@ def generate_batter_card(stats: dict, league: dict,
         year=stats.get("year"), team=stats.get("team"),
         stats=_batting_display_stats(stats),
         header_lines=ratings.batter_header_lines(stats, position_ratings or []),
+        profile=hit_profile(stats),
     )
     return card, warnings
 
@@ -500,5 +605,6 @@ def generate_pitcher_card(stats: dict, league: dict,
         year=stats.get("year"), team=stats.get("team"),
         stats=_pitching_display_stats(stats),
         header_lines=ratings.pitcher_header_lines(stats, fielding_rating),
+        profile=pitcher_hit_profile(stats, league),
     )
     return card, warnings

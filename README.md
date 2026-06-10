@@ -120,8 +120,31 @@ Other simplifications:
   the 20 ratings printed on the fixture cards (10 exact, 19 within ±1).
   Box-score stats can't see range a fielder never reaches or scouting
   judgment, so expect occasional ±1 disagreement with official cards.
+- Baserunning symbols are player-derived but heuristic: isolated power
+  sets the `**` share (automatic two-base advancement), soft contact the
+  `*` share, GIDP tendency the groundball-A (double play) share, and
+  speed the `++` count. Directionally right, not reverse-engineered from
+  official cards.
+- Stealing ratings cap at A for seasons where caught-stealing wasn't
+  tracked (mostly pre-1951): success rate is unknowable, so volume alone
+  decides and the card carries a warning. AA requires a measured elite
+  rate.
 - HBP isn't placed on cards (matching all 14 fixture cards).
 - Errors/X-chart resolution assumes league-average defense.
+
+## Game dynamics are tested too
+
+Per-PA rates aren't the whole game, so `stratogen/game.py` is a
+simplified basic-game engine that plays full innings with real
+baserunners: `*`/`**` advancement, the rulebook's no-asterisk running
+gamble (d20 vs the lead runner's rating, +2 with two outs), double plays
+off groundball-A, sacrifice-fly tags, max-effort lineouts, and X-chart
+errors. The test suite checks emergent behavior: a lineup of
+league-average cards scores within a documented band of the league's
+actual runs per game across run environments from 1968 to 1930 (the
+engine omits steals, non-X errors, HBP and small-ball, costing a
+consistent ~12-14%), eras order correctly, and symbol profiles and
+running ratings measurably move run scoring.
 
 ## Repository layout
 
@@ -135,6 +158,7 @@ stratogen/
   simulate.py           Statistical tester (exact expected rates + Monte Carlo)
   generate.py           Chance targets, clamping/redistribution, card layout
   benchmark.py          Scoring vs the real-card fixtures
+  game.py               Simplified game engine (innings, baserunners)
   ratings.py            Stealing/running ratings (fitted to real cards)
   fielding.py           Fielding ratings 1-5 (calibrated to real cards)
   render.py             HTML card rendering
@@ -152,9 +176,10 @@ was actually built.
 
 Download the new CSV release from https://sabr.org/lahman-database/ (every
 January), gzip `Batting.csv`, `Pitching.csv`, `People.csv`, `Teams.csv`,
-`Fielding.csv`, and replace the files in `data/lahman/`. `Appearances.csv`
-and `FieldingOFsplit.csv` aren't in the CSV release; export them from the
-Access (.mdb) release with mdbtools (`mdb-export lahman.mdb Appearances`).
+`Fielding.csv`, and replace the files in `data/lahman/`.
+`FieldingOFsplit.csv` isn't in the CSV release; export it from the Access
+(.mdb) release with mdbtools (`mdb-export lahman.mdb FieldingOFsplit`).
+The app's year bound updates automatically from the data.
 
 ## Credits
 
