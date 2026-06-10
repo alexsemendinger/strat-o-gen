@@ -1,0 +1,81 @@
+GARY CARTER
+catcher-3
+rightfield-3
+thirdbase-4
+stealing-C
+running 1-12
+
+MONTREAL EXPOS
+
+Column 1
+2-groundball
+  (p) B
+3-popout (3b)
+4-SINGLE*
+  1-6
+  lineout (2b)
+  7-20
+5-WALK
+6-WALK
+7-WALK
+8-groundball
+  (3b) B
+9-groundball
+  (ss) A++
+10-popout (ss)
+11-groundball
+  (2b) B
+12-groundball
+  (3b) B
+  plus injury
+
+Column 2
+2-groundball
+  (3b) A
+3-groundball
+  (p) B
+4-groundball
+  (3b) B
+5-flyball (cf) B
+6-groundball
+  (ss) A
+7-flyball (lf) B
+8-HOMERUN
+  1-18
+  DOUBLE
+  19-20
+9-DOUBLE**
+  1-12
+  SINGLE**
+  13-20
+10-SINGLE
+11-groundball
+  (3b) B
+12-flyball (rf) B
+
+Column 3
+2-lineout (3b)
+  into as many
+  outs as
+  possible
+3-groundball
+  (ss) A++
+4-SINGLE
+5-SINGLE
+6-SINGLE
+7-strikeout
+8-strikeout
+9-strikeout
+10-groundball
+  (ss) A
+11-strikeout
+12-WALK
+
+1975 BATTING RECORD
+AT BATS     503
+DOUBLES     20
+TRIPLES     1
+HOMERUNS    17
+AVERAGE     .270
+WALKS       72
+STRIKEOUTS  83

@@ -1,0 +1,84 @@
+GEORGE FOSTER
+centerfield-3
+leftfield-3
+rightfield-3
+stealing-C
+running 1-13
+
+CINCINNATI REDS
+
+Column 1
+2-groundball
+  (ss) A++
+3-groundball
+  (3b) A
+4-groundball
+  (3b) A
+5-strikeout
+6-flyball (lf) B
+7-groundball
+  (ss) A
+8-groundball
+  (3b) A
+9-flyball (cf) B
+10-groundball
+  (p) A
+11-groundball
+  (2b) A
+12-groundball
+  (ss) A
+  plus injury
+
+Column 2
+2-strikeout
+3-strikeout
+4-groundball
+  (ss) A++
+5-strikeout
+6-strikeout
+7-strikeout
+8-TRIPLE
+  1-3
+  SINGLE**
+  4-20
+9-HOMERUN
+  1-3
+  DOUBLE
+  4-20
+10-HOMERUN
+11-groundball
+  (ss) A++
+12-lineout (ss)
+  into as many
+  outs as
+  possible
+
+Column 3
+2-flyball (lf) B
+3-groundball
+  (ss) A
+4-WALK
+5-strikeout
+6-strikeout
+7-strikeout
+8-SINGLE*
+  1-16
+  lineout (3b)
+  17-20
+9-SINGLE
+10-DOUBLE**
+  1-16
+  SINGLE**
+  17-20
+11-groundball
+  (3b) A
+12-flyball (rf) B
+
+1971 BATTING RECORD
+AT BATS     473
+DOUBLES     23
+TRIPLES     4
+HOMERUNS    13
+AVERAGE     .241
+WALKS       29
+STRIKEOUTS  120

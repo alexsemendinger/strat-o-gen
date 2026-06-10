@@ -1,0 +1,80 @@
+WILLIE MAYS
+centerfield-1
+stealing-C
+running 1-17
+
+SAN FRANCISCO GIANTS
+
+Column 1
+2-groundball
+  (ss) A
+3-groundball
+  (2b) B
+4-popout (3b)
+5-groundball
+  (ss) A++
+6-groundball
+  (3b) A
+7-SINGLE*
+  1-18
+  lineout (3b)
+  19-20
+8-WALK
+9-WALK
+10-lineout (ss)
+11-groundball
+  (3b) B
+12-flyball (lf) A
+  plus injury
+
+Column 2
+2-flyball (rf) B
+3-groundball
+  (3b) A
+4-groundball
+  (p) B
+5-flyball (cf) B
+6-groundball
+  (ss) A
+7-flyball (lf) B
+8-strikeout
+9-WALK
+10-groundball
+  (3b) B
+11-groundball
+  (ss) A
+12-lineout (ss)
+  into as many
+  outs as possible
+
+Column 3
+2-strikeout
+3-groundball
+  (ss) A++
+4-HOMERUN
+5-HOMERUN
+6-HOMERUN
+7-HOMERUN
+  1-11
+  DOUBLE
+  12-20
+8-DOUBLE**
+  1
+  SINGLE**
+  2-20
+9-TRIPLE
+  1
+  SINGLE**
+  2-20
+10-SINGLE
+11-strikeout
+12-WALK
+
+1965 BATTING RECORD
+ATBATS      558
+DOUBLES     21
+TRIPLES     3
+HOMERUNS    52
+AVERAGE     .317
+WALKS       76
+STRIKEOUTS  71

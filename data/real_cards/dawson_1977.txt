@@ -1,0 +1,79 @@
+ANDRE DAWSON
+centerfield-3
+leftfield-3
+rightfield-3
+stealing-A
+running 1-15
+
+MONTREAL EXPOS
+
+Column 1
+2-foulout (c)
+  plus injury
+3-popout (ss)
+4-SINGLE**
+5-SINGLE*
+  1-19
+  lineout (2b)
+  20
+6-groundball
+  (3b) B
+7-groundball
+  (3b) B
+8-groundball
+  (ss) A
+9-groundball
+  (ss) A++
+10-lineout (3b)
+11-popout (ss)
+12-groundball
+  (p) B
+
+Column 2
+2-groundball
+  (3b) B
+3-groundball
+  (2b) B
+4-popout (3b)
+5-flyball (cf) B
+6-strikeout
+7-flyball (lf) B
+8-HOMERUN
+9-TRIPLE
+  1-13
+  DOUBLE
+  14-20
+10-DOUBLE
+11-groundball
+  (p) B
+12-flyball (rf) B
+
+Column 3
+2-lineout (3b)
+  into as many
+  outs as
+  possible
+3-groundball
+  (ss) A++
+4-DOUBLE**
+  1-6
+  SINGLE**
+  7-20
+5-SINGLE
+6-SINGLE
+7-strikeout
+8-strikeout
+9-strikeout
+10-groundball
+  (ss) A
+11-WALK
+12-WALK
+
+1977 BATTING RECORD
+AT BATS     525
+DOUBLES     26
+TRIPLES     9
+HOMERUNS    19
+AVERAGE     .282
+WALKS       34
+STRIKEOUTS  93

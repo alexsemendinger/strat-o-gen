@@ -1,0 +1,80 @@
+NOLAN RYAN
+pitcher-4
+batting # 2
+starter
+
+PITCHING CARD
+CALIFORNIA
+
+Column 4
+2-strikeout
+3-GROUND-
+  BALL(1b)X
+4-GROUND-
+  BALL(2b)X
+5-strikeout
+6-strikeout
+7-strikeout
+8-strikeout
+9-GROUND-
+  BALL(ss)X
+10-GROUND-
+  BALL(2b)X
+11-GROUND-
+  BALL(3b)X
+12-strikeout
+
+Column 5
+2-GROUND-
+  BALL(3b)X
+3-GROUND-
+  BALL(p)X
+4-CATCHER'S
+  CARD X
+5-strikeout
+6-strikeout
+7-strikeout
+8-strikeout
+9-DOUBLE
+  1-6
+  flyball(cf)B
+  7-20
+10-FLYBALL
+  (cf)X
+11-FLYBALL
+  (rf)X
+12-strikeout
+
+Column 6
+2-WALK
+3-TRIPLE
+  1
+  SINGLE**
+  2-20
+4-GROUND-
+  BALL(ss)X
+5-strikeout
+6-WALK
+7-WALK
+8-WALK
+9-WALK
+10-groundball
+  (2b)C
+11-FLYBALL
+  (lf)X
+12-HOMERUN
+  1-16
+  flyball(rf)B
+  17-20
+
+1972 PITCHING RECORD
+W                 19
+L                 16
+ERA               2.28
+STARTS            39
+SAVES             0
+IP                284
+HITS ALLOWED      166
+BB                157
+SO                329
+HOMERUNS ALLOWED  14

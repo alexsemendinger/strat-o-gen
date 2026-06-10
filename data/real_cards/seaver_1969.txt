@@ -1,0 +1,81 @@
+TOM SEAVER
+1 pitcher-starter
+
+PITCHING CARD
+NEW YORK METS
+
+Column 4
+2-strikeout
+3-FLYBALL
+  (LF) X
+4-WALK
+5-strikeout
+6-DOUBLE**
+  1-8
+  SINGLE**
+  9-20
+7-GROUND-
+  BALL (2B) X
+8-popout (1b)
+9-SINGLE*
+  1
+  lineout (2b)
+  2-20
+10-WALK
+11-GROUND-
+  BALL (1B) X
+12-CATCHER'S
+  CARD X
+
+Column 5
+2-GROUND-
+  BALL (SS) X
+3-GROUND-
+  BALL (P) X
+4-HOMERUN
+  1-12
+  DOUBLE
+  13-20
+5-TRIPLE
+  1-3
+  SINGLE**
+  4-20
+6-strikeout
+7-strikeout
+8-strikeout
+9-strikeout
+10-GROUND-
+  BALL (3B) X
+11-CATCHER'S
+  CARD X
+12-WALK
+
+Column 6
+2-groundball
+  (p) B
+3-groundball
+  (1b) C
+4-FLYBALL
+  (CF) X
+5-flyball (cf) B
+6-flyball (cf) B
+7-GROUND-
+  BALL (SS) X
+8-flyball (lf) B
+9-flyball (rf) C
+10-groundball
+  (2b) C
+11-FLYBALL
+  (RF) X
+12-groundball
+  (p) B
+
+1969 PITCHING RECORD
+WON               25
+LOST              7
+E.R.A.            2.21
+INNINGS PITCHED  273
+HITS ALLOWED      202
+WALKS ALLOWED     82
+STRIKEOUTS        208
+HOMERUNS ALLOWED  24

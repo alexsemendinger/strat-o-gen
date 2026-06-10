@@ -1,173 +1,156 @@
-# Strat-O-Matic Baseball Card Generator
+# Strat-O-Matic Card Maker
 
-Generate statistically accurate, game-usable Strat-O-Matic baseball cards from historical player statistics (1901-2025).
+Generate statistically accurate, game-usable Strat-O-Matic baseball cards
+for **any player season from 1871 to 2025** — batters and pitchers, every
+era, fully offline.
 
-## Features
+## Quick start
 
-- **Historical Coverage**: Supports players from 1901 to 2025
-- **Automatic Data Fetching**: Retrieves player statistics from Baseball Reference
-- **Smart Handling**: Gracefully handles missing historical data (IBB, SF, CS)
-- **Web Interface**: Simple, user-friendly web interface
-- **Player Disambiguation**: Handles multiple players with the same name
-- **Card Rendering**: Beautiful HTML cards with PDF export capability
-- **Confidence Indicators**: Shows reliability of generated cards
-- **Era-Appropriate**: Adjusts formulas based on league context for each year
+**Windows:** double-click `Start Strat-O-Gen.vbs` (first time: see
+[WINDOWS_SETUP.md](WINDOWS_SETUP.md)).
 
-## Quick Start
-
-### Windows
-
-**First-time setup:** See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for detailed instructions.
-
-**Daily use:**
-1. Double-click `Start Strat-O-Gen.vbs`
-2. The application will open in your browser automatically
-
-### Mac / Linux
-
+**Mac / Linux:**
 ```bash
-pip install -r requirements.txt
-python3 app.py
+pip install flask
+python3 app.py          # opens http://localhost:5001 in your browser
 ```
 
-Then visit: http://localhost:5001
-
-## Requirements
-
-- Python 3.10 or later
-- Internet connection (for first-time data fetching)
-
-Install dependencies with: `pip install -r requirements.txt`
-
-## Manual Installation
-
+**Command line:**
 ```bash
-pip install -r requirements.txt
-python3 app.py
+python3 generate_card.py "Willie Mays" 1965
+python3 generate_card.py "Nolan Ryan" 1972 --pitcher
+python3 generate_card.py "Tom Seaver" 1969 --pitcher --html seaver.html
 ```
 
-## Usage
+The only dependency is Flask (pure Python — no compilers, no native
+libraries, installs cleanly on Windows). Player statistics and league
+averages come from the bundled [Lahman database](https://sabr.org/lahman-database/)
+(`data/lahman/*.csv.gz`), so no internet connection or scraping is needed.
 
-1. Enter a player's name (e.g., "Babe Ruth", "Mike Trout")
-2. Enter the year (1901-2025)
-3. Click "Generate Card"
-4. If multiple players match, select the correct one
-5. View your generated card!
+## What you get
 
-## How It Works
+- A printable card in the classic 3-column × 11-row layout with d20 splits,
+  baserunning symbols (`SINGLE*`, `DOUBLE**`), groundball A/B/C ratings,
+  X-chart chances on pitcher cards, stealing/running ratings, one injury
+  result and one max-effort lineout per batter card — like the real thing.
+- An honesty table: what the card produces over the season's plate
+  appearances vs. what actually happened (hits, HR, BB, SO, ...).
+- Warnings whenever the card can't fully capture the season (see
+  *Known limitations* below) or the era's data is incomplete.
 
-The generator:
-1. Fetches player statistics from Baseball Reference via pybaseball
-2. Retrieves era-appropriate league averages for context
-3. Applies modified Bundy formulas to convert stats to card outcomes
-4. Accounts for the 50/50 batter/pitcher card split in Strat-O-Matic
-5. Handles missing historical data gracefully (pre-1955 IBB, pre-1954 SF, etc.)
-6. Places results on a 3-column card grid respecting 2d6 dice probabilities
-7. Calculates auxiliary ratings (stealing, power, speed)
-8. Generates a printable HTML card
+Same player + year always produces the same card.
 
-## Historical Data Notes
+## How it works
 
-### Fully Supported (1955-2025)
-All statistics available, highest accuracy.
+Strat-O-Matic resolves each plate appearance on the batter's card or the
+pitcher's card with equal probability (white die 1-3/4-6), with 2d6 picking
+the row and a d20 resolving split chances. Each card carries 108
+probability-weighted "chances"; a full batter+pitcher cycle is 216.
 
-### Good Support (1920-1954)
-- Missing: IBB (treated as 0)
-- Missing: SF before 1954
-- Otherwise complete data
+A card therefore encodes the player's **deviation from league average** —
+the opposing average card supplies the baseline:
 
-### Limited Support (1901-1919)
-- Missing: IBB, SF, and some CS data
-- Cards generated with warnings
-- Lower confidence ratings
-
-The generator always works, but older years come with appropriate warnings about data limitations.
-
-## Card Confidence Levels
-
-- **HIGH**: Complete data, adequate sample size (300+ PA)
-- **MEDIUM**: Minor missing data or smaller sample (150-300 PA)
-- **LOW**: Significant missing data or very small sample (<150 PA)
-
-## Technical Details
-
-### Architecture
-- **Backend**: Python 3 + Flask
-- **Data Source**: pybaseball (Baseball Reference)
-- **Card Engine**: Modified Bundy formulas with era adjustments
-- **PDF Generation**: WeasyPrint
-- **Caching**: Local JSON cache for performance
-
-### File Structure
 ```
-strat-o-gen/
-├── app.py                  # Flask web application
-├── generate_card.py        # Command-line interface
-├── stats_fetcher.py        # Data fetching (pybaseball wrapper)
-├── card_formulas.py        # Bundy formulas for card generation
-├── card_layout.py          # Card grid generation
-├── league_averages.py      # League average handling
-├── requirements.txt        # Python dependencies
-├── Start Strat-O-Gen.vbs   # Windows launcher (double-click this)
-├── start_windows.bat       # Windows batch script
-├── WINDOWS_SETUP.md        # Windows setup guide
-└── data/
-    ├── cache/              # Cached player data
-    └── league_averages/    # Cached league averages
+card_chances(outcome) = (2 × player_rate − league_rate) × 108
 ```
 
-## Formula Basis
+League rates are computed per year and league from the Lahman data (all
+eras, including the Negro Leagues), so a 1908 card and a 2019 card are
+built against their own run environments. Pitcher cards additionally carry
+the standard 30-chance X-chart block (defense-dependent results), shrunk
+automatically for extreme modern relievers whose strikeouts don't fit
+otherwise.
 
-This generator uses community-researched formulas (primarily the "Bundy formulas") to approximate official Strat-O-Matic cards. These formulas:
+This formula was validated against real cards: hand-counting Barry Bonds's
+2001 card gives 22 HR / 41 BB / 12 K chances; the formula predicts 21.8 /
+40.3 / 10.9. Nolan Ryan's 1972 card carries 47 strikeout chances; the
+formula predicts 46.8.
 
-- Are based on reverse-engineering, not official SOM sources
-- Account for the batter-pitcher card interaction
-- Adjust for era-specific league contexts
-- Are validated through simulation testing
+## How we know the cards are good
 
-**Note**: Generated cards are approximations and may differ slightly from official SOM cards.
+`data/real_cards/` contains 14 transcribed official cards (10 batters, 4
+pitchers). The test suite computes each card's **exact** expected outcome
+rates (no simulation noise — the dice probabilities are summed in closed
+form) against a league-average opponent and compares them to the player's
+actual season line:
 
-## Limitations
+- Real official cards land within **0.003–0.009 of the season batting
+  average** (their own d20 granularity and clamping cost them the rest).
+- Generated cards must match or beat the real card's error **on every
+  category of every benchmark case** — `tests/test_benchmark.py` enforces
+  this, and currently generated cards do at least as well across the board.
 
-- **Pitcher cards**: Not yet implemented (batters only)
-- **Advanced game features**: Basic game cards only (no platoon splits)
-- **Fielding ratings**: Simplified (requires defensive metrics)
-- **Minor leagues**: MLB only
+Run the suite:
+```bash
+pip install pytest
+python3 -m pytest
+```
 
-## Troubleshooting
+## Known limitations (shared with official cards)
 
-### "No players found"
-- Check spelling of player name
-- Try last name only
-- Verify the player played in that year
+A card can't hold negative chances, so when a player is *below* league
+average in a category, the opposing average card supplies more of that
+outcome than the player actually produced:
 
-### "Insufficient plate appearances"
-- Player didn't play enough in that year
-- Try a different season
-- Threshold is 50 PA (adjustable in config.py)
+- A never-strikes-out batter (Gwynn) will strike out at about half the
+  league rate in play — more than he really did.
+- A 0-HR season still yields about half the league HR rate.
+- An elite control pitcher (Maddux) walks more in play than his real rate.
 
-### Server won't start
-- Ensure Python 3.10+ is installed
-- Try manual installation: `pip install -r requirements.txt`
-- Check port 5001 isn't already in use
+The generator redistributes what it can (clamped hit deficits are absorbed
+by other hit types to preserve batting average and total hits) and **warns
+explicitly** about what it can't. The real-card benchmark shows official
+cards have exactly the same behavior.
+
+Other simplifications:
+- No lefty/righty platoon splits (basic-game style cards).
+- Fielding ratings (1-5 per position, printed on the card header) are
+  computed from range factor, fielding percentage, and catcher
+  caught-stealing rates vs same-position/same-season peers, blended over
+  the prior two seasons and shrunk for small samples. Calibrated against
+  the 20 ratings printed on the fixture cards (10 exact, 19 within ±1).
+  Box-score stats can't see range a fielder never reaches or scouting
+  judgment, so expect occasional ±1 disagreement with official cards.
+- HBP isn't placed on cards (matching all 14 fixture cards).
+- Errors/X-chart resolution assumes league-average defense.
+
+## Repository layout
+
+```
+app.py                  Flask web app (the dad-friendly interface)
+generate_card.py        Command-line interface
+stratogen/
+  model.py              Card data model, chance accounting, validation
+  card_text.py          Parser/serializer for the plain-text card format
+  lahman.py             Offline stats + league averages (1871-2025)
+  simulate.py           Statistical tester (exact expected rates + Monte Carlo)
+  generate.py           Chance targets, clamping/redistribution, card layout
+  benchmark.py          Scoring vs the real-card fixtures
+  ratings.py            Stealing/running ratings (fitted to real cards)
+  fielding.py           Fielding ratings 1-5 (calibrated to real cards)
+  render.py             HTML card rendering
+data/
+  lahman/               Bundled Lahman database (gzipped CSVs)
+  real_cards/           Transcribed official cards = ground truth fixtures
+tests/                  pytest suite (parser, data, benchmark, app smoke)
+```
+
+`STRAT_CARD_MAKER_SPEC_v2.md` is the original project spec, kept for
+reference; where it conflicts with this README, the README reflects what
+was actually built.
+
+## Updating for a new season
+
+Download the new CSV release from https://sabr.org/lahman-database/ (every
+January), gzip `Batting.csv`, `Pitching.csv`, `People.csv`, `Teams.csv`,
+`Fielding.csv`, and replace the files in `data/lahman/`. `Appearances.csv`
+and `FieldingOFsplit.csv` aren't in the CSV release; export them from the
+Access (.mdb) release with mdbtools (`mdb-export lahman.mdb Appearances`).
 
 ## Credits
 
-- **Strat-O-Matic**: Card game by Strat-O-Matic Game Company
-- **Bundy Formulas**: Community research by Bruce Bundy and others
-- **Baseball Reference**: Historical statistics
-- **pybaseball**: Python baseball statistics library
-
-## License
-
-This is an independent fan project. Strat-O-Matic is a registered trademark of the Strat-O-Matic Game Company. This project is not affiliated with or endorsed by Strat-O-Matic.
-
-Generated cards are for personal use only.
-
-## Version
-
-Version 1.0 - Initial Release
-
-## Support
-
-For issues or questions, see the specification document: `STRAT_CARD_MAKER_SPEC_v2.md`
+- **Strat-O-Matic** is a registered trademark of the Strat-O-Matic Game
+  Company; this is an independent fan project for personal use.
+- Card-formula reverse engineering builds on Bruce Bundy's community
+  research (somworld.com / cba-bb.net).
+- Statistics: the Lahman Baseball Database (SABR), CC BY-SA 3.0.
