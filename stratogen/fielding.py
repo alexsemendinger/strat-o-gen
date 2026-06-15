@@ -60,8 +60,14 @@ def _metrics(stats: dict) -> dict:
     return out
 
 
+_DIST_CACHE: dict[tuple[int, int, str], dict] = {}
+
+
 def _peer_distribution(db: LahmanDB, year: int, pos: str) -> dict:
     """Weighted mean/std of each metric across the position's regulars."""
+    cache_key = (id(db), year, pos)
+    if cache_key in _DIST_CACHE:
+        return _DIST_CACHE[cache_key]
     sums: dict[str, list[float]] = {}
     for stats in db.fielding_peers(year, pos):
         g = stats.get("G", 0)
@@ -79,6 +85,7 @@ def _peer_distribution(db: LahmanDB, year: int, pos: str) -> dict:
         mean = wx / w
         var = max(0.0, wx2 / w - mean * mean)
         dist[name] = (mean, var ** 0.5)
+    _DIST_CACHE[cache_key] = dist
     return dist
 
 

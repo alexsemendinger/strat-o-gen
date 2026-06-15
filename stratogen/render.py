@@ -48,7 +48,10 @@ CARD_CSS = """
 @media print {
   body * { visibility:hidden; }
   .som-card, .som-card * { visibility:visible; }
-  .som-card { position:absolute; left:0; top:0; box-shadow:none; }
+  /* Print at the physical SOM card size (~2.6in wide): 420px at 96dpi
+     is ~4.4in, so scale to actual size for sleeving into a real deck. */
+  .som-card { position:absolute; left:0; top:0; box-shadow:none;
+    transform:scale(0.6); transform-origin:top left; }
 }
 """
 
@@ -157,7 +160,6 @@ def accuracy_rows(card: Card, actual_stats: dict, opposing_chances: dict,
     pa = effective_pa(actual_stats)
     h = hits_from_stats(actual_stats)
     ab = actual_stats.get("AB", 0)
-    implied_ab = (1.0 - implied[WALK]) * pa
     rows = [
         ("Batting average", f"{h / ab:.3f}" if ab else "-", f"{implied['BA']:.3f}"),
         ("Hits", f"{h:.0f}", f"{implied['H_per_PA'] * pa:.0f}"),

@@ -15,6 +15,7 @@ bundled Lahman database (1871-2025). The only dependency is Flask.
 from __future__ import annotations
 
 import sys
+import threading
 
 try:
     from flask import Flask, jsonify, request
@@ -36,8 +37,7 @@ from stratogen.render import CARD_CSS, accuracy_rows, card_to_html
 from stratogen.simulate import effective_pa
 
 app = Flask(__name__)
-MIN_PA = 50          # below this, refuse (a card would be meaningless)
-WARN_PA = 150        # below this, generate but warn
+WARN_PA = 150        # below this, add a gentle small-sample note
 
 PAGE = """<!DOCTYPE html>
 <html lang="en">
@@ -120,6 +120,11 @@ h3 { color:var(--navy); margin:22px 0 4px; font-weight:normal; font-size:16px;
   text-transform:uppercase; letter-spacing:.07em;
   border-bottom:1px solid var(--rule-dark); padding-bottom:4px; }
 .note { color:var(--muted); font-size:13px; font-style:italic; }
+#years { margin-top:10px; }
+button.yearchip { background:var(--field); color:var(--navy); font-size:13px;
+  letter-spacing:normal; border:1px solid var(--rule-dark); border-radius:3px;
+  padding:4px 9px; margin:4px 6px 0 0; box-shadow:none; cursor:pointer; }
+button.yearchip:hover { border-color:var(--navy); background:var(--paper-dark); }
 #spinner { display:none; color:var(--muted); font-style:italic; margin-top:12px; }
 .footer { text-align:center; color:var(--muted); font-size:12px;
   font-style:italic; margin:6px 0 24px; }
@@ -131,7 +136,7 @@ __CARD_CSS__
   <div class="panel">
     <div class="masthead">
       <h1>Strat-O-Matic<span class="star">&#9733;</span>Card Maker</h1>
-      <p class="subtitle">A game-usable card for any player, 1871&ndash;2025</p>
+      <p class="subtitle">A game-usable card for any player, 1871&ndash;__MAX_YEAR__</p>
     </div>
     <div class="row">
       <div>
@@ -140,7 +145,7 @@ __CARD_CSS__
       </div>
       <div style="max-width:140px">
         <label for="year">Year</label>
-        <input type="number" id="year" min="1871" max="2025" placeholder="1927">
+        <input type="number" id="year" min="1871" max="__MAX_YEAR__" placeholder="1927">
       </div>
     </div>
     <div class="kind-toggle" id="kindToggle" style="display:none">
@@ -148,9 +153,10 @@ __CARD_CSS__
       <label><input type="radio" name="kind" value="pitcher"> Pitcher card</label>
     </div>
     <button id="searchBtn">Find player</button>
-    <button id="randomBtn" class="secondary" title="Any substantial season, 1871&ndash;2025">Random player</button>
+    <button id="randomBtn" class="secondary" title="Any substantial season, 1871&ndash;__MAX_YEAR__">Random player</button>
     <div id="spinner">Working&hellip;</div>
     <div class="error" id="error"></div>
+    <div id="years"></div>
     <div class="candidates" id="candidates"></div>
   </div>
   <div id="result"></div>
@@ -164,8 +170,33 @@ let chosen = null;
 function showError(msg) { const e = $('error'); e.textContent = msg;
   e.style.display = msg ? 'block' : 'none'; }
 
+function showYears(years, msg) {
+  const box = $('years');
+  box.innerHTML = '';
+  if (!years || !years.length) return;
+  const label = document.createElement('span');
+  label.className = 'note';
+  label.textContent = msg;
+  box.appendChild(label);
+  for (const y of years) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'yearchip';
+    b.textContent = y;
+    b.onclick = () => { $('year').value = y; generate(); };
+    box.appendChild(b);
+  }
+}
+
+function chosenYears() {
+  if (!chosen) return [];
+  const kind = document.querySelector('input[name=kind]:checked').value;
+  return (kind === 'pitcher' ? chosen.pitching_years : chosen.batting_years) || [];
+}
+
 async function search() {
   showError(''); $('result').innerHTML = ''; $('candidates').innerHTML = '';
+  $('years').innerHTML = '';
   $('kindToggle').style.display = 'none'; chosen = null;
   const name = $('name').value.trim();
   if (!name) { showError('Enter a player name.'); return; }
@@ -209,9 +240,12 @@ function pick(p, div) {
 
 async function generate() {
   if (!chosen) return;
-  showError(''); $('result').innerHTML = '';
+  showError(''); $('result').innerHTML = ''; $('years').innerHTML = '';
   const year = parseInt($('year').value, 10);
-  if (!year) { showError('Enter a year.'); return; }
+  if (!year) {
+    showYears(chosenYears(), (chosen.name || 'This player') + ' has a season in: ');
+    return;
+  }
   const kind = document.querySelector('input[name=kind]:checked').value;
   $('spinner').style.display = 'block';
   try {
@@ -219,7 +253,11 @@ async function generate() {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ player_id: chosen.player_id, year: year, kind: kind })});
     const data = await r.json();
-    if (!r.ok) { showError(data.error); return; }
+    if (!r.ok) {
+      showError(data.error);
+      showYears(data.years || chosenYears(), 'Seasons available: ');
+      return;
+    }
     let htmlOut = '';
     if (data.warnings.length) {
       htmlOut += '<div class="panel"><div class="warnings"><b>Heads up:</b><ul>'
@@ -264,9 +302,24 @@ for (const el of document.querySelectorAll('input[name=kind]'))
 """.replace("__CARD_CSS__", CARD_CSS)
 
 
+_warmed = threading.Event()
+
+
+def warm_in_background():
+    """Parse the data files while the user is still typing, so the first
+    search and first card are instant."""
+    def _warm():
+        default_db().warm()
+        _warmed.set()
+    threading.Thread(target=_warm, daemon=True).start()
+
+
 @app.route("/")
 def index():
-    return PAGE
+    # The year bound comes from the data when it's loaded (so a new
+    # season's files are picked up automatically); 2025 until then.
+    max_year = default_db().max_year() if _warmed.is_set() else 2025
+    return PAGE.replace("__MAX_YEAR__", str(max_year))
 
 
 @app.route("/api/search")
@@ -292,6 +345,8 @@ def api_search():
                     + (f" · {', '.join(kinds)}" if kinds else ""),
             "can_bat": bool(hit.batting_years),
             "can_pitch": bool(hit.pitching_years),
+            "batting_years": hit.batting_years,
+            "pitching_years": hit.pitching_years,
         })
     return jsonify(players=players)
 
@@ -326,7 +381,9 @@ def api_generate():
         if kind == "pitcher":
             stats = db.pitching_season(player_id, year)
             if stats is None:
-                return jsonify(error=f"{name} has no pitching record in {year}."), 404
+                return jsonify(
+                    error=f"{name} has no pitching record in {year}.",
+                    years=db.pitching_years(player_id)), 404
             league = db.league_batting(year, stats["league"])
             card, warnings = generate_pitcher_card(
                 stats, league,
@@ -335,18 +392,18 @@ def api_generate():
         else:
             stats = db.batting_season(player_id, year)
             if stats is None:
-                return jsonify(error=f"{name} has no batting record in {year}."), 404
+                return jsonify(
+                    error=f"{name} has no batting record in {year}.",
+                    years=db.batting_years(player_id)), 404
             pa = effective_pa(stats)
-            if pa < MIN_PA:
-                return jsonify(error=(
-                    f"{name} only had {pa:.0f} plate appearances in {year} — "
-                    f"not enough to make a meaningful card (minimum {MIN_PA}). "
-                    f"Try another season.")), 400
             league = db.league_batting(year, stats["league"])
             card, warnings = generate_batter_card(
                 stats, league,
                 position_ratings=position_ratings(db, player_id, year))
-            if pa < WARN_PA:
+            # The generator warns below 100 PA; add a gentler note for the
+            # 100-150 range. Tiny seasons (even a pitcher's 12 AB) still
+            # make a card — Strat-O-Matic prints those too.
+            if WARN_PA > pa >= 100:
                 warnings.append(
                     f"only {pa:.0f} plate appearances — small samples make "
                     f"streaky cards")
@@ -365,7 +422,7 @@ def api_generate():
 
 if __name__ == "__main__":
     import webbrowser
-    import threading
 
+    warm_in_background()
     threading.Timer(1.5, lambda: webbrowser.open("http://localhost:5001")).start()
     app.run(host="127.0.0.1", port=5001, debug=False)

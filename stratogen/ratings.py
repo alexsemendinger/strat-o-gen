@@ -9,7 +9,25 @@ proprietary; these reproduce all nine known fixture ratings.
 from __future__ import annotations
 
 
-def stealing_rating(sb: int, cs: int) -> str:
+def stealing_rating(sb: int, cs: int, cs_missing: bool = False) -> str:
+    """Stealing letter rating (AA best ... E worst).
+
+    When caught-stealing wasn't tracked (most seasons before 1951),
+    success rate is unknowable and rating purely on SB/(SB+0) would hand
+    every high-volume runner a perfect record. Instead, volume alone sets
+    the rating, capped at A: AA is reserved for runners with a *measured*
+    elite success rate.
+    """
+    if cs_missing and cs == 0:
+        if sb >= 50:
+            return "A"
+        if sb >= 20:
+            return "B"
+        if sb >= 5:
+            return "C"
+        if sb >= 1:
+            return "D"
+        return "E"
     attempts = sb + cs
     rate = sb / attempts if attempts else 0.0
     if sb >= 40 and rate >= 0.80:
@@ -70,7 +88,10 @@ def batter_header_lines(stats: dict,
         lines.append(f"{_POS_NAMES.get(pos, pos.lower())}-{rating}")
     if not lines:
         lines.append("dh")
-    lines.append(f"stealing-{stealing_rating(stats.get('SB', 0) or 0, stats.get('CS', 0) or 0)}")
+    cs_missing = "CS" in (stats.get("missing") or [])
+    steal = stealing_rating(stats.get("SB", 0) or 0, stats.get("CS", 0) or 0,
+                            cs_missing=cs_missing)
+    lines.append(f"stealing-{steal}")
     lines.append(f"running 1-{running_rating(stats)}")
     return lines
 
