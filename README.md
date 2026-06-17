@@ -93,7 +93,7 @@ league-average opponent and compares them to the player's actual season line:
 - Generated cards must match or beat the real card's error **on every
   category of every benchmark case** — `tests/test_benchmark.py` enforces
   this, and currently generated cards do at least as well across the board.
-- A few unofficial cards (made by a league player, not Strat-O-Matic) are
+- A few unofficial cards (uncertain provenance, probably genuine) are
   included but tested *tolerantly*: a failure only they exhibit is allowed.
 
 Run the suite:
@@ -156,7 +156,7 @@ running ratings measurably move run scoring.
 ## Repository layout
 
 ```
-app.py                  Flask web app (the dad-friendly interface)
+app.py                  Flask web app (simple web interface)
 generate_card.py        Command-line interface
 stratogen/
   model.py              Card data model, chance accounting, validation

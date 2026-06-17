@@ -31,9 +31,10 @@ source of truth. Notation is catalogued in `SYMBOLS.md`.
 ## Official vs unofficial
 Four pitcher cards are flagged `"official": false` (filename `_unofficial`):
 Al Orth (1906), Bob Shawkey (1917), Jack Warhop (1914), Bill Zuber (1945).
-These are high-quality cards the owner's father made/printed and actively
-used in his league, but they are not regulation Strat-O-Matic product, so
-they may be less reliable along some dimension. They are advanced-side only.
+These are of uncertain provenance — high-quality cards that are probably
+genuine (most likely copied or transcribed from real cards), but not
+confirmed regulation Strat-O-Matic product, so they may be less reliable
+along some dimension. They are advanced-side only.
 
 ## Notes / known points
 - **Aaron Judge 2024 (basic side)** legitimately under-represents home runs
