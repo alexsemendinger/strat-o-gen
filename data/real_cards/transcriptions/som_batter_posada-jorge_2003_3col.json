@@ -1,0 +1,79 @@
+{
+  "cardId": "batter_posada-jorge_2003",
+  "sourceImage": "som_batter_posada-jorge_2003_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Jorge Posada",
+    "bats": "S",
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 2003,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "catcher", "rating": 3, "error": null } ],
+    "stealing": "D",
+    "running": "1-9",
+    "notes": "Header reads: 'JORGE POSADA   catcher-3   stealing-D   running 1-9' and 'NEW YORK(AL)'. The basic side lists only the primary fielding position (catcher-3). Jorge Posada is a switch hitter (bats S)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "lineout (2b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (2b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 4, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "groundball (p) A", "outcomes": [ { "range": null, "result": "groundball (p) A" } ] },
+          { "roll": 11, "raw": "groundball (2b) A", "outcomes": [ { "range": null, "result": "groundball (2b) A" } ] },
+          { "roll": 12, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 5, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-16 / DOUBLE 17-20", "outcomes": [ { "range": [1,16], "result": "HOMERUN" }, { "range": [17,20], "result": "DOUBLE" } ] },
+          { "roll": 10, "raw": "DOUBLE** 1-17 / SINGLE** 18-20", "outcomes": [ { "range": [1,17], "result": "DOUBLE**" }, { "range": [18,20], "result": "SINGLE**" } ] },
+          { "roll": 11, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 12, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "flyball (cf) A", "outcomes": [ { "range": null, "result": "flyball (cf) A" } ] },
+          { "roll": 3, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 4, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 5, "raw": "SINGLE* 1-5 / lineout (1b) 6-20", "outcomes": [ { "range": [1,5], "result": "SINGLE*" }, { "range": [6,20], "result": "lineout (1b)" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "flyball (lf) B", "outcomes": [ { "range": null, "result": "flyball (lf) B" } ] },
+          { "roll": 11, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 12, "raw": "strikeout plus injury", "outcomes": [ { "range": null, "result": "strikeout plus injury" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 2003,
+    "stats": { "AVG": ".281", "AB": 481, "2B": 24, "3B": 0, "HR": 30, "RBI": 101, "BB": 93, "SO": 110, "SB": 2, "CS": 4, "SLG%": ".518", "ON BASE%": ".405" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted (rotated 270) copy of the rotated_ccw original; verified header and column-2 mid-rolls from full-res crops. Posada is a switch hitter (bats S). Col1 roll2 and col3 roll12 carry verbose instruction-style results ('lineout (2b) into as many outs as possible', 'strikeout plus injury') captured verbatim. Col2 roll9 prints 'HOMERUN 1-16 / DOUBLE 17-20'; roll10 'DOUBLE** 1-17 / SINGLE** 18-20'; col3 roll5 'SINGLE* 1-5 / lineout (1b) 6-20'."
+  }
+}

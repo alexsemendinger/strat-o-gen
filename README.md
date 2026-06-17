@@ -77,17 +77,24 @@ formula predicts 46.8.
 
 ## How we know the cards are good
 
-`data/real_cards/` contains 14 transcribed official cards (10 batters, 4
-pitchers). The test suite computes each card's **exact** expected outcome
-rates (no simulation noise — the dice probabilities are summed in closed
-form) against a league-average opponent and compares them to the player's
-actual season line:
+`data/real_cards/` contains transcribed real cards used as ground truth:
+14 in a plain-text format (`*.txt`) and 25 more in a richer JSON format
+(`transcriptions/`, capturing both the basic and advanced/platoon sides plus
+situational symbols — see that directory's README and SYMBOLS.md). The test
+suite computes each card's **exact** expected outcome rates (no simulation
+noise — the dice probabilities are summed in closed form) against a
+league-average opponent and compares them to the player's actual season line:
 
-- Real official cards land within **0.003–0.009 of the season batting
+- Real official cards land within **~0.003–0.009 of the season batting
   average** (their own d20 granularity and clamping cost them the rest).
+  Extreme seasons cost more: the real Aaron Judge 2024 card can't fit both
+  his home runs and his walks in 108 chances, so it trades away HR — a
+  limitation generated cards share.
 - Generated cards must match or beat the real card's error **on every
   category of every benchmark case** — `tests/test_benchmark.py` enforces
   this, and currently generated cards do at least as well across the board.
+- A few unofficial cards (made by a league player, not Strat-O-Matic) are
+  included but tested *tolerantly*: a failure only they exhibit is allowed.
 
 Run the suite:
 ```bash
@@ -154,6 +161,7 @@ generate_card.py        Command-line interface
 stratogen/
   model.py              Card data model, chance accounting, validation
   card_text.py          Parser/serializer for the plain-text card format
+  card_json.py          Loader for the JSON transcriptions (both sides)
   lahman.py             Offline stats + league averages (1871-2025)
   simulate.py           Statistical tester (exact expected rates + Monte Carlo)
   generate.py           Chance targets, clamping/redistribution, card layout
@@ -164,7 +172,9 @@ stratogen/
   render.py             HTML card rendering
 data/
   lahman/               Bundled Lahman database (gzipped CSVs)
-  real_cards/           Transcribed official cards = ground truth fixtures
+  real_cards/           Transcribed real cards = ground truth fixtures
+    *.txt               14 cards in the plain-text format
+    transcriptions/     25 more in JSON (basic + advanced sides, symbols)
 tests/                  pytest suite (parser, data, benchmark, app smoke)
 ```
 

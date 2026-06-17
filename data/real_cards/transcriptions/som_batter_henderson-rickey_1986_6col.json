@@ -1,0 +1,128 @@
+{
+  "cardId": "batter_henderson-rickey_1986",
+  "sourceImage": "som_batter_henderson-rickey_1986_6col.jpg",
+  "cardType": "batter",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Rickey Henderson",
+    "bats": "R",
+    "throws": null,
+    "team": null,
+    "year": null,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "cf", "rating": 1, "arm": "+2", "error": "e7" },
+      { "pos": "lf", "rating": 1, "error": "e7" }
+    ],
+    "stealing": "AA",
+    "bunting": "D",
+    "hitAndRun": "C",
+    "running": "1-17",
+    "power": { "vsL": "N", "vsR": "N" },
+    "notes": "Header reads: 'R | RICKEY HENDERSON   cf-1(+2) e7 / lf-1 e7   stealing- AA   bunting- D   hit & run- C   running 1-17'. Leading 'R' = bats right. Two fielding positions: cf-1 with arm (+2) e7, and lf-1 e7. Left grid banner: '32% AGAINST LEFT-HAND PITCHER' with 'Power-N'. Right grid banner: '68% AGAINST RIGHT-HAND PITCHER' with 'Power-N'. No stealing-detail line is printed on this card. Advanced side carries no year/team (those are on the basic side; cardId links the two)."
+  },
+  "grids": [
+    {
+      "vs": "LHP",
+      "percent": 32,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "HBP", "outcomes": [ { "range": null, "result": "HBP" } ] },
+          { "roll": 3, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 4, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "gb (ss) A", "outcomes": [ { "range": null, "result": "gb (ss) A" } ] },
+          { "roll": 9, "raw": "DOUBLE(cf)", "outcomes": [ { "range": null, "result": "DOUBLE(cf)" } ] },
+          { "roll": 10, "raw": "fly (cf) B ?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (cf) B ?" } ] },
+          { "roll": 11, "raw": "◆11-fly (lf) B ?", "markers": ["diamond", "questionMark"], "outcomes": [ { "range": null, "result": "fly (lf) B ?" } ] },
+          { "roll": 12, "raw": "◆12-HR 1-12 / fly(lf)B 13-20", "markers": ["diamond"], "outcomes": [ { "range": [1,12], "result": "HR" }, { "range": [13,20], "result": "fly(lf)B" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "◆2-HOMERUN", "markers": ["diamond"], "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 3, "raw": "▼3-SINGLE (lf)", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "SINGLE (lf)" } ] },
+          { "roll": 4, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "gb (ss) A", "outcomes": [ { "range": null, "result": "gb (ss) A" } ] },
+          { "roll": 7, "raw": "SI* 1-2 / lo(ss) 3-20", "outcomes": [ { "range": [1,2], "result": "SI*" }, { "range": [3,20], "result": "lo(ss)" } ] },
+          { "roll": 8, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 9, "raw": "gb (ss) A+", "outcomes": [ { "range": null, "result": "gb (ss) A+" } ] },
+          { "roll": 10, "raw": "gb (3b) A", "outcomes": [ { "range": null, "result": "gb (3b) A" } ] },
+          { "roll": 11, "raw": "fly (rf) B ?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (rf) B ?" } ] },
+          { "roll": 12, "raw": "DO 1 / fly(cf)B 2-20", "outcomes": [ { "range": [1,1], "result": "DO" }, { "range": [2,20], "result": "fly(cf)B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "Ω2-SINGLE (rf)", "markers": ["omega"], "outcomes": [ { "range": null, "result": "SINGLE (rf)" } ] },
+          { "roll": 3, "raw": "gb (ss) B+", "outcomes": [ { "range": null, "result": "gb (ss) B+" } ] },
+          { "roll": 4, "raw": "▼4-gb (ss) B", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 5, "raw": "HR 1-14 / TR 15-20", "outcomes": [ { "range": [1,14], "result": "HR" }, { "range": [15,20], "result": "TR" } ] },
+          { "roll": 6, "raw": "TR 1-4 / fly(lf)B 5-20", "outcomes": [ { "range": [1,4], "result": "TR" }, { "range": [5,20], "result": "fly(lf)B" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "△10-fly (cf) B ?   SI* 1 / lo(ss) 2-20", "markers": ["upTriangle", "questionMark"], "outcomes": [ { "range": null, "result": "fly (cf) B ?" }, { "range": [1,1], "result": "SI*" }, { "range": [2,20], "result": "lo(ss)" } ] },
+          { "roll": 11, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 12, "raw": "lo(3b) max plus injury", "outcomes": [ { "range": null, "result": "lo(3b) max plus injury" } ] }
+        ] }
+      ]
+    },
+    {
+      "vs": "RHP",
+      "percent": 68,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "fly (lf) B ?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (lf) B ?" } ] },
+          { "roll": 3, "raw": "lineout (1b)", "outcomes": [ { "range": null, "result": "lineout (1b)" } ] },
+          { "roll": 4, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "fly (cf) B ?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (cf) B ?" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "gb (ss) A", "outcomes": [ { "range": null, "result": "gb (ss) A" } ] },
+          { "roll": 9, "raw": "Ω9-SINGLE (lf)", "markers": ["omega"], "outcomes": [ { "range": null, "result": "SINGLE (lf)" } ] },
+          { "roll": 10, "raw": "△10-fly (lf) B ?   SI* 1-10 / lo(ss) 11-20", "markers": ["upTriangle", "questionMark"], "outcomes": [ { "range": null, "result": "fly (lf) B ?" }, { "range": [1,10], "result": "SI*" }, { "range": [11,20], "result": "lo(ss)" } ] },
+          { "roll": 11, "raw": "◆11-HOMERUN", "markers": ["diamond"], "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 12, "raw": "◆12-HR 1-10 / fly(lf)B 11-20", "markers": ["diamond"], "outcomes": [ { "range": [1,10], "result": "HR" }, { "range": [11,20], "result": "fly(lf)B" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "▼3-SINGLE (cf)", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "SINGLE (cf)" } ] },
+          { "roll": 4, "raw": "fly (rf) B ?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (rf) B ?" } ] },
+          { "roll": 5, "raw": "gb (ss) A+", "outcomes": [ { "range": null, "result": "gb (ss) A+" } ] },
+          { "roll": 6, "raw": "gb (ss) A", "outcomes": [ { "range": null, "result": "gb (ss) A" } ] },
+          { "roll": 7, "raw": "Ω7-SINGLE (rf)", "markers": ["omega"], "outcomes": [ { "range": null, "result": "SINGLE (rf)" } ] },
+          { "roll": 8, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 9, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 10, "raw": "gb (3b) A", "outcomes": [ { "range": null, "result": "gb (3b) A" } ] },
+          { "roll": 11, "raw": "Ω11-SINGLE**", "markers": ["omega"], "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 12, "raw": "lo(3b) max plus injury", "outcomes": [ { "range": null, "result": "lo(3b) max plus injury" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "HBP", "outcomes": [ { "range": null, "result": "HBP" } ] },
+          { "roll": 3, "raw": "gb (ss) B+", "outcomes": [ { "range": null, "result": "gb (ss) B+" } ] },
+          { "roll": 4, "raw": "▼4-gb (ss) B", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 5, "raw": "HR 1-18 / TR 19-20", "outcomes": [ { "range": [1,18], "result": "HR" }, { "range": [19,20], "result": "TR" } ] },
+          { "roll": 6, "raw": "DO** 1-19 / SI** 20", "outcomes": [ { "range": [1,19], "result": "DO**" }, { "range": [20,20], "result": "SI**" } ] },
+          { "roll": 7, "raw": "SI* 1-4 / lo(ss) 5-20", "outcomes": [ { "range": [1,4], "result": "SI*" }, { "range": [5,20], "result": "lo(ss)" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "◆10-fly (lf) B ?", "markers": ["diamond", "questionMark"], "outcomes": [ { "range": null, "result": "fly (lf) B ?" } ] },
+          { "roll": 11, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 12, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": ["LHP.col3.roll10", "RHP.col1.roll10"],
+    "notes": "Read from an uprighted copy (sips rotate 180) of the upside_down original, then full-res left/right and per-column crops; this card is printed in blue ink. Markers captured: diamond ◆ (LHP col1 r11/r12, col2 r2; RHP col1 r11/r12, col3 r10), downTriangle ▼ (LHP col2 r3; RHP col2 r3, col3 r4) and (LHP col3 r4), upTriangle △ (LHP col3 r10, RHP col1 r10), omega Ω (LHP col3 r2; RHP col1 r9, col2 r7/r11). '?' captured as questionMark; printed with a space (e.g. 'fly (lf) B ?') — preserved in raw. UNCERTAIN: LHP col3 r10 and RHP col1 r10 each print a triangle-marked primary 'fly (..) B ?' with an italic split line beneath ('SI* / lo(ss)'); the roll-binding of that split is ambiguous (same pattern flagged in the Pipp gold example) — both lines captured verbatim in raw and all three sub-results listed in outcomes. 'plus injury' on LHP col3 r12 and RHP col2 r12 captured verbatim. Header e-ratings are 'e7' for both cf and lf; cf carries an arm rating (+2)."
+  }
+}

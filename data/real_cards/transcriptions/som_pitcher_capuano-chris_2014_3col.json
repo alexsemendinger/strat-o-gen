@@ -1,0 +1,83 @@
+{
+  "cardId": "pitcher_capuano-chris_2014",
+  "sourceImage": "som_pitcher_capuano-chris_2014_3col.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Chris Capuano",
+    "throws": null,
+    "bats": null,
+    "team": "New York (AL)",
+    "year": 2014,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "starter": null, "relief": null },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": "batting # 1",
+    "hold": null,
+    "wildPitch": null,
+    "balk": null,
+    "bunting": null,
+    "notes": "Header reads: 'CHRIS CAPUANO   pitcher-2   batting # 1   starter relief' and 'PITCHING CARD   NEW YORK (AL)'. 'pitcher-2' is the pitcher's fielding rating; 'batting # 1' is his batting/bunting designation; 'starter' and 'relief' both print as the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 3, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] },
+          { "roll": 4, "raw": "flyball (cf)C", "outcomes": [ { "range": null, "result": "flyball (cf)C" } ] },
+          { "roll": 5, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "GROUND-BALL(2b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b)X" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-13 / DOUBLE 14-20", "outcomes": [ { "range": [1,13], "result": "HOMERUN" }, { "range": [14,20], "result": "DOUBLE" } ] },
+          { "roll": 10, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 3, "raw": "GROUND-BALL(p)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(p)X" } ] },
+          { "roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "TRIPLE 1-5 / DOUBLE 6-20", "outcomes": [ { "range": [1,5], "result": "TRIPLE" }, { "range": [6,20], "result": "DOUBLE" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 11, "raw": "GROUND-BALL(1b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(1b)X" } ] },
+          { "roll": 12, "raw": "flyball (cf)C", "outcomes": [ { "range": null, "result": "flyball (cf)C" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 3, "raw": "FLYBALL (lf)X", "outcomes": [ { "range": null, "result": "FLYBALL (lf)X" } ] },
+          { "roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(3b)X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "SINGLE* 1-9 / lineout (ss) 10-20", "outcomes": [ { "range": [1,9], "result": "SINGLE*" }, { "range": [10,20], "result": "lineout (ss)" } ] },
+          { "roll": 7, "raw": "DOUBLE** 1-4 / SINGLE** 5-20", "outcomes": [ { "range": [1,4], "result": "DOUBLE**" }, { "range": [5,20], "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 9, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 10, "raw": "FLYBALL(cf)X", "outcomes": [ { "range": null, "result": "FLYBALL(cf)X" } ] },
+          { "roll": 11, "raw": "FLYBALL(rf)X", "outcomes": [ { "range": null, "result": "FLYBALL(rf)X" } ] },
+          { "roll": 12, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2014,
+    "stats": { "W": 3, "L": 4, "ERA": "4.35", "STARTS": 12, "SAVES": 0, "IP": 97, "HITS ALLOWED": 101, "BB": 34, "SO": 84, "HOMERUNS ALLOWED": 10 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted (270deg) copy of the rotated_cw original; grayscale/B&W printed card, crisp and fully legible. Basic side uses full-word vocabulary. Spacing is verbatim: lowercase results print with a space before the fielder ('flyball (lf)B'), CAPITAL ground/flyballs without ('GROUND-BALL(3b)X'). col6 roll6 and roll7 carry 20-sided splits."
+  }
+}
