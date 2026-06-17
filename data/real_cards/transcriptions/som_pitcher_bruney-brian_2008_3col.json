@@ -1,0 +1,83 @@
+{
+  "cardId": "pitcher_bruney-brian_2008",
+  "sourceImage": "som_pitcher_bruney-brian_2008_3col.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Brian Bruney",
+    "throws": null,
+    "bats": null,
+    "team": "New York (AL)",
+    "year": 2008,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "relief": null },
+    "pitcherFielding": "pitcher-3",
+    "battingNumber": "batting # 1",
+    "hold": null,
+    "wildPitch": null,
+    "balk": null,
+    "bunting": null,
+    "notes": "Header reads: 'BRIAN BRUNEY   pitcher-3   batting # 1   relief' and 'PITCHING CARD   NEW YORK (AL)'. 'pitcher-3' is the pitcher's fielding rating; 'batting # 1' is his batting/bunting designation; 'relief' is the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "flyball (lf)C", "outcomes": [ { "range": null, "result": "flyball (lf)C" } ] },
+          { "roll": 3, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] },
+          { "roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(3b)X" } ] },
+          { "roll": 5, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 6, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 7, "raw": "GROUND-BALL(2b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b)X" } ] },
+          { "roll": 8, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 11, "raw": "FLYBALL(rf)X", "outcomes": [ { "range": null, "result": "FLYBALL(rf)X" } ] },
+          { "roll": 12, "raw": "flyball (lf)C", "outcomes": [ { "range": null, "result": "flyball (lf)C" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "flyball (lf)C", "outcomes": [ { "range": null, "result": "flyball (lf)C" } ] },
+          { "roll": 3, "raw": "FLYBALL (lf)X", "outcomes": [ { "range": null, "result": "FLYBALL (lf)X" } ] },
+          { "roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 11, "raw": "GROUND-BALL(1b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(1b)X" } ] },
+          { "roll": 12, "raw": "flyball (lf)C", "outcomes": [ { "range": null, "result": "flyball (lf)C" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 3, "raw": "GROUND-BALL(p)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(p)X" } ] },
+          { "roll": 4, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 5, "raw": "HOMERUN 1-2 / flyball (lf)B 3-20", "outcomes": [ { "range": [1,2], "result": "HOMERUN" }, { "range": [3,20], "result": "flyball (lf)B" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "FLYBALL(cf)X", "outcomes": [ { "range": null, "result": "FLYBALL(cf)X" } ] },
+          { "roll": 11, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 12, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2008,
+    "stats": { "W": 3, "L": 0, "ERA": "1.83", "STARTS": 1, "SAVES": 1, "IP": 34, "HITS ALLOWED": 18, "BB": 16, "SO": 33, "HOMERUNS ALLOWED": 2 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted (270deg) copy of the rotated_ccw original; image is crisp and fully legible. Basic side uses full-word vocabulary (flyball/FLYBALL, groundball/GROUND-BALL, CATCHER'S CARD X, HOMERUN). Spacing between play word and fielder is verbatim: lowercase results print with a space before the fielder (e.g. 'flyball (lf)C'), CAPITAL results print without a space (e.g. 'GROUND-BALL(3b)X')."
+  }
+}

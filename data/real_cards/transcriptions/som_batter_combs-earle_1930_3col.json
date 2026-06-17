@@ -1,0 +1,83 @@
+{
+  "cardId": "batter_combs-earle_1930",
+  "sourceImage": "som_batter_combs-earle_1930_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Earle Combs",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 1930,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "lf", "rating": 2, "error": null },
+      { "pos": "rf", "rating": 2, "error": null },
+      { "pos": "cf", "rating": 3, "error": null }
+    ],
+    "stealing": "B",
+    "running": "1-16",
+    "notes": "Header reads: 'EARLE COMBS   leftfield-2   rightfield-2   centerfield-3   stealing-B   running 1-16' and 'NEW YORK YANKEES'."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "foulout (c) plus injury", "outcomes": [ { "range": null, "result": "foulout (c) plus injury" } ] },
+          { "roll": 3, "raw": "DOUBLE", "outcomes": [ { "range": null, "result": "DOUBLE" } ] },
+          { "roll": 4, "raw": "DOUBLE** 1-18 / SINGLE** 19-20", "outcomes": [ { "range": [1,18], "result": "DOUBLE**" }, { "range": [19,20], "result": "SINGLE**" } ] },
+          { "roll": 5, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 6, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 7, "raw": "HOMERUN 1-3 / flyball (rf) B 4-20", "outcomes": [ { "range": [1,3], "result": "HOMERUN" }, { "range": [4,20], "result": "flyball (rf) B" } ] },
+          { "roll": 8, "raw": "groundball (1b) B", "outcomes": [ { "range": null, "result": "groundball (1b) B" } ] },
+          { "roll": 9, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 10, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 11, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 12, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "lineout (1b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (1b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 4, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 5, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 6, "raw": "TRIPLE 1 / SINGLE** 2-20", "outcomes": [ { "range": [1,1], "result": "TRIPLE" }, { "range": [2,20], "result": "SINGLE**" } ] },
+          { "roll": 7, "raw": "TRIPLE", "outcomes": [ { "range": null, "result": "TRIPLE" } ] },
+          { "roll": 8, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 9, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 10, "raw": "groundball (p) A", "outcomes": [ { "range": null, "result": "groundball (p) A" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "groundball (1b) B", "outcomes": [ { "range": null, "result": "groundball (1b) B" } ] },
+          { "roll": 3, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 4, "raw": "groundball (1b) A", "outcomes": [ { "range": null, "result": "groundball (1b) A" } ] },
+          { "roll": 5, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "SINGLE* 1-12 / lineout (2b) 13-20", "outcomes": [ { "range": [1,12], "result": "SINGLE*" }, { "range": [13,20], "result": "lineout (2b)" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 11, "raw": "groundball (2b) A", "outcomes": [ { "range": null, "result": "groundball (2b) A" } ] },
+          { "roll": 12, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1930,
+    "stats": { "AT BATS": 532, "DOUBLES": 30, "TRIPLES": 22, "HOMERUNS": 7, "AVERAGE": ".344", "WALKS": 74, "STRIKEOUTS": 26 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from a rotated-upright copy (original orientationHint upside_down; rotated 90 to bring text horizontal) plus full-res column crops. Col1 roll2 and col3-style verbose results captured verbatim. 1930 BATTING RECORD box lists only the seven stats shown (AT BATS, DOUBLES, TRIPLES, HOMERUNS, AVERAGE, WALKS, STRIKEOUTS)."
+  }
+}

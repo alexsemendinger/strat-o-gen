@@ -1,0 +1,86 @@
+{
+  "cardId": "batter_linz-phil_1963",
+  "sourceImage": "som_batter_linz-phil_1963_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Phil Linz",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 1963,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "shortstop", "rating": 3, "error": null },
+      { "pos": "3rd base", "rating": 3, "error": null },
+      { "pos": "2nd base", "rating": 3, "error": null },
+      { "pos": "centerfield", "rating": 4, "error": null },
+      { "pos": "rightfield", "rating": 4, "error": null },
+      { "pos": "leftfield", "rating": 4, "error": null }
+    ],
+    "stealing": "D",
+    "running": "1-14",
+    "notes": "Header reads: 'PHIL LINZ' / 'NEW YORK(AL)' with positions 'shortstop-3   3rd base-3   2nd base-3   centerfield-4   rightfield-4   leftfield-4' and 'stealing-D   running 1-14'."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 5, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "DOUBLE", "outcomes": [ { "range": null, "result": "DOUBLE" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "lineout (3b)", "outcomes": [ { "range": null, "result": "lineout (3b)" } ] },
+          { "roll": 9, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 10, "raw": "DOUBLE** 1-2 / SINGLE** 3-20", "outcomes": [ { "range": [1,2], "result": "DOUBLE**" }, { "range": [3,20], "result": "SINGLE**" } ] },
+          { "roll": 11, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 12, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "lineout (3b) plus injury", "outcomes": [ { "range": null, "result": "lineout (3b) plus injury" } ] },
+          { "roll": 3, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 4, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 5, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-11 / lineout (3b) 12-20", "outcomes": [ { "range": [1,11], "result": "SINGLE*" }, { "range": [12,20], "result": "lineout (3b)" } ] },
+          { "roll": 8, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 9, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 10, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 11, "raw": "groundball (2b)B", "outcomes": [ { "range": null, "result": "groundball (2b)B" } ] },
+          { "roll": 12, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 3, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 4, "raw": "groundball (p)A", "outcomes": [ { "range": null, "result": "groundball (p)A" } ] },
+          { "roll": 5, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 6, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 7, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 8, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 9, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 10, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 11, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 12, "raw": "lineout (ss) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (ss) into as many outs as possible" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1963,
+    "stats": { "AVG": ".269", "AB": 186, "2B": 9, "3B": 0, "HR": 6, "RBI": 12, "BB": 15, "SO": 18, "SB": 1, "CS": 6, "SLG%": ".349", "ON BASE%": ".330" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Original was rotated_cw; uprighted (rotated 90 then 180) before reading. Header and all three columns verified from full-res crops. Col1 roll10 'DOUBLE** 1-2 / SINGLE** 3-20'; col2 roll7 'SINGLE* 1-11 / lineout (3b) 12-20'. Col2 roll2 'lineout (3b) plus injury' and col3 roll12 'lineout (ss) into as many outs as possible' captured verbatim. Fielding class letters print adjacent to the parenthesized fielder with no space (e.g. '(ss)A', '(3b)A', '(2b)B') as on the card."
+  }
+}

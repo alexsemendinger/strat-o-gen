@@ -1,0 +1,78 @@
+{
+  "cardId": "batter_pipp-wally_1921",
+  "sourceImage": "som_batter_pipp-wally_1921_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "player": {
+    "name": "Wally Pipp",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 1921,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "1b", "rating": 2, "error": null } ],
+    "stealing": "B",
+    "running": "1-12",
+    "notes": "Header reads: 'WALLY PIPP   1st base-2   stealing-B   running 1-12' and '1921 NEW YORK (AL)'. The basic side lists only the primary fielding position (1st base-2); the advanced side lists more detail (1b-2 e16)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 4, "raw": "lineout (1b)", "outcomes": [ { "range": null, "result": "lineout (1b)" } ] },
+          { "roll": 5, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 6, "raw": "HOMERUN 1-7 / DOUBLE 8-20", "outcomes": [ { "range": [1,7], "result": "HOMERUN" }, { "range": [8,20], "result": "DOUBLE" } ] },
+          { "roll": 7, "raw": "DOUBLE** 1-5 / SINGLE** 6-20", "outcomes": [ { "range": [1,5], "result": "DOUBLE**" }, { "range": [6,20], "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 9, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 10, "raw": "TRIPLE 1-9 / DOUBLE 10-20", "outcomes": [ { "range": [1,9], "result": "TRIPLE" }, { "range": [10,20], "result": "DOUBLE" } ] },
+          { "roll": 11, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 12, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] },
+          { "roll": 3, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 4, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 5, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 6, "raw": "SINGLE* 1 / lineout (2b) 2-20", "outcomes": [ { "range": [1,1], "result": "SINGLE*" }, { "range": [2,20], "result": "lineout (2b)" } ] },
+          { "roll": 7, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 8, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 9, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 10, "raw": "groundball (1b) B", "outcomes": [ { "range": null, "result": "groundball (1b) B" } ] },
+          { "roll": 11, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 12, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "lineout (1b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (1b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 4, "raw": "groundball (p) A", "outcomes": [ { "range": null, "result": "groundball (p) A" } ] },
+          { "roll": 5, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "groundball (1b) A", "outcomes": [ { "range": null, "result": "groundball (1b) A" } ] },
+          { "roll": 8, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 9, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 10, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 11, "raw": "groundball (2b) A", "outcomes": [ { "range": null, "result": "groundball (2b) A" } ] },
+          { "roll": 12, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1921,
+    "stats": { "AVG": ".296", "AB": 588, "2B": 35, "3B": 9, "HR": 8, "RBI": 103, "BB": 45, "SO": 28, "SB": 17, "CS": 10, "SLG%": ".427", "ON BASE%": ".347" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy of the rotated original. Col 3 roll 2 prints a verbose instruction-style result ('lineout (1b) into as many outs as possible') — captured verbatim."
+  }
+}

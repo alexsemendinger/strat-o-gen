@@ -1,0 +1,83 @@
+{
+  "cardId": "pitcher_monroe-zach_1958",
+  "sourceImage": "som_pitcher_monroe-zach_1958_3col.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Zach Monroe",
+    "throws": null,
+    "bats": null,
+    "team": "New York",
+    "year": 1958,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "relief": true, "starter": true },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": "batting # 1",
+    "hold": null,
+    "wildPitch": null,
+    "balk": null,
+    "bunting": null,
+    "notes": "Header reads: 'ZACH MONROE   pitcher-2   batting # 1   relief  starter' and 'PITCHING CARD   NEW YORK'. 'relief' is printed underlined (above 'starter'); both role labels appear with no numeric rating. 'pitcher-2' is the pitcher's fielding rating; 'batting # 1' is the batting/bunting designation."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] },
+          { "roll": 3, "raw": "GROUND-BALL(1b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(1b)X" } ] },
+          { "roll": 4, "raw": "FLYBALL (cf)X", "outcomes": [ { "range": null, "result": "FLYBALL (cf)X" } ] },
+          { "roll": 5, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-8 / lineout (ss) 9-20", "outcomes": [ { "range": [1,8], "result": "SINGLE*" }, { "range": [9,20], "result": "lineout (ss)" } ] },
+          { "roll": 8, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 9, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 10, "raw": "GROUND-BALL(3b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(3b)X" } ] },
+          { "roll": 11, "raw": "GROUND-BALL(p)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(p)X" } ] },
+          { "roll": 12, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 4, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 5, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 6, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "HOMERUN 1-3 / flyball (lf)B 4-20", "outcomes": [ { "range": [1,3], "result": "HOMERUN" }, { "range": [4,20], "result": "flyball (lf)B" } ] },
+          { "roll": 9, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 10, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 3, "raw": "FLYBALL (rf)X", "outcomes": [ { "range": null, "result": "FLYBALL (rf)X" } ] },
+          { "roll": 4, "raw": "lineout (ss)", "outcomes": [ { "range": null, "result": "lineout (ss)" } ] },
+          { "roll": 5, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 6, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 7, "raw": "GROUND-BALL(2b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b)X" } ] },
+          { "roll": 8, "raw": "TRIPLE 1-4 / SINGLE** 5-20", "outcomes": [ { "range": [1,4], "result": "TRIPLE" }, { "range": [5,20], "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "flyball (lf)C", "outcomes": [ { "range": null, "result": "flyball (lf)C" } ] },
+          { "roll": 10, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 11, "raw": "FLYBALL (lf)X", "outcomes": [ { "range": null, "result": "FLYBALL (lf)X" } ] },
+          { "roll": 12, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 1958,
+    "stats": { "W": 4, "L": 2, "ERA": "3.26", "STARTS": 6, "SAVES": 1, "IP": 58, "HITS ALLOWED": 57, "BB": 27, "SO": 18, "HOMERUNS ALLOWED": 8 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy of the rotated_cw original (rotated 270, which produced upright). Basic-side full-word vocabulary. Team prints as 'NEW YORK' (no league suffix) on this 1958 card. Header role labels 'relief' (underlined) and 'starter' carry no numeric ratings."
+  }
+}

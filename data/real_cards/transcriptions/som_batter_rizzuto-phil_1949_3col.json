@@ -1,0 +1,79 @@
+{
+  "cardId": "batter_rizzuto-phil_1949",
+  "sourceImage": "som_batter_rizzuto-phil_1949_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Phil Rizzuto",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 1949,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "ss", "rating": 2, "error": null } ],
+    "stealing": "B",
+    "running": "1-17",
+    "notes": "Header reads: 'PHIL RIZZUTO   shortstop-2   stealing-B   running 1-17' and 'NEW YORK (AL)'. The basic side lists only the primary fielding position (shortstop-2)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "groundball (p)A", "outcomes": [ { "range": null, "result": "groundball (p)A" } ] },
+          { "roll": 3, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 4, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 5, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-12 / lineout (3b) 13-20", "outcomes": [ { "range": [1,12], "result": "SINGLE*" }, { "range": [13,20], "result": "lineout (3b)" } ] },
+          { "roll": 8, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 9, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 10, "raw": "lineout (3b)", "outcomes": [ { "range": null, "result": "lineout (3b)" } ] },
+          { "roll": 11, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 12, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "lineout (ss) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (ss) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (2b)B", "outcomes": [ { "range": null, "result": "groundball (2b)B" } ] },
+          { "roll": 4, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 5, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 8, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 9, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 10, "raw": "lineout (ss)", "outcomes": [ { "range": null, "result": "lineout (ss)" } ] },
+          { "roll": 11, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 12, "raw": "strikeout plus injury", "outcomes": [ { "range": null, "result": "strikeout plus injury" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 4, "raw": "lineout (3b)", "outcomes": [ { "range": null, "result": "lineout (3b)" } ] },
+          { "roll": 5, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 6, "raw": "TRIPLE 1-5 / SINGLE** 6-20", "outcomes": [ { "range": [1,5], "result": "TRIPLE" }, { "range": [6,20], "result": "SINGLE**" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 9, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 10, "raw": "DOUBLE** 1-16 / SINGLE** 17-20", "outcomes": [ { "range": [1,16], "result": "DOUBLE**" }, { "range": [17,20], "result": "SINGLE**" } ] },
+          { "roll": 11, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 12, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1949,
+    "stats": { "AVG": ".275", "AB": 614, "2B": 22, "3B": 7, "HR": 5, "RBI": 65, "BB": 72, "SO": 34, "SB": 18, "CS": 6, "SLG%": ".358", "ON BASE%": ".352" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy (sips rotate 270 then 180) of the rotated_cw original, plus full-res column crops. Col 1 roll 7 and col 3 rolls 6 & 10 carry 20-sided splits. Col 2 roll 2 prints a verbose instruction result ('lineout (ss) into as many outs as possible'); col 2 roll 12 'strikeout plus injury' — both captured verbatim. Fielding-class letters are printed flush against the fielder parens (e.g. '(p)A', '(ss)A++') — preserved verbatim in raw."
+  }
+}

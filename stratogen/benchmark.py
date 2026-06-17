@@ -15,6 +15,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .card_text import load_real_cards
+from .card_json import (
+    Transcription, basic_card, combined_chances, load_transcriptions,
+)
 from .generate import average_batter_chances, average_pitcher_chances
 from .lahman import LahmanDB, default_db
 from .model import Card
@@ -73,6 +76,66 @@ def benchmark_cases(db: LahmanDB | None = None) -> list[BenchmarkCase]:
         cases.append(BenchmarkCase(
             stem=stem, card=card, actual_stats=stats,
             league=db.league_batting(stats["year"], stats["league"])))
+    return cases
+
+
+@dataclass
+class TranscriptionCase:
+    """A JSON-transcribed card scored against its real Lahman season.
+
+    `reps` maps representation name -> scoreable target: "basic" -> the
+    3col-side Card; "advanced" -> the percentage-weighted platoon chances
+    dict. A card may have one or both.
+    """
+    card_id: str
+    transcription: Transcription
+    actual_stats: dict
+    league: dict
+    reps: dict
+    official: bool
+
+    @property
+    def card_type(self) -> str:
+        return self.transcription.card_type
+
+
+def transcription_cases(db: LahmanDB | None = None) -> list[TranscriptionCase]:
+    """Build scoreable cases from the JSON transcriptions.
+
+    Only cards that resolve to a real (player, year) in Lahman get a case
+    (HOF/undated cards have no single-season context for league averages —
+    they are still parsed and structurally validated elsewhere).
+    """
+    db = db or default_db()
+    cases = []
+    for card_id, card in sorted(load_transcriptions().items()):
+        if card.year is None:
+            continue
+        getter = (db.pitching_season if card.card_type == "pitcher"
+                  else db.batting_season)
+        pid = None
+        for hit in db.search_players(card.name):
+            years = (hit.pitching_years if card.card_type == "pitcher"
+                     else hit.batting_years)
+            if card.year in years:
+                pid = hit.player_id
+                break
+        if pid is None:
+            continue
+        stats = getter(pid, card.year)
+        reps = {}
+        bc = basic_card(card)
+        if bc is not None:
+            reps["basic"] = bc
+        cc = combined_chances(card)
+        if cc is not None:
+            reps["advanced"] = cc
+        if not reps:
+            continue
+        cases.append(TranscriptionCase(
+            card_id=card_id, transcription=card, actual_stats=stats,
+            league=db.league_batting(stats["year"], stats["league"]),
+            reps=reps, official=card.official))
     return cases
 
 
