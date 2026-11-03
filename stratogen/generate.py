@@ -664,19 +664,28 @@ _DEFAULT_PROFILE = {"single_2star": 0.30, "single_star": 0.17,
                     "double_2star": 0.32, "gb_a": 0.70, "plus_plus": 1}
 
 
+# Shares of the */** hit variants: the means of the official basic batter
+# cards in data/real_cards (SINGLE** .325, SINGLE* .186, DOUBLE** .386 of
+# single/double chances). Isolated power used to set them, but on the real
+# cards it predicts worse than these constants and with the wrong sign
+# (corr(ISO, share) -0.20 / -0.12 / -0.41; Judge 2024, ISO .379, prints
+# SINGLE** on .11 of his singles), and running speed doesn't predict them
+# either, so every batter gets the real-card mean.
+SINGLE_2STAR_SHARE = 0.33
+SINGLE_STAR_SHARE = 0.19
+DOUBLE_2STAR_SHARE = 0.39
+
+
 def hit_profile(stats: dict, pa: float | None = None) -> dict:
     """How this player's hits and outs should read, beyond raw frequencies.
 
     In play, ** means runners automatically advance two bases, * pins them
-    to one, and no asterisk allows a running gamble — so the mix matters.
-    Hard contact (isolated power) drives the ** share; soft contact drives
-    the * share; GIDP tendency drives the groundball-A (double play) share;
-    speed drives the count of ++ groundouts (which favor the offense when
-    the infield is in or a runner is held).
+    to one, and no asterisk allows a running gamble. The */** mix is the
+    real cards' mean (see SINGLE_2STAR_SHARE); GIDP tendency drives the
+    groundball-A (double play) share; speed drives the count of ++
+    groundouts (which favor the offense when the infield is in or a
+    runner is held).
     """
-    ab = stats.get("AB", 0) or 1
-    iso = (stats.get("2B", 0) + 2 * stats.get("3B", 0)
-           + 3 * stats.get("HR", 0)) / ab
     pa = pa or effective_pa(stats) or 1
 
     def clamp(v, lo, hi):
@@ -687,9 +696,9 @@ def hit_profile(stats: dict, pa: float | None = None) -> dict:
         gidp == 0 and "GIDP" not in stats)
     speed = ratings.running_rating(stats)  # 8 (slow) .. 17 (fast)
     return {
-        "single_2star": clamp(0.10 + 1.6 * iso, 0.10, 0.55),
-        "single_star": clamp(0.32 - 1.1 * iso, 0.05, 0.32),
-        "double_2star": clamp(0.15 + 1.2 * iso, 0.15, 0.55),
+        "single_2star": SINGLE_2STAR_SHARE,
+        "single_star": SINGLE_STAR_SHARE,
+        "double_2star": DOUBLE_2STAR_SHARE,
         "gb_a": _DEFAULT_PROFILE["gb_a"] if gidp_missing
                 else clamp(0.17 + 26.0 * gidp / pa, 0.15, 1.0),
         "plus_plus": 3 if speed >= 15 else (2 if speed >= 13 else 1),
@@ -862,11 +871,15 @@ class _OutFlavors:
 
 
 class _HitVariants:
-    """Player-aware */** mix on hit texts (see hit_profile).
+    """The */** mix on hit texts (see hit_profile).
 
-    Variants are allocated by largest-deficit quota over the chances
-    actually placed, so the card's realized mix matches the profile even
-    when a player has only a couple of single chances to spread around.
+    Variants are allocated by largest-deficit quota as each hit cell is
+    placed. Cells are whole (real cards never split a hit cell between
+    variants), so with only one to four cells per category the realized
+    mix can only approximate the profile: the first, largest cell goes to
+    the largest share (Mays 1965 prints DOUBLE** on .86 of his doubles
+    against a .54 share). An exact whole-cell assignment does no better
+    in practice, so the greedy stays.
     """
 
     def __init__(self, rng: random.Random, profile: dict,

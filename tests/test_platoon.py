@@ -532,14 +532,16 @@ def test_cli_advanced(capsys, monkeypatch):
 #   running miss (verified: targets and warnings identical; placed chances
 #   moved by at most 0.05 per category, Cobb BB 6.25->6.30, Judge SO
 #   29.55->29.60, Chapman SO 90.05->90.00; the rest is out texts and which
-#   cells hold the batters' hits).
+#   cells hold the batters' hits);
+# - batter */** shares became the real-card means (verified: only the */**
+#   suffixes of batter hit texts moved; pitchers identical).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
-    ("mayswi01", 1965, "batter", "8e94e36b0b4f32cd"),
-    ("gwynnto01", 1995, "batter", "6abbaccd7e9bf8b3"),
-    ("cobbty01", 1911, "batter", "68d6d5cddb717220"),
-    ("judgeaa01", 2024, "batter", "287e81667532739c"),
+    ("mayswi01", 1965, "batter", "57ea21c00a2ae4d7"),
+    ("gwynnto01", 1995, "batter", "085d9ced01c97b12"),
+    ("cobbty01", 1911, "batter", "30e107da6e1b1eeb"),
+    ("judgeaa01", 2024, "batter", "b2cf5d1f9112a36b"),
     ("ryanno01", 1974, "pitcher", "d4f287e1be21fe60"),
     ("maddugr01", 1995, "pitcher", "3b06621e6392c374"),
     ("chapmar01", 2014, "pitcher", "40d07c310a7e41ba"),

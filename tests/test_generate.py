@@ -5,7 +5,7 @@ import pytest
 from stratogen.generate import generate_batter_card, generate_pitcher_card
 from stratogen.benchmark import score_batter_card, score_pitcher_card
 from stratogen.lahman import default_db
-from stratogen.model import HR, SO, WALK
+from stratogen.model import DICE_WEIGHTS, HR, SO, WALK
 from stratogen.simulate import simulate_season, combined_rates, card_chances
 from stratogen.generate import average_pitcher_chances
 
@@ -118,13 +118,42 @@ def _card_for(pid, year):
     return card
 
 
-def test_hit_symbols_track_player_power():
-    """Hard contact (McGwire) earns more automatic-two-base ** singles;
-    soft contact (Vince Coleman) earns more one-base * singles."""
-    mcgwire = _card_for("mcgwima01", 1998)   # ISO ~.450
-    coleman = _card_for("colemvi01", 1987)   # ISO ~.070
-    assert _text_share(mcgwire, "SINGLE", "**") > _text_share(coleman, "SINGLE", "**")
-    assert _text_share(coleman, "SINGLE", "*") > _text_share(mcgwire, "SINGLE", "*")
+def test_hit_symbol_shares_are_the_real_card_means():
+    """The */** shares are the official basic batter cards' means (isolated
+    power, which used to set them, anti-correlates with the real shares),
+    recomputed here from the fixtures, chance-weighted within each card."""
+    import statistics
+    from stratogen.benchmark import transcription_cases
+    from stratogen.card_text import load_real_cards
+    from stratogen.generate import (DOUBLE_2STAR_SHARE, SINGLE_2STAR_SHARE,
+                                    SINGLE_STAR_SHARE)
+    cards = [c for stem, c in load_real_cards().items()
+             if c.card_type == "batter"
+             and stem not in ("posnanski_2014", "raines_hero")]
+    cards += [c.reps["basic"] for c in transcription_cases()
+              if c.card_type == "batter" and c.official and "basic" in c.reps]
+    shares = {"SINGLE**": [], "SINGLE*": [], "DOUBLE**": []}
+    for card in cards:
+        for base in ("SINGLE", "DOUBLE"):
+            parts = {}
+            for _c, d, s in card.iter_splits():
+                if s.text.startswith(base):
+                    suffix = s.text[len(base):].strip()
+                    parts[suffix] = parts.get(suffix, 0.0) + DICE_WEIGHTS[d] * s.fraction
+            total = sum(parts.values())
+            if not total:
+                continue
+            if base == "SINGLE":
+                shares["SINGLE**"].append(parts.get("**", 0.0) / total)
+                shares["SINGLE*"].append(parts.get("*", 0.0) / total)
+            else:
+                shares["DOUBLE**"].append(parts.get("**", 0.0) / total)
+    assert len(shares["SINGLE**"]) >= 19
+    for key, value in (("SINGLE**", SINGLE_2STAR_SHARE),
+                       ("SINGLE*", SINGLE_STAR_SHARE),
+                       ("DOUBLE**", DOUBLE_2STAR_SHARE)):
+        assert statistics.mean(shares[key]) == pytest.approx(value, abs=0.02), (
+            key, statistics.mean(shares[key]))
 
 
 def test_dp_letters_track_gidp_tendency():
