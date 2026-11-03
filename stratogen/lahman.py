@@ -40,6 +40,22 @@ _FIELDING_STATS = ["G", "GS", "InnOuts", "PO", "A", "E", "DP", "PB", "SB", "CS"]
 _BAT_IDX = {f: i for i, f in enumerate(_BATTING_FIELDS)}
 _PIT_IDX = {f: i for i, f in enumerate(_PITCHING_FIELDS)}
 
+# Handedness buckets for the league matchup accumulators. People.bats uses
+# 'B' (both) for switch hitters; we call them 'S'. Blank or odd values
+# (e.g. throws 'B'/'S' for the handful of ambidextrous pitchers) are
+# unknown and left out of the shares.
+_BAT_HANDS = ("L", "R", "S", "?")
+_PIT_HANDS = ("L", "R", "?")
+_BAT_HAND_IDX = {"L": 0, "R": 1, "B": 2, "S": 2}
+_PIT_HAND_IDX = {"L": 0, "R": 1}
+_PA_TERMS = tuple((_BAT_IDX[k], sign) for k, sign in
+                  (("AB", 1), ("BB", 1), ("IBB", -1), ("HBP", 1), ("SF", 1)))
+
+
+def _pa_eff(values: tuple) -> int:
+    """AB + BB - IBB + HBP + SF from a compact batting tuple (None -> 0)."""
+    return sum((values[i] or 0) * sign for i, sign in _PA_TERMS)
+
 
 def _norm_name(s: str) -> str:
     s = unicodedata.normalize("NFKD", s)
@@ -91,7 +107,13 @@ class LahmanDB:
         self._fielding_peers_cache: dict[tuple[int, str], list[dict]] = {}
         self._team_names: dict[tuple[int, str], str] | None = None
         self._league_rg: dict[tuple[int, str], list[int]] = {}
+        self._league_teams: dict[tuple[int, str], int] = {}
         self._league_totals: dict[tuple[int, str], dict] = {}
+        # (year, lg) -> effective PA by batter hand (_BAT_HANDS order) and
+        # batters faced by pitcher hand (_PIT_HANDS order): the platoon
+        # matchup frequencies, built in the same single load pass.
+        self._league_bat_hands: dict[tuple[int, str], list[int]] = {}
+        self._league_pit_hands: dict[tuple[int, str], list[int]] = {}
         self._random_pool: list[tuple[str, int, str]] | None = None
 
     def _rows(self, table: str):
@@ -140,6 +162,8 @@ class LahmanDB:
         with self._lock:
             if self._batting is not None:
                 return
+            self._load_people()  # hands are accumulated in this pass
+            people = self._people
             table: dict = defaultdict(list)
             years: dict[str, set] = defaultdict(set)
             for row in self._rows("Batting"):
@@ -150,6 +174,10 @@ class LahmanDB:
                                for f in _BATTING_FIELDS)
                 table[(pid, year)].append((row["teamID"], lg, values))
                 years[pid].add(year)
+                hands = self._league_bat_hands.setdefault(
+                    (year, lg), [0] * len(_BAT_HANDS))
+                bats = people.get(pid, {}).get("bats", "?")
+                hands[_BAT_HAND_IDX.get(bats, 3)] += _pa_eff(values)
                 sums, tracked = self._league_acc.setdefault(
                     (year, lg), ([0] * len(_BATTING_FIELDS),
                                  [False] * len(_BATTING_FIELDS)))
@@ -165,6 +193,10 @@ class LahmanDB:
         with self._lock:
             if self._pitching is not None:
                 return
+            self._load_people()  # hands are accumulated in this pass
+            people = self._people
+            bfp_i = _PIT_IDX["BFP"]
+            est_i = [_PIT_IDX[k] for k in ("IPouts", "H", "BB")]
             table: dict = defaultdict(list)
             years: dict[str, set] = defaultdict(set)
             for row in self._rows("Pitching"):
@@ -174,6 +206,13 @@ class LahmanDB:
                                for f in _PITCHING_FIELDS)
                 table[(pid, year)].append((row["teamID"], row["lgID"], values))
                 years[pid].add(year)
+                # Batters faced; where BFP wasn't tracked, estimate it the
+                # way pitching rates do (3 per inning + hits + walks).
+                bfp = values[bfp_i] or sum(values[i] or 0 for i in est_i)
+                hands = self._league_pit_hands.setdefault(
+                    (year, row["lgID"]), [0] * len(_PIT_HANDS))
+                throws = people.get(pid, {}).get("throws", "?")
+                hands[_PIT_HAND_IDX.get(throws, 2)] += bfp
             self._pitching = dict(table)
             self._pitching_years = {p: sorted(ys) for p, ys in years.items()}
 
@@ -209,13 +248,17 @@ class LahmanDB:
                 return
             names = {}
             league_rg: dict[tuple[int, str], list[int]] = {}
+            league_teams: dict[tuple[int, str], int] = {}
             for row in self._rows("Teams"):
                 year = int(row["yearID"])
                 names[(year, row["teamID"])] = row["name"]
                 acc = league_rg.setdefault((year, row["lgID"]), [0, 0])
                 acc[0] += _int_or_none(row.get("R", "")) or 0
                 acc[1] += _int_or_none(row.get("G", "")) or 0
+                key = (year, row["lgID"])
+                league_teams[key] = league_teams.get(key, 0) + 1
             self._league_rg = league_rg
+            self._league_teams = league_teams
             self._team_names = names
 
     def search_players(self, query: str, limit: int = 25) -> list[PlayerHit]:
@@ -400,6 +443,63 @@ class LahmanDB:
             self._random_pool = pool
         return (rng or random).choice(self._random_pool)
 
+    # --- handedness (platoon matchups) --------------------------------------
+
+    def league_handedness(self, year: int, league: str) -> dict:
+        """Who faced whom in a (year, league), by hand.
+
+        Returns {"pitchers": {"L", "R"} shares of batters faced, "batters":
+        {"L", "R", "S"} shares of effective PA ('S' = switch hitter,
+        People.bats 'B'), "pitcher_coverage"/"batter_coverage": the share
+        of each total whose hand is known}. Unknown hands are left out of
+        the shares; a share dict is empty when no hand is known at all.
+        Raises KeyError when the year/league has no data.
+        """
+        self._load_batting()
+        self._load_pitching()
+        bat = self._league_bat_hands.get((year, league))
+        pit = self._league_pit_hands.get((year, league))
+        if bat is None and pit is None:
+            raise KeyError(f"no data for {league} {year}")
+
+        def shares(counts, labels):
+            counts = counts or [0] * (len(labels) + 1)
+            known = sum(counts[:-1])
+            total = known + counts[-1]
+            dist = ({h: c / known for h, c in zip(labels, counts)}
+                    if known else {})
+            return dist, (known / total if total else 0.0)
+
+        pitchers, pcov = shares(pit, _PIT_HANDS[:-1])
+        batters, bcov = shares(bat, _BAT_HANDS[:-1])
+        return {"pitchers": pitchers, "pitcher_coverage": pcov,
+                "batters": batters, "batter_coverage": bcov}
+
+    def league_batter_lines(self, year: int, league: str,
+                            ) -> list[tuple[str, int, int, int]]:
+        """Every batter who appeared in a (year, league), as compact
+        (bats, PA in this league, season PA, season HR) tuples.
+
+        Season PA/HR sum all of the player's stints that year (what his
+        card is built from); PA in this league weights him in league
+        aggregates. PA are effective PA (AB + BB - IBB + HBP + SF). Scans
+        the batting index, so callers should cache the result.
+        """
+        self._load_batting()
+        hr_i = _BAT_IDX["HR"]
+        out = []
+        for (pid, y), stints in self._batting.items():
+            if y != year:
+                continue
+            in_lg = sum(_pa_eff(v) for _t, lg, v in stints if lg == league)
+            if in_lg <= 0:
+                continue
+            season_pa = sum(_pa_eff(v) for _t, _lg, v in stints)
+            season_hr = sum(v[hr_i] or 0 for _t, _lg, v in stints)
+            bats = self._people.get(pid, {}).get("bats", "?")
+            out.append((bats, in_lg, season_pa, season_hr))
+        return out
+
     # --- league averages ---------------------------------------------------
 
     def leagues_for_year(self, year: int) -> list[str]:
@@ -417,6 +517,16 @@ class LahmanDB:
         if not games:
             raise KeyError(f"no team data for {league} {year}")
         return runs / games
+
+    def league_games_per_team(self, year: int, league: str) -> float:
+        """Average schedule length (games per team) of a (year, league).
+        Raises KeyError when the league has no team data."""
+        self._load_teams()
+        games = self._league_rg.get((year, league), (0, 0))[1]
+        teams = self._league_teams.get((year, league), 0)
+        if not games or not teams:
+            raise KeyError(f"no team data for {league} {year}")
+        return games / teams
 
     def league_batting(self, year: int, league: str) -> dict:
         """League-wide batting rates for a (year, league).
