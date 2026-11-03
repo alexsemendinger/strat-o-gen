@@ -96,6 +96,12 @@ def batter_header_lines(stats: dict,
     return lines
 
 
+# A pitcher needs this many starts for a (secondary) starter role: Mendoza
+# 2001's two starts print 'relief starter', Bruney 2008's one prints
+# 'relief' only. Shared with advanced_ratings' starter(N).
+STARTER_MIN_GS = 2
+
+
 def pitcher_header_lines(stats: dict, fielding_rating: int = 3) -> list[str]:
     games = stats.get("G", 0) or 0
     starts = stats.get("GS", 0) or 0
@@ -106,6 +112,6 @@ def pitcher_header_lines(stats: dict, fielding_rating: int = 3) -> list[str]:
             role.append("relief")
     else:
         role.append("relief")
-        if starts >= 5:
+        if starts >= STARTER_MIN_GS:
             role.append("starter")
     return [f"pitcher-{fielding_rating}"] + role

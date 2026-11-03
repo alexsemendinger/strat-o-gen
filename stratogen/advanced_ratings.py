@@ -41,12 +41,10 @@ and `advanced_pitcher_ratings` / `advanced_pitcher_header_lines`.
 
 from __future__ import annotations
 
-import csv
-import gzip
 import math
 import re
 import threading
-from collections import defaultdict
+import weakref
 
 from . import fielding as _fielding
 from . import ratings as _ratings
@@ -90,8 +88,17 @@ def _tc(stats: dict) -> int:
 
 # --- fielding peer norms -----------------------------------------------------
 
-_PEER_CACHE: dict[tuple[int, int, str], dict] = {}
+# Per-database caches (weak keys: they die with the database).
+_CACHES: "weakref.WeakKeyDictionary" = weakref.WeakKeyDictionary()
 _PEER_LOCK = threading.Lock()
+
+
+def _cache(db, name: str) -> dict:
+    with _PEER_LOCK:
+        caches = _CACHES.get(db)
+        if caches is None:
+            caches = _CACHES[db] = {}
+        return caches.setdefault(name, {})
 
 
 def _games_eq(stats: dict, tc_per_game: float) -> float:
@@ -118,14 +125,14 @@ def _peer_norms(db: LahmanDB, year: int, pos: str) -> dict:
     errors, assists and passed balls, the caught-stealing rate (None when
     not recorded), and the regulars' chances per game used to convert
     appearances into full games.
-    Peers below fielding._MIN_PEER_GAMES games don't define the norm.
+    Peers below fielding.MIN_PEER_GAMES games don't define the norm.
     """
-    key = (id(db), year, pos)
-    with _PEER_LOCK:
-        if key in _PEER_CACHE:
-            return _PEER_CACHE[key]
+    cache = _cache(db, "peers")
+    key = (year, pos)
+    if key in cache:
+        return cache[key]
     peers = [p for p in db.fielding_peers(year, pos)
-             if (p.get("G") or 0) >= _fielding._MIN_PEER_GAMES]
+             if (p.get("G") or 0) >= _fielding.MIN_PEER_GAMES]
     out = {"tc_per_game": 0.0, "games": 0.0, "e_rate": 0.0, "a_rate": 0.0,
            "pb_rate": 0.0, "cs_pct": None, "steals_tracked": False}
     if peers:
@@ -144,8 +151,7 @@ def _peer_norms(db: LahmanDB, year: int, pos: str) -> dict:
             out["steals_tracked"] = sb + cs > 0
             if sb + cs > 0:
                 out["cs_pct"] = cs / (sb + cs)
-    with _PEER_LOCK:
-        _PEER_CACHE[key] = out
+    cache[key] = out
     return out
 
 
@@ -334,8 +340,6 @@ ARM_SLOPE = 1.75
 ARM_PSEUDO_ASSISTS = 2.0     # shrinkage toward the league rate
 ARM_RANGE = (-6, 5)
 
-_ARM_CACHE: dict[tuple[int, int], tuple[float, float]] = {}
-
 
 def _outfield_spots(db: LahmanDB, year: int) -> tuple[str, ...]:
     """LF/CF/RF when the season has the splits (1891+), else OF."""
@@ -364,13 +368,13 @@ def _arm_population(db: LahmanDB, year: int) -> tuple[float, float]:
     """(mean, sd) of the log assist ratio among the season's regular
     outfielders: at each spot, those with 60%+ of the busiest fielder's
     games there, each against that spot's assist rate."""
-    key = (id(db), year)
-    if key in _ARM_CACHE:
-        return _ARM_CACHE[key]
+    cache = _cache(db, "arms")
+    if year in cache:
+        return cache[year]
     xs = []
     for pos in _outfield_spots(db, year):
         peers = [p for p in db.fielding_peers(year, pos)
-                 if (p.get("G") or 0) >= _fielding._MIN_PEER_GAMES]
+                 if (p.get("G") or 0) >= _fielding.MIN_PEER_GAMES]
         if not peers:
             continue
         max_g = max(p["G"] for p in peers)
@@ -382,7 +386,7 @@ def _arm_population(db: LahmanDB, year: int) -> tuple[float, float]:
         mean = sum(xs) / len(xs)
         sd = (sum((x - mean) ** 2 for x in xs) / len(xs)) ** 0.5
         result = (mean, sd)
-    _ARM_CACHE[key] = result
+    cache[year] = result
     return result
 
 
@@ -634,56 +638,6 @@ def parse_stealing_detail(text: str) -> dict | None:
 
 # --- pitching norms (league start/relief length, pitchers' bunting) --------
 
-_PITCH_INDEX: dict[str, dict] = {}
-_PITCH_LOCK = threading.Lock()
-
-
-def _pitching_index(db: LahmanDB) -> dict:
-    """Per (year, league): innings per start and per relief appearance,
-    and the pitchers who appeared (for pitchers'-batting norms).
-
-    LahmanDB exposes no league pitching aggregates, so this reads
-    Pitching.csv.gz once per database directory (~0.3 s) and keeps only
-    the per-league sums.
-    """
-    key = str(getattr(db, "data_dir", ""))
-    with _PITCH_LOCK:
-        if key in _PITCH_INDEX:
-            return _PITCH_INDEX[key]
-        per_player: dict = defaultdict(lambda: [0, 0, 0])   # G, GS, IPouts
-        try:
-            path = db.data_dir / "Pitching.csv.gz"
-            with gzip.open(path, "rt", encoding="utf-8-sig", newline="") as fh:
-                for row in csv.DictReader(fh):
-                    k = (row["playerID"], int(row["yearID"]), row.get("lgID") or "?")
-                    acc = per_player[k]
-                    for i, f in enumerate(("G", "GS", "IPouts")):
-                        v = (row.get(f) or "").strip()
-                        if v:
-                            try:
-                                acc[i] += int(float(v))
-                            except ValueError:
-                                pass
-        except (OSError, AttributeError, TypeError):
-            per_player = {}
-        leagues: dict = defaultdict(lambda: {"ip": 0.0, "g": 0, "gs": 0,
-                                             "r_ip": 0.0, "r_g": 0})
-        pitchers: dict[int, dict] = defaultdict(dict)   # year -> {pid: G}
-        for (pid, year, lg), (g, gs, outs) in per_player.items():
-            a = leagues[(year, lg)]
-            a["ip"] += outs / 3.0
-            a["g"] += g
-            a["gs"] += gs
-            if gs == 0 and g >= 3:
-                a["r_ip"] += outs / 3.0
-                a["r_g"] += g
-            pitchers[year][pid] = pitchers[year].get(pid, 0) + g
-        index = {"leagues": dict(leagues), "pitchers": dict(pitchers),
-                 "bunt": {}}
-        _PITCH_INDEX[key] = index
-        return index
-
-
 def _league_pitching_lengths(db: LahmanDB, year: int, league: str) -> tuple[float, float]:
     """(innings per start, innings per relief appearance) for the league.
 
@@ -691,11 +645,14 @@ def _league_pitching_lengths(db: LahmanDB, year: int, league: str) -> tuple[floa
     length is everything else divided by starts, which stays sane in eras
     where nearly every pitcher both started and relieved.
     """
-    a = _pitching_index(db)["leagues"].get((year, league))
-    if not a or not a["gs"]:
+    try:
+        a = db.league_pitching_usage(year, league)
+    except KeyError:
         return 6.0, 1.2
-    relief = a["r_ip"] / a["r_g"] if a["r_g"] else 2.0
-    start = (a["ip"] - (a["g"] - a["gs"]) * relief) / a["gs"]
+    if not a["GS"]:
+        return 6.0, 1.2
+    relief = (a["relief_IPouts"] / 3.0 / a["relief_G"]) if a["relief_G"] else 2.0
+    start = (a["IPouts"] / 3.0 - (a["G"] - a["GS"]) * relief) / a["GS"]
     return max(3.0, min(9.0, start)), max(0.5, min(4.0, relief))
 
 
@@ -704,16 +661,15 @@ def _pitchers_sacrifice_rate(db: LahmanDB, year: int) -> float:
     leagues; widened to +-2 seasons when pitchers barely batted, as under
     the universal DH). Two-way players and position players who mopped
     up an inning (more batting games than pitching games) don't count."""
-    index = _pitching_index(db)
-    with _PITCH_LOCK:
-        if year in index["bunt"]:
-            return index["bunt"][year]
+    cache = _cache(db, "bunt")
+    if year in cache:
+        return cache[year]
     sh = pa = 0
     for span in (0, 2):
         for y in range(year - span, year + span + 1):
             if span and y == year:
                 continue
-            for pid, pitched in index["pitchers"].get(y, {}).items():
+            for pid, pitched in db.season_pitchers(y).items():
                 b = db.batting_season(pid, y)
                 if b and (b.get("G", 0) or 0) <= pitched:
                     sh += b.get("SH", 0) or 0
@@ -721,8 +677,7 @@ def _pitchers_sacrifice_rate(db: LahmanDB, year: int) -> float:
         if pa >= 500:
             break
     rate = sh / pa if pa >= 100 and sh > 0 else 0.08
-    with _PITCH_LOCK:
-        index["bunt"][year] = rate
+    cache[year] = rate
     return rate
 
 
@@ -800,7 +755,7 @@ def hold_rating(throws: str) -> int:
 
 
 # Endurance
-STARTER_MIN_GS = 2          # Bruney's lone start earns no starter rating
+STARTER_MIN_GS = _ratings.STARTER_MIN_GS   # Bruney's lone start earns none
 RELIEF_MIN_GAMES = 2
 STARTER_PSEUDO_STARTS = 4.0
 STARTER_PRIOR_DROP = 1.5    # spot-start prior: league start length - 1.5
@@ -813,7 +768,7 @@ def starter_endurance(db: LahmanDB, stats: dict) -> int | None:
     """Starter endurance N of `starter(N)` (None if under 2 starts).
 
     Inputs: G, GS, IP, and the league's innings per start and per relief
-    appearance (from Pitching.csv). Lahman doesn't split a swingman's
+    appearance (LahmanDB.league_pitching_usage). Lahman doesn't split a swingman's
     innings, so innings per start are estimated as (IP - relief
     appearances x league relief length) / GS, capped at league start
     length + 0.5, then shrunk toward a spot-starter prior of league - 1.5
