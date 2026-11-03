@@ -7,10 +7,8 @@ exhibit is allowed (xfail), per the project's "real cards aren't perfect"
 philosophy.
 """
 
-import glob
 import json
 import math
-import os
 
 import pytest
 
@@ -21,8 +19,7 @@ from stratogen.benchmark import (
 from stratogen.model import CHANCES_PER_CARD, XCHANCE, categorize
 
 CARDS = cj.load_transcriptions()
-JSON_FILES = sorted(glob.glob(
-    os.path.join(os.path.dirname(cj.TRANSCRIPTIONS_DIR), "transcriptions", "*.json")))
+JSON_FILES = sorted(cj.TRANSCRIPTIONS_DIR.glob("*.json"))
 
 # Documented tolerances (failure allowed, with reason). See the dir README.
 TOLERANT_CARDS = {
@@ -45,6 +42,7 @@ def _tolerant(card_id, official):
 # --- loading -----------------------------------------------------------------
 
 def test_loads_all_cards():
+    assert len(JSON_FILES) == 45
     assert len(CARDS) == 25
     assert sum(c.card_type == "batter" for c in CARDS.values()) == 13
     assert sum(c.card_type == "pitcher" for c in CARDS.values()) == 12
@@ -67,9 +65,13 @@ def test_sides_joined_by_card_id():
 
 # --- vocabulary (normalizer regression guard) --------------------------------
 
+def _load_json(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _all_tokens():
     for path in JSON_FILES:
-        d = json.loads(open(path).read())
+        d = _load_json(path)
         for grid in d["grids"]:
             for col in grid["columns"]:
                 for cell in col["cells"]:
@@ -87,17 +89,60 @@ def test_every_token_normalizes_and_categorizes():
 
 
 def test_token_categories_are_sane():
-    # a few hand-checked mappings across the abbreviated vocabulary
+    # hand-checked mappings across the abbreviated vocabulary: the exact
+    # canonical text (so dropped detail can't hide behind the right
+    # category) and its category
     cases = {
-        "SI*": "1B", "SI**": "1B", "DO": "2B", "DO**": "2B", "TR": "3B",
-        "HR": "HR", "N-HR": "HR", "WALK": "BB", "HBP plus injury": "HBP",
-        "strikeout ●": "SO", "gb (ss) A": "OUT", "fly (rf) B?": "OUT",
-        "lo (2b) max": "OUT", "GB (ss) X": "X", "GROUND-BALL(p)X": "X",
-        "CATCH-X": "X", "CATCHER'S CARD X": "X", "▼SINGLE (lf)": "1B",
+        "SI*": ("SINGLE*", "1B"), "SI**": ("SINGLE**", "1B"),
+        "DO": ("DOUBLE", "2B"), "DO**": ("DOUBLE**", "2B"),
+        "TR": ("TRIPLE", "3B"), "HR": ("HOMERUN", "HR"),
+        "N-HR": ("N-HR", "HR"), "WALK": ("WALK", "BB"),
+        "HBP plus injury": ("HBP", "HBP"), "strikeout ●": ("strikeout", "SO"),
+        "gb (ss) A": ("groundball (ss)A", "OUT"),
+        "fly (rf) B?": ("flyball (rf)B", "OUT"),
+        "lo (2b) max": ("lineout (2b) into as many outs as possible", "OUT"),
+        "GB (ss) X": ("GROUNDBALL (ss) X", "X"),
+        "GROUND-BALL(p)X": ("GROUNDBALL (p) X", "X"),
+        "CATCH-X": ("CATCHER'S CARD X", "X"),
+        "CATCHER'S CARD X": ("CATCHER'S CARD X", "X"),
+        "▼SINGLE (lf)": ("SINGLE (lf)", "1B"),
+        # fragile spellings: stars before a location, lowercase class,
+        # lineout X chances
+        "SINGLE** (lf)": ("SINGLE** (lf)", "1B"),
+        "SI*(cf)": ("SINGLE* (cf)", "1B"),
+        "DOUBLE(cf)": ("DOUBLE (cf)", "2B"),
+        "gb (ss) a+": ("groundball (ss)A+", "OUT"),
+        "lo (ss) X": ("LINEOUT (ss) X", "X"),
     }
-    for token, expected in cases.items():
+    for token, (canonical, category) in cases.items():
         text, _ = cj.parse_result(token)
-        assert categorize(text) == expected, (token, text)
+        assert text == canonical, token
+        assert categorize(text) == category, (token, text)
+
+
+def test_unknown_tokens_are_rejected_not_guessed():
+    # 'HR' matches only as the whole kind word, so this isn't a homer
+    for token in ("fly (rf) THRU", "SIN", "gb (ss) A max", "K"):
+        with pytest.raises(ValueError):
+            cj.parse_result(token)
+
+
+def test_max_effort_lineouts_keep_their_tail():
+    """`lo (x) max` is the advanced side's spelling of the max-effort
+    lineout: it must import as one, so every batter grid (basic and both
+    platoon grids) carries exactly one, like the 3col long form."""
+    assert cj.parse_result("lo (2b) max") == (
+        "lineout (2b) into as many outs as possible", False)
+    assert cj.parse_result("lo(3b) max plus injury") == (
+        "lineout (3b) into as many outs as possible", True)
+    for cid, card in CARDS.items():
+        if card.card_type != "batter":
+            continue
+        for side in card.sides:
+            for grid in side.grids:
+                gc = cj._grid_card(side, grid, card.name)
+                n = sum("as many outs" in s.text for _c, _d, s in gc.iter_splits())
+                assert n == 1, (cid, side.side, grid.get("vs"))
 
 
 def test_injury_flag_parsed():
@@ -127,6 +172,72 @@ def test_every_grid_is_a_valid_108_chance_card(cid, side_label, gi):
     if not ok and _tolerant(cid, card.official):
         pytest.xfail(f"{cid}: tolerant card; {problems or total}")
     assert ok, f"{cid} {side_label} grid {gi}: {problems or total}"
+
+
+# Situational (△) cells whose JSON lists only the clutch alternate in
+# `outcomes`; the default result is in `raw` alone (e.g. Mendoza LHB c4 r2,
+# raw '△2-strikeout / SI* 1-11 / lo (2b) 12-20'). The importer must take
+# the default, not the alternate. (side vs, column, roll) -> default.
+SITUATIONAL_DEFAULT_IN_RAW = {
+    ("batter_sewell-joe_HOF", "LHP", 3, 2): "SINGLE (cf)",
+    ("batter_sewell-joe_HOF", "RHP", 3, 2): "SINGLE (rf)",
+    ("pitcher_mendoza-ramiro_2001", "LHB", 4, 2): "strikeout",
+    ("pitcher_mendoza-ramiro_2001", "RHB", 4, 12): "flyball (lf)C",
+    ("pitcher_monroe-zach_1958", "LHB", 5, 2): "SINGLE (cf)",
+    ("pitcher_monroe-zach_1958", "RHB", 4, 2): "SINGLE (rf)",
+    ("pitcher_perez-melido_1994", "RHB", 6, 2): "groundball (ss)A",
+    ("pitcher_pettitte-andy_2012", "LHB", 5, 2): "SINGLE (rf)",
+    ("pitcher_pettitte-andy_2012", "RHB", 6, 5): "groundball (ss)A",
+}
+
+
+def _situational_cells():
+    for cid, card in sorted(CARDS.items()):
+        for side in card.sides:
+            for grid in side.grids:
+                for col in grid["columns"]:
+                    for cell in col["cells"]:
+                        if "upTriangle" in (cell.get("markers") or []):
+                            yield (cid, grid.get("vs"), col["col"], cell["roll"]), cell
+
+
+def test_situational_cells_import_their_default():
+    """Every △ cell imports as its everyday default over the whole d20,
+    never as its clutch SI*/lineout alternate, however the transcription
+    encoded the default (a range:null outcome, or only in `raw`)."""
+    seen = 0
+    default_only_in_raw = set()
+    for key, cell in _situational_cells():
+        seen += 1
+        nulls = [o for o in cell["outcomes"] if o["range"] is None]
+        ranged = [o for o in cell["outcomes"] if o["range"] is not None]
+        assert len(nulls) <= 1, key
+        if ranged:          # the alternate is a clean d20 split
+            covered = sorted(n for o in ranged
+                             for n in range(o["range"][0], o["range"][1] + 1))
+            assert covered == list(range(1, 21)), key
+        if nulls:
+            expected = cj.parse_result(nulls[0]["result"])[0]
+        else:
+            default_only_in_raw.add(key)
+            expected = SITUATIONAL_DEFAULT_IN_RAW[key]
+        splits = cj._cell_splits(cell)
+        assert [(s.lo, s.hi, s.text) for s in splits] == [(1, 20, expected)], key
+    assert seen == 30
+    assert default_only_in_raw == set(SITUATIONAL_DEFAULT_IN_RAW)
+
+
+def test_ambiguous_cells_are_rejected():
+    split = [{"range": [1, 11], "result": "SI*"},
+             {"range": [12, 20], "result": "lo (2b)"}]
+    default = {"range": None, "result": "strikeout"}
+    with pytest.raises(ValueError):       # a default plus a split, no △
+        cj._cell_splits({"roll": 2, "raw": "", "outcomes": [default, *split]})
+    with pytest.raises(ValueError):       # two defaults
+        cj._cell_splits({"roll": 2, "raw": "", "outcomes": [default, default]})
+    with pytest.raises(ValueError):       # △ with no default anywhere
+        cj._cell_splits({"roll": 2, "markers": ["upTriangle"],
+                         "raw": "△2-SI* 1-11 / lo (2b) 12-20", "outcomes": split})
 
 
 def test_basic_pitcher_cards_carry_30_x_chances():
@@ -199,8 +310,7 @@ def test_official_corpus_is_tight_in_aggregate():
 def test_markers_preserved_in_json():
     """The verbatim JSON must retain the situational/marker glyphs even
     though the Card model drops them — they're future-feature material."""
-    d = json.loads(open(os.path.join(
-        cj.TRANSCRIPTIONS_DIR, "som_batter_judge-aaron_2024_6col.json")).read())
+    d = _load_json(cj.TRANSCRIPTIONS_DIR / "som_batter_judge-aaron_2024_6col.json")
     markers = {m for g in d["grids"] for col in g["columns"]
                for cell in col["cells"] for m in (cell.get("markers") or [])}
-    assert {"omega", "diamond", "downTriangle"} & markers
+    assert {"omega", "diamond", "downTriangle", "upTriangle"} <= markers
