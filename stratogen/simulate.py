@@ -21,7 +21,11 @@ checks; the exact computation is what the tests use.
 
 from __future__ import annotations
 
+import csv
+import gzip
 import random
+from functools import lru_cache
+from pathlib import Path
 
 from .model import (
     Card, DICE_WEIGHTS, CHANCES_PER_CARD, CHANCES_PER_CYCLE,
@@ -143,17 +147,105 @@ def actual_batting_rates(stats: dict) -> dict[str, float]:
     return rates
 
 
-def actual_pitching_rates(stats: dict) -> dict[str, float]:
-    """Per-batter outcome rates from a real pitching line.
+def _pitching_batters_faced(stats: dict) -> tuple[float, bool]:
+    """(batters faced, estimated?): Lahman BFP, or when it wasn't tracked
+    3 per inning + hits + walks + hit batsmen (calibrated per league in
+    pitcher_effective_pa)."""
+    tbf = stats.get("TBF") or 0
+    if tbf:
+        return tbf, False
+    return (round(stats.get("IP", 0) * 3) + stats.get("H", 0)
+            + stats.get("BB", 0) + (stats.get("HBP") or 0)), True
+
+
+@lru_cache(maxsize=1)
+def _league_pitching_sums() -> dict:
+    """{(year, lg): (sum of BFP - IBB over rows with BFP, the same sum of
+    the IP/H/BB/HBP estimate over every row)} from the Lahman Pitching
+    table, read once."""
+    from .lahman import DATA_DIR
+    sums: dict = {}
+    with gzip.open(Path(DATA_DIR) / "Pitching.csv.gz", "rt",
+                   encoding="utf-8-sig", newline="") as fh:
+        reader = csv.reader(fh)
+        idx = {h: i for i, h in enumerate(next(reader))}
+
+        def num(row, key):
+            value = row[idx[key]].strip()
+            return int(float(value)) if value else None
+
+        for row in reader:
+            slot = sums.setdefault((int(row[idx["yearID"]]), row[idx["lgID"]]),
+                                   [0, 0])
+            ibb = num(row, "IBB") or 0
+            bfp = num(row, "BFP")
+            if bfp is not None:
+                slot[0] += bfp - ibb
+            slot[1] += (sum(num(row, k) or 0 for k in ("IPouts", "H", "BB", "HBP"))
+                        - ibb)
+    return {key: tuple(v) for key, v in sums.items()}
+
+
+def _resolve_league(stats: dict, league: dict | None) -> dict | None:
+    if league is not None:
+        return league
+    year, lg = stats.get("year"), stats.get("league")
+    if not year or not lg:
+        return None
+    from .lahman import default_db
+    try:
+        return default_db().league_batting(year, lg)
+    except KeyError:
+        return None
+
+
+def pitcher_effective_pa(stats: dict, league: dict | None = None) -> float:
+    """Batters faced that interact with the cards, on the same footing as
+    the league's effective PA (AB + BB - IBB + HBP + SF): Lahman BFP minus
+    intentional walks and sacrifice hits. A sacrifice bunt is a manager's
+    decision, not a card result (game.py plays bunts separately), and
+    league and batter rates leave them out, so a pitcher's rates must too.
+
+    - Player SH tracked (pitching SH is complete from 1970, and in the
+      Negro Leagues): BFP - IBB - SH, exact.
+    - SH not tracked: (BFP - IBB) times the league-season's factor
+      PA_eff / sum(BFP - IBB) over its pitchers, which also absorbs the
+      seasons whose SH included sacrifice flies (1908-1930) and the early
+      seasons whose BFP already left sacrifices out.
+    - BFP not tracked (essentially 1925 NNL/ECL): estimated as 3 per
+      inning + H + BB + HBP, scaled by the league's PA_eff / sum of the
+      same estimate (the raw estimate runs 3-5% high: IP outs include
+      caught stealing and the second out of double plays).
+
+    `league` is LahmanDB.league_batting(year, lg); when omitted it's looked
+    up from stats['year'] / stats['league'] if present. Without a league
+    the uncorrected BFP - IBB (or estimate - IBB) is returned.
+    """
+    tbf, estimated = _pitching_batters_faced(stats)
+    pa = tbf - (stats.get("IBB") or 0)
+    missing = stats.get("missing") or ()
+    if not estimated and "SH" in stats and "SH" not in missing:
+        return pa - (stats.get("SH") or 0)
+    league = _resolve_league(stats, league)
+    if not league or not league.get("PA_eff"):
+        return pa
+    key = (league.get("year"), league.get("league"))
+    sums = _league_pitching_sums().get(key)
+    if not sums:
+        return pa
+    total = sums[1] if estimated else sums[0]
+    return pa * (league["PA_eff"] / total) if total > 0 else pa
+
+
+def actual_pitching_rates(stats: dict, league: dict | None = None,
+                          ) -> dict[str, float]:
+    """Per-batter outcome rates from a real pitching line, per effective
+    batter faced (pitcher_effective_pa; `league` as there).
 
     2B/3B allowed aren't tracked, so only H (total), HR, BB, SO and OUT
     are meaningful; doubles/triples are reported as part of H only.
     """
-    tbf = stats.get("TBF", 0)
-    if not tbf:
-        # Estimate batters faced when not tracked: 3 outs/inning + baserunners
-        tbf = stats.get("IP", 0) * 3 + stats.get("H", 0) + stats.get("BB", 0)
-    tbf_eff = tbf - stats.get("IBB", 0)
+    tbf_eff = pitcher_effective_pa(stats, league)
     if tbf_eff <= 0:
         raise ValueError("no batters faced")
     h = stats.get("H", 0)

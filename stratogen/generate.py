@@ -39,6 +39,7 @@ from .model import (
 )
 from .simulate import (
     X_SINGLE_RATE, actual_batting_rates, effective_pa, hits_from_stats,
+    pitcher_effective_pa,
 )
 from . import platoon, ratings
 
@@ -164,15 +165,14 @@ def pitcher_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
 
 def _pitching_rates(stats: dict, league: dict,
                     warnings: list[str]) -> tuple[float, ...]:
-    """(BB, SO, HR, H) per effective batter faced; warns about estimated
-    or small samples."""
-    tbf = stats.get("TBF", 0)
-    if not tbf:
-        tbf = stats.get("IP", 0) * 3 + stats.get("H", 0) + stats.get("BB", 0)
-        warnings.append("batters faced estimated from IP/H/BB")
-    tbf_eff = tbf - stats.get("IBB", 0)
+    """(BB, SO, HR, H) per effective batter faced
+    (simulate.pitcher_effective_pa); warns about estimated or small samples."""
+    tbf_eff = pitcher_effective_pa(stats, league)
     if tbf_eff <= 0:
         raise ValueError("pitcher has no batters faced")
+    if not stats.get("TBF"):
+        warnings.append("batters faced not recorded this season: estimated "
+                        "from innings, hits, walks and hit batsmen")
     if tbf_eff < 100:
         warnings.append(f"small sample: only {tbf_eff:.0f} batters faced")
 

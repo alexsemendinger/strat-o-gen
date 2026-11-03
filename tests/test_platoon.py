@@ -523,7 +523,10 @@ def test_cli_advanced(capsys, monkeypatch):
 #   moved);
 # - pitcher cards took the X block's singles out of the singles share alone
 #   (batter cards verified identical; on the pitchers only the 1B/2B/3B split
-#   moved, total hits unchanged, plus Chapman's now-quantified hits warning).
+#   moved, total hits unchanged, plus Chapman's now-quantified hits warning);
+# - pitcher rates left sacrifice hits out of batters faced
+#   (simulate.pitcher_effective_pa; batter cards verified identical, the
+#   pitchers' BB/SO/HR/hit targets rose by their SH share, ~1%).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
@@ -531,9 +534,9 @@ _BASIC_GOLDEN = [
     ("gwynnto01", 1995, "batter", "97bd25606327eb01"),
     ("cobbty01", 1911, "batter", "cbc297e924d0548d"),
     ("judgeaa01", 2024, "batter", "81710993e5f25871"),
-    ("ryanno01", 1974, "pitcher", "99014c6bce73973a"),
-    ("maddugr01", 1995, "pitcher", "c21077efa19a9b9d"),
-    ("chapmar01", 2014, "pitcher", "785124d4c9c71fc4"),
+    ("ryanno01", 1974, "pitcher", "2e668f31a7d24c4b"),
+    ("maddugr01", 1995, "pitcher", "81d6932415f72730"),
+    ("chapmar01", 2014, "pitcher", "1e967d72383454cf"),
 ]
 
 

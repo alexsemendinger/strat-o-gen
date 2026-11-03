@@ -156,7 +156,7 @@ def score_pitcher_card(card_or_chances, actual_stats: dict,
                        league: dict) -> dict[str, float]:
     implied = derived_stats(
         combined_rates(average_batter_chances(league), card_or_chances))
-    return pitching_errors(implied, actual_pitching_rates(actual_stats))
+    return pitching_errors(implied, actual_pitching_rates(actual_stats, league))
 
 
 # --- advanced (platoon) cards ---------------------------------------------------

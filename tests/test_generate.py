@@ -240,6 +240,50 @@ def test_dominant_reliever_x_block_never_adds_hits():
     assert card.chances()["X"] < 30
     hit_warnings = [w for w in warnings if "hits allowed" in w]
     assert len(hit_warnings) == 1 and "% of PA high" in hit_warnings[0]
+    from stratogen.simulate import pitcher_effective_pa
     err = score_pitcher_card(card, stats, league)
-    floor = league["H_per_PA"] / 2 - stats["H"] / (stats["TBF"] - stats["IBB"])
-    assert err["H_per_PA"] == pytest.approx(floor, abs=0.002)
+    floor = league["H_per_PA"] / 2 - stats["H"] / pitcher_effective_pa(stats)
+    assert err["H_per_PA"] == pytest.approx(floor, abs=1e-9)
+
+
+# --- pitcher denominators -----------------------------------------------------
+
+def test_pitcher_effective_pa_leaves_out_sacrifices():
+    """Pitcher rates use the league's footing (AB + BB - IBB + HBP + SF):
+    Lahman BFP also counts sacrifice hits, which are a manager's call, not
+    a card result."""
+    from stratogen.simulate import _league_pitching_sums, pitcher_effective_pa
+    ryan = db.pitching_season("ryanno01", 1972)          # SH tracked
+    assert pitcher_effective_pa(ryan) == ryan["TBF"] - ryan["IBB"] - ryan["SH"]
+    # SH untracked (pre-1970): scaled by the league's PA_eff / sum(BFP - IBB),
+    # which is the league's sacrifice share (1930 NL: 2.8% of BFP)
+    league = db.league_batting(1930, "NL")
+    factor = league["PA_eff"] / _league_pitching_sums()[(1930, "NL")][0]
+    assert 1 / factor == pytest.approx(1 + league["raw"]["SH"] / league["PA_eff"],
+                                       abs=0.001)
+    hubbell = db.pitching_season("hubbeca01", 1930)
+    assert "SH" in hubbell["missing"]
+    assert pitcher_effective_pa(hubbell, league) == pytest.approx(
+        (hubbell["TBF"] - hubbell["IBB"]) * factor)
+    assert pitcher_effective_pa(hubbell) == pitcher_effective_pa(hubbell, league)
+    # BFP untracked (1925 NNL): the IP/H/BB/HBP estimate, calibrated per league
+    dean = db.pitching_season("deanne01", 1925)
+    assert "TBF" in dean["missing"]
+    raw = round(dean["IP"] * 3) + dean["H"] + dean["BB"] + dean["HBP"]
+    assert 0.94 * raw < pitcher_effective_pa(dean) < 0.98 * raw
+    _card, warnings = generate_pitcher_card(
+        dean, db.league_batting(1925, dean["league"]))
+    assert any("batters faced not recorded" in w and "estimated" in w
+               for w in warnings)
+    # a bare stat line with no league to look up is taken as printed
+    assert pitcher_effective_pa({"TBF": 600, "IBB": 5}) == 595
+
+
+def test_ryan_1972_strikeouts_match_the_real_card():
+    """The real card carries 47 strikeout chances; with sacrifices out of
+    the denominator the formula gives 46.1 (45.5 with them in)."""
+    from stratogen.generate import pitcher_chance_targets
+    stats = db.pitching_season("ryanno01", 1972)
+    league = db.league_batting(1972, stats["league"])
+    targets, _ = pitcher_chance_targets(stats, league)
+    assert targets[SO] == pytest.approx(46.1, abs=0.05)
