@@ -42,10 +42,12 @@ from .model import (
     AdvancedCard, BATTER_COLUMNS, Card, DICE_WEIGHTS, PITCHER_COLUMNS,
     PlatoonSide, Split,
 )
+from .lahman import InningsPitched
 
 # The real-card fixtures, resolved from the package (not the working directory).
 REAL_CARDS_DIR = Path(__file__).resolve().parent.parent / "data" / "real_cards"
 
+_INNINGS_RE = re.compile(r"^(\d+)(?:\.([012]))?$")
 _RANGE_RE = re.compile(r"^(\d{1,2})(?:-(\d{1,2}))?$")
 _ENTRY_RE = re.compile(r"^(\d{1,2})-(.*)$")
 _COLUMN_RE = re.compile(r"^Column\s+(\d)\s*$", re.IGNORECASE)
@@ -246,6 +248,13 @@ def parse_card(text: str) -> Card:
             if value == "-":                  # undefined (e.g. ERA with 0 IP)
                 stats[canonical] = None
                 continue
+            if canonical == "IP":
+                # Innings print in baseball notation: 273.1 = 273 1/3.
+                m = _INNINGS_RE.match(value)
+                if m:
+                    outs = int(m.group(1)) * 3 + int(m.group(2) or 0)
+                    stats["IP"] = InningsPitched(outs)
+                    continue
             try:
                 num = float(value) if ("." in value) else int(value)
             except ValueError:
