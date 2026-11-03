@@ -1,25 +1,45 @@
-' Strat-O-Matic Card Generator - Hidden Launcher
-' This script runs start_windows.bat without showing a console window
+' Strat-O-Matic Card Maker - quiet launcher.
 '
-' Double-click this file to start the app!
+' Double-click this file to start the app. It checks that Python and Flask
+' are ready, then starts start_windows.bat in a MINIMIZED window (it sits
+' on the taskbar; close it to stop the app) and your browser opens by
+' itself. If something needs attention (Python missing, first-time Flask
+' install) the window opens normally instead, so you can read it.
 
-Set WshShell = CreateObject("WScript.Shell")
+Option Explicit
+Dim shell, fso, scriptDir, batFile, py
+
+Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
-
-' Get the directory where this script is located
 scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
-
-' Path to the batch file
 batFile = fso.BuildPath(scriptDir, "start_windows.bat")
 
-' Check if batch file exists
-If Not fso.FileExists(batFile) Then
-    MsgBox "Error: Cannot find start_windows.bat" & vbCrLf & vbCrLf & _
-           "Make sure this file is in the same folder as start_windows.bat", _
-           vbCritical, "Strat-O-Gen Error"
+If Not fso.FileExists(batFile) Or Not fso.FileExists(fso.BuildPath(scriptDir, "app.py")) Then
+    MsgBox "The card maker's files aren't next to this launcher." & vbCrLf & vbCrLf & _
+           "If you opened it from inside the downloaded ZIP file, first right-click " & _
+           "the ZIP, choose ""Extract All"", and start it from the extracted folder.", _
+           vbExclamation, "Strat-O-Matic Card Maker"
     WScript.Quit 1
 End If
 
-' Run the batch file minimized (1 = minimized, 0 = hidden)
-' Using 1 (minimized) so user can see the window if needed, but it starts out of the way
-WshShell.Run """" & batFile & """", 1, False
+shell.CurrentDirectory = scriptDir
+
+' Run a command hidden and wait for it; True when it succeeds.
+Function Works(cmd)
+    Works = (shell.Run("cmd /c " & cmd & " >nul 2>&1", 0, True) = 0)
+End Function
+
+py = ""
+If Works("py -3 -c ""import sys; sys.exit(sys.version_info < (3, 9))""") Then
+    py = "py -3"
+ElseIf Works("python -c ""import sys; sys.exit(sys.version_info < (3, 9))""") Then
+    py = "python"
+End If
+
+If py <> "" And Works(py & " -c ""import flask""") Then
+    ' All set: start minimized (7 = minimized, not focused).
+    shell.Run """" & batFile & """", 7, False
+Else
+    ' Show the window so its messages (or the Flask install) can be read.
+    shell.Run """" & batFile & """", 1, False
+End If

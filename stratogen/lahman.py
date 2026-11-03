@@ -1248,6 +1248,367 @@ class LahmanDB:
         self._league_totals[key] = result
         return result
 
+    # --- teams / rosters ------------------------------------------------------
+    #
+    # Read-only views for the product layer (web app, CLI, team sets): career
+    # summaries, name autocomplete, season roles, teams and rosters. Each
+    # index is built once from the compact tables above (plus one small
+    # read of Teams for W-L) and cached on the instance, so requests never
+    # rescan anything. Attributes are created lazily here so this section
+    # stays self-contained.
+
+    _SUGGEST_SUFFIXES = frozenset({"jr", "sr", "ii", "iii", "iv"})
+
+    def warm_rosters(self):
+        """Build this section's indexes up front (career table, name
+        autocomplete, teams, rosters), e.g. in a background thread."""
+        self._career_table()
+        self._suggest_index()
+        self._team_table()
+        self._roster_index()
+
+    @staticmethod
+    def _suggest_tokens(text: str) -> list[str]:
+        """Name tokens for autocomplete: accents, case, dots, apostrophes
+        (straight or curly) and commas dropped; hyphens split; runs of
+        single-letter initials joined ('A. J.' -> 'aj'); Jr/Sr/II.. dropped."""
+        s = unicodedata.normalize("NFKD", text or "")
+        s = "".join(c for c in s if not unicodedata.combining(c)).lower()
+        for ch in ".'’‘`,":
+            s = s.replace(ch, " " if ch in ".," else "")
+        s = s.replace("-", " ")
+        raw = [t for t in s.split() if t]
+        tokens: list[str] = []
+        run = ""
+        for t in raw:
+            if len(t) == 1 and t.isalpha():
+                run += t
+                continue
+            if run:
+                tokens.append(run)
+                run = ""
+            tokens.append(t)
+        if run:
+            tokens.append(run)
+        return [t for t in tokens if t not in LahmanDB._SUGGEST_SUFFIXES] or tokens
+
+    @staticmethod
+    def _season_pitch_bf(stints: list) -> int:
+        """Batters faced minus IBB, the way pitching rates count them
+        (BFP, or 3 per inning + hits + walks where BFP wasn't kept)."""
+        bfp = sum(s[2][_PIT_IDX["BFP"]] or 0 for s in stints)
+        if not bfp:
+            bfp = sum((s[2][_PIT_IDX["IPouts"]] or 0) + (s[2][_PIT_IDX["H"]] or 0)
+                      + (s[2][_PIT_IDX["BB"]] or 0) for s in stints)
+        return bfp - sum(s[2][_PIT_IDX["IBB"]] or 0 for s in stints)
+
+    def _career_table(self) -> dict:
+        """pid -> [PA, BF, batting G, pitching G, playable batting years,
+        playable pitching years]. 'Playable' = a card can be made: some
+        effective plate appearances / batters faced that season."""
+        table = getattr(self, "_career_cache", None)
+        if table is not None:
+            return table
+        with self._lock:
+            table = getattr(self, "_career_cache", None)
+            if table is not None:
+                return table
+            self._load_batting()
+            self._load_pitching()
+            bat_g, pit_g = _BAT_IDX["G"], _PIT_IDX["G"]
+            table = {}
+            for (pid, year), stints in self._batting.items():
+                entry = table.setdefault(pid, [0, 0, 0, 0, [], []])
+                pa = sum(_pa_eff(s[2]) for s in stints)
+                entry[0] += max(pa, 0)
+                entry[2] += sum(s[2][bat_g] or 0 for s in stints)
+                if pa > 0:
+                    entry[4].append(year)
+            for (pid, year), stints in self._pitching.items():
+                entry = table.setdefault(pid, [0, 0, 0, 0, [], []])
+                bf = self._season_pitch_bf(stints)
+                entry[1] += max(bf, 0)
+                entry[3] += sum(s[2][pit_g] or 0 for s in stints)
+                if bf > 0:
+                    entry[5].append(year)
+            for entry in table.values():
+                entry[4].sort()
+                entry[5].sort()
+            self._career_cache = table
+            return table
+
+    def playable_years(self, player_id: str, kind: str) -> list[int]:
+        """Seasons that make a card of this kind ('batter'/'pitcher'):
+        only seasons with effective PA (or batters faced) above zero."""
+        entry = self._career_table().get(player_id)
+        if not entry:
+            return []
+        return list(entry[4] if kind == "batter" else entry[5])
+
+    @staticmethod
+    def _role(pa: int, bf: int, bat_g: int, pitch_g: int) -> str | None:
+        """'pitcher' when pitching games outnumber the other games played
+        (batting G counts every game, pitching ones included), else
+        'batter'; volume decides when games weren't recorded."""
+        if bf <= 0:
+            return "batter" if pa > 0 else None
+        if pa <= 0:
+            return "pitcher"
+        if bat_g or pitch_g:
+            return "pitcher" if 2 * pitch_g > bat_g else "batter"
+        return "pitcher" if bf > pa else "batter"
+
+    def primary_role(self, player_id: str, year: int | None = None) -> str | None:
+        """'batter' or 'pitcher': what the player mostly was that season
+        (or over his career when year is None). None without usable stats.
+        Ohtani and Ruth from 1918 are batters; a pitcher who batted is a
+        pitcher; a position player's mop-up inning doesn't count."""
+        if year is None:
+            entry = self._career_table().get(player_id)
+            if not entry:
+                return None
+            return self._role(entry[0], entry[1], entry[2], entry[3])
+        self._load_batting()
+        self._load_pitching()
+        bat = self._batting.get((player_id, year)) or []
+        pit = self._pitching.get((player_id, year)) or []
+        pa = sum(_pa_eff(s[2]) for s in bat)
+        bf = self._season_pitch_bf(pit) if pit else 0
+        return self._role(pa, bf,
+                          sum(s[2][_BAT_IDX["G"]] or 0 for s in bat),
+                          sum(s[2][_PIT_IDX["G"]] or 0 for s in pit))
+
+    def career_summary(self, player_id: str) -> dict | None:
+        """Career span and volume from the stats themselves (People's
+        debut/finalGame are blank for active and most Negro-league
+        players): first_year, last_year, pa, bf, role, position."""
+        entry = self._career_table().get(player_id)
+        if not entry:
+            return None
+        years = sorted(set(entry[4]) | set(entry[5]))
+        return {
+            "player_id": player_id,
+            "name": self.player_name(player_id),
+            "first_year": years[0] if years else None,
+            "last_year": years[-1] if years else None,
+            "pa": entry[0],
+            "bf": entry[1],
+            "role": self._role(entry[0], entry[1], entry[2], entry[3]),
+            "position": self.career_position(player_id),
+            "batting_years": list(entry[4]),
+            "pitching_years": list(entry[5]),
+        }
+
+    def career_position(self, player_id: str) -> str | None:
+        """Position with the most career games ('OF' for any outfield
+        spot), or None when no fielding is recorded."""
+        self._load_fielding()
+        entry = self._career_table().get(player_id)
+        if not entry:
+            return None
+        g_index = _FIELDING_STATS.index("G")
+        games: dict[str, int] = defaultdict(int)
+        for year in set(entry[4]) | set(entry[5]):
+            for pos, (values, _lg) in self._fielding.get((player_id, year), {}).items():
+                if pos in ("LF", "CF", "RF", "PH", "PR"):
+                    continue  # 'OF' already holds the outfield total
+                games[pos] += values[g_index] or 0
+        if not games:
+            return None
+        return max(games.items(), key=lambda kv: kv[1])[0]
+
+    def _suggest_index(self) -> tuple[list[str], dict[str, list[str]], dict]:
+        """(sorted unique name tokens, token -> pids, pid -> token tuple),
+        built once over every player who has a playable season."""
+        index = getattr(self, "_suggest_cache", None)
+        if index is not None:
+            return index
+        with self._lock:
+            index = getattr(self, "_suggest_cache", None)
+            if index is not None:
+                return index
+            self._load_people()
+            career = self._career_table()
+            by_token: dict[str, list[str]] = defaultdict(list)
+            names: dict[str, tuple] = {}
+            for pid, entry in career.items():
+                if not (entry[4] or entry[5]):
+                    continue
+                tokens = tuple(self._suggest_tokens(self.player_name(pid)))
+                names[pid] = tokens
+                for t in set(tokens):
+                    by_token[t].append(pid)
+            index = (sorted(by_token), dict(by_token), names)
+            self._suggest_cache = index
+            return index
+
+    def suggest_players(self, query: str, limit: int = 8) -> list[dict]:
+        """Autocomplete: players whose name tokens start with every typed
+        token, in any order ('babe ru', 'mays w', 'aj pierz', 'griffey
+        jr'), most prominent first (career PA + batters faced), exact
+        name-token matches ahead of prefixes. Fast (bisect over a token
+        index built once)."""
+        import bisect
+        import heapq
+
+        q = self._suggest_tokens(query)
+        if not q:
+            return []
+        tokens, by_token, names = self._suggest_index()
+        matched: set | None = None
+        for t in sorted(set(q), key=len, reverse=True):
+            found: set = set()
+            i = bisect.bisect_left(tokens, t)
+            while i < len(tokens) and tokens[i].startswith(t):
+                found.update(by_token[tokens[i]])
+                i += 1
+            matched = found if matched is None else matched & found
+            if not matched:
+                return []
+        career = self._career_table()
+        # A whole typed word counts as a match only from two letters up,
+        # and a whole-name match only for two words or more (so 'smith'
+        # ranks Ozzie and Lee ahead of the mononym 'Smith' of 1884).
+        qset = {t for t in q if len(t) > 1}
+        multi = len(q) > 1
+
+        def score(pid):
+            entry = career[pid]
+            exact = len(qset & set(names[pid]))
+            full = multi and names[pid] == tuple(q)
+            return (full, exact, entry[0] + entry[1], pid)
+
+        best = heapq.nlargest(limit, matched, key=score)
+        return [self.career_summary(pid) for pid in best]
+
+    # Teams
+
+    def _team_table(self) -> dict:
+        """(year, teamID) -> team row (name, league, W, L, G, rank,
+        franchise), from one cached read of the small Teams table."""
+        table = getattr(self, "_team_cache", None)
+        if table is not None:
+            return table
+        with self._lock:
+            table = getattr(self, "_team_cache", None)
+            if table is not None:
+                return table
+            table = {}
+            for row in self._rows("Teams"):
+                year = int(row["yearID"])
+                table[(year, row["teamID"])] = {
+                    "year": year,
+                    "team_id": row["teamID"],
+                    "name": row.get("name") or row["teamID"],
+                    "league": row.get("lgID") or "?",
+                    "division": row.get("divID") or "",
+                    "franchise": row.get("franchID") or "",
+                    "rank": _int_or_none(row.get("Rank", "")),
+                    "G": _int_or_none(row.get("G", "")) or 0,
+                    "W": _int_or_none(row.get("W", "")) or 0,
+                    "L": _int_or_none(row.get("L", "")) or 0,
+                }
+            self._team_cache = table
+            return table
+
+    def team_years(self) -> tuple[int, int]:
+        """(first, last) season with team data."""
+        years = [y for y, _t in self._team_table()]
+        return min(years), max(years)
+
+    def teams(self, year: int) -> list[dict]:
+        """That season's teams, by league, then standing (rank, W%)."""
+        rows = [dict(t) for (y, _tid), t in self._team_table().items() if y == year]
+        for t in rows:
+            decided = t["W"] + t["L"]
+            t["pct"] = t["W"] / decided if decided else 0.0
+        rows.sort(key=lambda t: (t["league"], t["division"],
+                                 t["rank"] if t["rank"] is not None else 99,
+                                 -t["pct"], t["name"]))
+        return rows
+
+    def team(self, year: int, team_id: str) -> dict | None:
+        row = self._team_table().get((year, team_id))
+        return dict(row) if row else None
+
+    def team_name(self, year: int, team_id: str) -> str:
+        row = self._team_table().get((year, team_id))
+        return row["name"] if row else team_id
+
+    def _roster_index(self) -> dict:
+        """(year, teamID) -> pids with a batting or pitching stint there."""
+        index = getattr(self, "_roster_cache", None)
+        if index is not None:
+            return index
+        with self._lock:
+            index = getattr(self, "_roster_cache", None)
+            if index is not None:
+                return index
+            self._load_batting()
+            self._load_pitching()
+            index = defaultdict(set)
+            for table in (self._batting, self._pitching):
+                for (pid, year), stints in table.items():
+                    for team_id, _lg, _values in stints:
+                        index[(year, team_id)].add(pid)
+            self._roster_cache = dict(index)
+            return self._roster_cache
+
+    def team_roster(self, year: int, team_id: str) -> list[dict]:
+        """Everyone who played for the team that season, with his batting
+        and pitching *for this team* (for playing-time thresholds) and
+        the other teams he played for that year. A player's card still
+        uses his full-season line (batting_season/pitching_season sum all
+        stints, as Strat-O-Matic does)."""
+        pids = self._roster_index().get((year, team_id), set())
+        self._load_fielding()
+        g_bat, g_pit = _BAT_IDX["G"], _PIT_IDX["G"]
+        out = []
+        for pid in pids:
+            bat = self._batting.get((pid, year)) or []
+            pit = self._pitching.get((pid, year)) or []
+            bat_here = [s for s in bat if s[0] == team_id]
+            pit_here = [s for s in pit if s[0] == team_id]
+            others = sorted({s[0] for s in bat + pit if s[0] != team_id})
+            batting = None
+            if bat_here:
+                v = [s[2] for s in bat_here]
+                batting = {
+                    "G": sum(x[g_bat] or 0 for x in v),
+                    "PA": sum(_pa_eff(x) for x in v),
+                    "AB": sum(x[_BAT_IDX["AB"]] or 0 for x in v),
+                }
+            pitching = None
+            if pit_here:
+                v = [s[2] for s in pit_here]
+                pitching = {
+                    "G": sum(x[g_pit] or 0 for x in v),
+                    "GS": sum(x[_PIT_IDX["GS"]] or 0 for x in v),
+                    "IPouts": sum(x[_PIT_IDX["IPouts"]] or 0 for x in v),
+                    "BF": self._season_pitch_bf(pit_here),
+                }
+            positions = self.positions(pid, year)
+            person = self._people.get(pid, {})
+            out.append({
+                "player_id": pid,
+                "name": self.player_name(pid),
+                "bats": person.get("bats", "?"),
+                "throws": person.get("throws", "?"),
+                "batting": batting,
+                "pitching": pitching,
+                "season_pa": sum(_pa_eff(s[2]) for s in bat),
+                "season_bf": self._season_pitch_bf(pit) if pit else 0,
+                "season_bat_g": sum(s[2][g_bat] or 0 for s in bat),
+                "season_pitch_g": sum(s[2][g_pit] or 0 for s in pit),
+                "role": self.primary_role(pid, year),
+                "position": positions[0][0] if positions else None,
+                "positions": positions,
+                "other_teams": [{"team_id": t, "name": self.team_name(year, t)}
+                                for t in others],
+            })
+        out.sort(key=lambda p: p["name"])
+        return out
+
 
 @lru_cache(maxsize=1)
 def default_db() -> LahmanDB:

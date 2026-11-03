@@ -1,306 +1,57 @@
-"""Strat-O-Matic Card Maker — local web app.
+"""Strat-O-Matic Card Maker - local web app.
 
 Run:  uv run app.py      (uv provisions Flask automatically)
  or:  python3 app.py     (needs: python3 -m pip install flask)
-then open http://localhost:5001
+It opens your browser by itself (http://localhost:5001 unless that port is
+busy). Options: --port N (or STRATOGEN_PORT=N), --no-browser.
 
 Everything is offline: player statistics and league averages come from the
 bundled Lahman database (1871-2025). The only dependency is Flask.
 """
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.9"
 # dependencies = ["flask>=2.0"]
 # ///
 
 from __future__ import annotations
 
+import argparse
+import json
+import logging
+import os
+import re
+import socket
 import sys
 import threading
+import time
+import urllib.request
+import webbrowser
+from pathlib import Path
 
 try:
-    from flask import Flask, jsonify, request
+    from flask import Flask, Response, jsonify, render_template, request
+    from werkzeug.exceptions import HTTPException
 except ModuleNotFoundError:
     sys.exit(
         "Flask isn't installed for this Python interpreter.\n"
         "Install it with THIS python so pip and python match:\n\n"
-        f"    {sys.executable} -m pip install flask\n\n"
+        f'    "{sys.executable}" -m pip install flask\n\n'
         "(A bare 'pip install flask' may target a different Python "
         "installation on your machine.)")
 
-from stratogen.fielding import position_ratings, rate_position
-from stratogen.generate import (
-    average_batter_chances, average_pitcher_chances,
-    generate_batter_card, generate_pitcher_card,
-)
+from stratogen import service
 from stratogen.lahman import default_db
-from stratogen.render import CARD_CSS, accuracy_rows, card_to_html
-from stratogen.simulate import effective_pa
+from stratogen.render import CARD_CSS, SHEET_CSS
 
-app = Flask(__name__)
-WARN_PA = 150        # below this, add a gentle small-sample note
+BASE_DIR = Path(__file__).resolve().parent
+APP_ID = "strat-o-gen"
+DEFAULT_PORT = 5001
+FIRST_YEAR = 1871
 
-PAGE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Strat-O-Matic Card Maker</title>
-<style>
-:root {
-  --navy:#1e2d4f; --navy-dark:#16223d; --brick:#9e3a2f; --ink:#2c2a25;
-  --paper:#faf6ea; --paper-dark:#f1ead7; --field:#fffdf6;
-  --rule:#d6cab0; --rule-dark:#b9ab8c; --muted:#7d7259;
-}
-body { font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
-  margin:0; color:var(--ink); min-height:100vh;
-  background-color:#ece4d2;
-  background-image:repeating-linear-gradient(90deg,
-    rgba(30,45,79,0.04) 0, rgba(30,45,79,0.04) 1px, transparent 1px, transparent 28px); }
-.container { max-width:760px; margin:0 auto; padding:34px 16px; }
-.panel { background:var(--paper); border:1px solid var(--rule-dark);
-  border-radius:4px; padding:26px 28px; margin-bottom:22px;
-  box-shadow:0 1px 0 #fff inset, 0 3px 10px rgba(44,42,37,0.18);
-  outline:1px solid var(--rule); outline-offset:-5px; }
-.masthead { text-align:center; margin-bottom:18px; }
-h1 { margin:0; color:var(--navy); font-size:30px; font-weight:normal;
-  text-transform:uppercase; letter-spacing:.08em; }
-h1 .star { color:var(--brick); font-size:.55em; vertical-align:.35em;
-  padding:0 .5em; }
-.subtitle { color:var(--muted); font-style:italic; margin:6px 0 0;
-  font-size:15px; }
-.masthead::after { content:""; display:block; width:200px; margin:14px auto 0;
-  border-top:1px solid var(--brick); border-bottom:1px solid var(--brick);
-  height:3px; }
-label { display:block; color:var(--navy); margin:12px 0 5px; font-size:13px;
-  text-transform:uppercase; letter-spacing:.08em; }
-input[type=text], input[type=number] { width:100%; box-sizing:border-box;
-  padding:10px 12px; font-size:17px; font-family:inherit; color:var(--ink);
-  background:var(--field); border:1px solid var(--rule-dark); border-radius:3px;
-  box-shadow:0 1px 2px rgba(44,42,37,0.08) inset; }
-input:focus { outline:none; border-color:var(--navy);
-  box-shadow:0 0 0 1px var(--navy); }
-.row { display:flex; gap:14px; }
-.row > div { flex:1; }
-button { background:var(--navy); color:#f5efdf; font-family:inherit;
-  font-size:14px; text-transform:uppercase; letter-spacing:.1em;
-  border:1px solid var(--navy-dark); border-radius:3px; padding:11px 24px;
-  cursor:pointer; margin-top:16px;
-  box-shadow:0 1px 0 rgba(255,255,255,0.15) inset, 0 2px 4px rgba(44,42,37,0.25); }
-button:hover { background:var(--navy-dark); }
-button:disabled { background:#a9a290; border-color:#948d7b; cursor:default; }
-button.secondary { background:var(--paper-dark); color:var(--navy);
-  border:1px solid var(--rule-dark); box-shadow:none; }
-button.secondary:hover { background:#e7dec6; }
-.error { background:#f4e2dd; color:#7e2c22; border:1px solid #c79289;
-  border-left:4px solid var(--brick); border-radius:3px; padding:10px 14px;
-  margin-top:14px; display:none; }
-.warnings { background:#f6ecd2; color:#6d5520; border:1px solid #d6c08c;
-  border-left:4px solid #b08c3a; border-radius:3px; padding:10px 14px;
-  margin:12px 0; font-size:14px; }
-.warnings ul { margin:4px 0 0 18px; padding:0; }
-.candidates { margin-top:14px; }
-.candidate { border:1px solid var(--rule-dark); background:var(--field);
-  border-radius:3px; padding:10px 14px; margin-bottom:8px; cursor:pointer; }
-.candidate:hover, .candidate.active { border-color:var(--navy);
-  background:var(--paper-dark); box-shadow:2px 0 0 var(--brick) inset; }
-.candidate b { color:var(--navy); }
-.candidate .meta { color:var(--muted); font-size:13px; font-style:italic; }
-.kind-toggle { margin-top:12px; }
-.kind-toggle label { display:inline; margin-right:18px; font-size:14px;
-  text-transform:none; letter-spacing:normal; color:var(--ink); }
-.kind-toggle input { accent-color:var(--brick); }
-.accuracy { width:100%; border-collapse:collapse; font-size:14px;
-  margin-top:8px; background:var(--field); }
-.accuracy th, .accuracy td { border:1px solid var(--rule-dark);
-  padding:6px 12px; text-align:center; }
-.accuracy th { background:var(--navy); color:#f5efdf; font-weight:normal;
-  text-transform:uppercase; letter-spacing:.06em; font-size:12px; }
-.accuracy tr:nth-child(even) td { background:var(--paper-dark); }
-h3 { color:var(--navy); margin:22px 0 4px; font-weight:normal; font-size:16px;
-  text-transform:uppercase; letter-spacing:.07em;
-  border-bottom:1px solid var(--rule-dark); padding-bottom:4px; }
-.note { color:var(--muted); font-size:13px; font-style:italic; }
-#years { margin-top:10px; }
-button.yearchip { background:var(--field); color:var(--navy); font-size:13px;
-  letter-spacing:normal; border:1px solid var(--rule-dark); border-radius:3px;
-  padding:4px 9px; margin:4px 6px 0 0; box-shadow:none; cursor:pointer; }
-button.yearchip:hover { border-color:var(--navy); background:var(--paper-dark); }
-#spinner { display:none; color:var(--muted); font-style:italic; margin-top:12px; }
-.footer { text-align:center; color:var(--muted); font-size:12px;
-  font-style:italic; margin:6px 0 24px; }
-__CARD_CSS__
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="panel">
-    <div class="masthead">
-      <h1>Strat-O-Matic<span class="star">&#9733;</span>Card Maker</h1>
-      <p class="subtitle">A game-usable card for any player, 1871&ndash;__MAX_YEAR__</p>
-    </div>
-    <div class="row">
-      <div>
-        <label for="name">Player name</label>
-        <input type="text" id="name" placeholder="e.g. Babe Ruth, Nolan Ryan" autofocus>
-      </div>
-      <div style="max-width:140px">
-        <label for="year">Year</label>
-        <input type="number" id="year" min="1871" max="__MAX_YEAR__" placeholder="1927">
-      </div>
-    </div>
-    <div class="kind-toggle" id="kindToggle" style="display:none">
-      <label><input type="radio" name="kind" value="batter" checked> Batter card</label>
-      <label><input type="radio" name="kind" value="pitcher"> Pitcher card</label>
-    </div>
-    <button id="searchBtn">Find player</button>
-    <button id="randomBtn" class="secondary" title="Any substantial season, 1871&ndash;__MAX_YEAR__">Random player</button>
-    <div id="spinner">Working&hellip;</div>
-    <div class="error" id="error"></div>
-    <div id="years"></div>
-    <div class="candidates" id="candidates"></div>
-  </div>
-  <div id="result"></div>
-  <div class="footer">An independent fan project &mdash; not affiliated with
-    the Strat-O-Matic Game Company</div>
-</div>
-<script>
-const $ = id => document.getElementById(id);
-let chosen = null;
-
-function showError(msg) { const e = $('error'); e.textContent = msg;
-  e.style.display = msg ? 'block' : 'none'; }
-
-function showYears(years, msg) {
-  const box = $('years');
-  box.innerHTML = '';
-  if (!years || !years.length) return;
-  const label = document.createElement('span');
-  label.className = 'note';
-  label.textContent = msg;
-  box.appendChild(label);
-  for (const y of years) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'yearchip';
-    b.textContent = y;
-    b.onclick = () => { $('year').value = y; generate(); };
-    box.appendChild(b);
-  }
-}
-
-function chosenYears() {
-  if (!chosen) return [];
-  const kind = document.querySelector('input[name=kind]:checked').value;
-  return (kind === 'pitcher' ? chosen.pitching_years : chosen.batting_years) || [];
-}
-
-async function search() {
-  showError(''); $('result').innerHTML = ''; $('candidates').innerHTML = '';
-  $('years').innerHTML = '';
-  $('kindToggle').style.display = 'none'; chosen = null;
-  const name = $('name').value.trim();
-  if (!name) { showError('Enter a player name.'); return; }
-  $('spinner').style.display = 'block';
-  try {
-    const r = await fetch('/api/search?name=' + encodeURIComponent(name));
-    const data = await r.json();
-    if (!r.ok) { showError(data.error); return; }
-    if (data.players.length === 0) {
-      showError('No player found by that name. Check the spelling (last name alone works too).');
-      return;
-    }
-    if (data.players.length === 1) { pick(data.players[0], null); return; }
-    for (const p of data.players) {
-      const div = document.createElement('div');
-      div.className = 'candidate';
-      div.innerHTML = '<b>' + p.name + '</b> <span class="meta">' + p.meta + '</span>';
-      div.onclick = () => pick(p, div);
-      $('candidates').appendChild(div);
-    }
-  } finally { $('spinner').style.display = 'none'; }
-}
-
-function pick(p, div) {
-  chosen = p;
-  if (div) {
-    for (const el of document.querySelectorAll('.candidate')) el.classList.remove('active');
-    div.classList.add('active');
-  }
-  const kinds = [];
-  if (p.can_bat) kinds.push('batter');
-  if (p.can_pitch) kinds.push('pitcher');
-  if (kinds.length === 2) {
-    $('kindToggle').style.display = 'block';
-  } else {
-    $('kindToggle').style.display = 'none';
-    document.querySelector('input[name=kind][value=' + (kinds[0] || 'batter') + ']').checked = true;
-  }
-  generate();
-}
-
-async function generate() {
-  if (!chosen) return;
-  showError(''); $('result').innerHTML = ''; $('years').innerHTML = '';
-  const year = parseInt($('year').value, 10);
-  if (!year) {
-    showYears(chosenYears(), (chosen.name || 'This player') + ' has a season in: ');
-    return;
-  }
-  const kind = document.querySelector('input[name=kind]:checked').value;
-  $('spinner').style.display = 'block';
-  try {
-    const r = await fetch('/api/generate', { method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ player_id: chosen.player_id, year: year, kind: kind })});
-    const data = await r.json();
-    if (!r.ok) {
-      showError(data.error);
-      showYears(data.years || chosenYears(), 'Seasons available: ');
-      return;
-    }
-    let htmlOut = '';
-    if (data.warnings.length) {
-      htmlOut += '<div class="panel"><div class="warnings"><b>Heads up:</b><ul>'
-        + data.warnings.map(w => '<li>' + w + '</li>').join('') + '</ul></div></div>';
-    }
-    htmlOut += '<div class="panel">' + data.card_html
-      + '<button onclick="window.print()" class="secondary">Print card</button>'
-      + '<h3>How well does this card match the real season?</h3>'
-      + '<p class="note">What the card produces over the same plate appearances, versus what actually happened:</p>'
-      + '<table class="accuracy"><tr><th></th><th>Actual ' + data.year + '</th><th>This card</th></tr>'
-      + data.accuracy.map(r2 => '<tr><td style="text-align:left">' + r2[0] + '</td><td>'
-          + r2[1] + '</td><td>' + r2[2] + '</td></tr>').join('')
-      + '</table></div>';
-    $('result').innerHTML = htmlOut;
-  } finally { $('spinner').style.display = 'none'; }
-}
-
-async function randomPick() {
-  showError(''); $('result').innerHTML = ''; $('candidates').innerHTML = '';
-  $('spinner').style.display = 'block';
-  try {
-    const r = await fetch('/api/random');
-    const p = await r.json();
-    if (!r.ok) { showError(p.error); return; }
-    $('name').value = p.name;
-    $('year').value = p.year;
-    document.querySelector('input[name=kind][value=' + p.kind + ']').checked = true;
-    pick({ player_id: p.player_id, name: p.name,
-           can_bat: p.can_bat, can_pitch: p.can_pitch }, null);
-  } finally { $('spinner').style.display = 'none'; }
-}
-
-$('searchBtn').onclick = search;
-$('randomBtn').onclick = randomPick;
-$('name').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
-$('year').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
-for (const el of document.querySelectorAll('input[name=kind]'))
-  el.addEventListener('change', generate);
-</script>
-</body>
-</html>
-""".replace("__CARD_CSS__", CARD_CSS)
-
+app = Flask(__name__, root_path=str(BASE_DIR),
+            template_folder=str(BASE_DIR / "templates"),
+            static_folder=str(BASE_DIR / "static"))
+log = logging.getLogger("strat-o-gen")
 
 _warmed = threading.Event()
 
@@ -309,45 +60,160 @@ def warm_in_background():
     """Parse the data files while the user is still typing, so the first
     search and first card are instant."""
     def _warm():
-        default_db().warm()
+        db = default_db()
+        db.warm()
+        db.warm_rosters()
         _warmed.set()
     threading.Thread(target=_warm, daemon=True).start()
 
 
-@app.route("/")
-def index():
+def _max_year() -> int:
     # The year bound comes from the data when it's loaded (so a new
     # season's files are picked up automatically); 2025 until then.
-    max_year = default_db().max_year() if _warmed.is_set() else 2025
-    return PAGE.replace("__MAX_YEAR__", str(max_year))
+    return default_db().max_year() if _warmed.is_set() else 2025
+
+
+# --- errors -------------------------------------------------------------------------
+
+class ApiError(Exception):
+    def __init__(self, message: str, status: int = 400, **extra):
+        super().__init__(message)
+        self.message, self.status, self.extra = message, status, extra
+
+
+@app.errorhandler(ApiError)
+def _api_error(exc: ApiError):
+    return jsonify(error=exc.message, **exc.extra), exc.status
+
+
+@app.errorhandler(service.CardError)
+def _card_error(exc: service.CardError):
+    return jsonify(exc.to_json()), exc.status
+
+
+@app.errorhandler(HTTPException)
+def _http_error(exc: HTTPException):
+    messages = {404: "There's no such page or API endpoint.",
+                405: "That address doesn't accept this kind of request."}
+    return jsonify(error=messages.get(exc.code, exc.description)), exc.code
+
+
+@app.errorhandler(Exception)
+def _server_error(exc: Exception):
+    log.exception("unexpected error")
+    return jsonify(error=f"Something went wrong on our side "
+                         f"({type(exc).__name__}). Please try again."), 500
+
+
+# --- input validation ----------------------------------------------------------------
+
+def _year(value, *, required: bool = True) -> int | None:
+    """An int or a numeric string within the data's seasons (bools,
+    floats and words are rejected)."""
+    if value is None or value == "":
+        if required:
+            raise ApiError("Enter a year, like 1927.")
+        return None
+    if isinstance(value, bool):
+        raise ApiError("year must be a whole number, like 1927")
+    if isinstance(value, int):
+        year = value
+    elif isinstance(value, str) and value.strip().isdigit():
+        year = int(value.strip())
+    else:
+        raise ApiError("year must be a whole number, like 1927")
+    if not FIRST_YEAR <= year <= _max_year():
+        raise ApiError(f"Pick a year from {FIRST_YEAR} to {_max_year()}.")
+    return year
+
+
+def _text(value, name: str, *, max_len: int = 80, required: bool = True) -> str:
+    if value is None:
+        value = ""
+    if not isinstance(value, str):
+        raise ApiError(f"{name} must be text")
+    value = value.strip()
+    if required and not value:
+        raise ApiError(f"Enter a {name}.")
+    if len(value) > max_len:
+        raise ApiError(f"{name} is too long")
+    return value
+
+
+_ID = re.compile(r"^[A-Za-z0-9.'_-]{1,16}$")
+
+
+def _player_id(value) -> str:
+    if not isinstance(value, str) or not _ID.match(value):
+        raise ApiError("Unknown player.", 404)
+    if not default_db().player_info(value):
+        raise ApiError("Unknown player.", 404)
+    return value
+
+
+def _kind(value) -> str:
+    if value in (None, "", "auto"):
+        return "auto"
+    if value not in service.KINDS:
+        raise ApiError("kind must be 'batter', 'pitcher' or 'auto'")
+    return value
+
+
+def _sides(value) -> str:
+    value = value or "both"
+    if value not in service.SIDES:
+        raise ApiError("sides must be 'basic', 'advanced' or 'both'")
+    return value
+
+
+# --- pages ---------------------------------------------------------------------------
+
+@app.route("/")
+def index():
+    return render_template("index.html", max_year=_max_year(), first_year=FIRST_YEAR)
+
+
+@app.route("/card.css")
+def card_css():
+    return Response(CARD_CSS + SHEET_CSS, mimetype="text/css")
+
+
+@app.route("/api/health")
+def api_health():
+    return jsonify(app=APP_ID, ok=True, ready=_warmed.is_set())
+
+
+# --- players -------------------------------------------------------------------------
+
+@app.route("/api/suggest")
+def api_suggest():
+    q = _text(request.args.get("q"), "name", max_len=60, required=False)
+    if not q:
+        return jsonify(players=[])
+    db = default_db()
+    players = [service.player_summary(db, hit["player_id"])
+               for hit in db.suggest_players(q, limit=8)]
+    return jsonify(players=[p for p in players if p])
 
 
 @app.route("/api/search")
 def api_search():
-    name = (request.args.get("name") or "").strip()
-    if not name:
-        return jsonify(error="missing name"), 400
+    name = _text(request.args.get("name"), "player name", max_len=80)
+    year = _year(request.args.get("year"), required=False)
     db = default_db()
-    players = []
+    players, seen = [], set()
     for hit in db.search_players(name):
-        span = ""
-        if hit.first_year:
-            span = f"{hit.first_year}–{hit.last_year}"
-        kinds = []
-        if hit.batting_years:
-            kinds.append("batted")
-        if len(hit.pitching_years) > 2 or len(hit.pitching_years) > len(hit.batting_years) // 2:
-            kinds.append("pitched")
-        players.append({
-            "player_id": hit.player_id,
-            "name": hit.name,
-            "meta": f"{span} · bats {hit.bats}/throws {hit.throws}"
-                    + (f" · {', '.join(kinds)}" if kinds else ""),
-            "can_bat": bool(hit.batting_years),
-            "can_pitch": bool(hit.pitching_years),
-            "batting_years": hit.batting_years,
-            "pitching_years": hit.pitching_years,
-        })
+        if hit.player_id in seen:
+            continue
+        seen.add(hit.player_id)
+        summary = service.player_summary(db, hit.player_id)
+        if summary:
+            players.append(summary)
+    if year is not None:
+        # Players with a card that season first (stable otherwise).
+        for p in players:
+            p["has_year"] = year in p["batting_years"] or year in p["pitching_years"]
+        players.sort(key=lambda p: not p["has_year"])
     return jsonify(players=players)
 
 
@@ -355,74 +221,196 @@ def api_search():
 def api_random():
     """A random substantial player-season, ready to generate."""
     db = default_db()
-    player_id, year, kind = db.random_season()
-    return jsonify(
-        player_id=player_id,
-        name=db.player_name(player_id),
-        year=year,
-        kind=kind,
-        can_bat=db.batting_season(player_id, year) is not None,
-        can_pitch=db.pitching_season(player_id, year) is not None,
-    )
+    for _ in range(20):
+        player_id, year, kind = db.random_season()
+        if year in db.playable_years(player_id, kind):
+            break
+    summary = service.player_summary(db, player_id) or {}
+    return jsonify(dict(summary, player_id=player_id, year=year, kind=kind,
+                        name=db.player_name(player_id)))
 
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
-    payload = request.get_json(silent=True) or {}
-    player_id = payload.get("player_id")
-    year = payload.get("year")
-    kind = payload.get("kind", "batter")
-    if not player_id or not isinstance(year, int):
-        return jsonify(error="player and year are required"), 400
-
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise ApiError("Send JSON like {\"player_id\": \"ruthba01\", \"year\": 1927}.")
+    player_id = _player_id(payload.get("player_id"))
+    year = _year(payload.get("year"))
+    kind = _kind(payload.get("kind"))
     db = default_db()
-    name = db.player_name(player_id)
-    try:
-        if kind == "pitcher":
-            stats = db.pitching_season(player_id, year)
-            if stats is None:
-                return jsonify(
-                    error=f"{name} has no pitching record in {year}.",
-                    years=db.pitching_years(player_id)), 404
-            league = db.league_batting(year, stats["league"])
-            card, warnings = generate_pitcher_card(
-                stats, league,
-                fielding_rating=rate_position(db, player_id, year, "P") or 3)
-            opposing = average_batter_chances(league)
-        else:
-            stats = db.batting_season(player_id, year)
-            if stats is None:
-                return jsonify(
-                    error=f"{name} has no batting record in {year}.",
-                    years=db.batting_years(player_id)), 404
-            pa = effective_pa(stats)
-            league = db.league_batting(year, stats["league"])
-            card, warnings = generate_batter_card(
-                stats, league,
-                position_ratings=position_ratings(db, player_id, year))
-            # The generator warns below 100 PA; add a gentler note for the
-            # 100-150 range. Tiny seasons (even a pitcher's 12 AB) still
-            # make a card — Strat-O-Matic prints those too.
-            if WARN_PA > pa >= 100:
-                warnings.append(
-                    f"only {pa:.0f} plate appearances — small samples make "
-                    f"streaky cards")
-            opposing = average_pitcher_chances(league)
-    except (ValueError, KeyError) as exc:
-        return jsonify(error=str(exc)), 400
+    cs = service.make_cards(db, player_id, year, kind)
+    data = cs.to_api()
+    query = f"player_id={cs.player_id}&year={cs.year}&kind={cs.kind}"
+    data["downloads"] = {"html": f"/download/card?{query}&format=html",
+                         "json": f"/download/card?{query}&format=json"}
+    data["batting_years"] = db.playable_years(player_id, "batter")
+    data["pitching_years"] = db.playable_years(player_id, "pitcher")
+    data["years"] = sorted(set(data["batting_years"]) | set(data["pitching_years"]))
+    return jsonify(data)
 
-    return jsonify(
-        card_html=card_to_html(card),
-        warnings=warnings,
-        accuracy=accuracy_rows(card, stats, opposing),
-        year=year,
-        name=name,
-    )
+
+def _filename(text: str) -> str:
+    return re.sub(r"[^A-Za-z0-9]+", "-", text).strip("-") or "card"
+
+
+@app.route("/download/card")
+def download_card():
+    args = request.args
+    player_id = _player_id(args.get("player_id"))
+    year = _year(args.get("year"))
+    kind = _kind(args.get("kind"))
+    fmt = args.get("format", "html")
+    if fmt not in ("html", "json"):
+        raise ApiError("format must be 'html' or 'json'")
+    cs = service.make_cards(default_db(), player_id, year, kind)
+    name = _filename(f"{cs.name} {cs.year} {cs.kind}")
+    if fmt == "json":
+        body = json.dumps(cs.card_data(), indent=1, ensure_ascii=False)
+        resp = Response(body, mimetype="application/json")
+        resp.headers["Content-Disposition"] = f'attachment; filename="{name}.json"'
+        return resp
+    resp = Response(service.card_document(cs, _sides(args.get("sides"))),
+                    mimetype="text/html")
+    resp.headers["Content-Disposition"] = f'attachment; filename="{name}.html"'
+    return resp
+
+
+# --- teams ---------------------------------------------------------------------------
+
+@app.route("/api/teams")
+def api_teams():
+    year = _year(request.args.get("year"))
+    db = default_db()
+    leagues: dict[str, list] = {}
+    for t in db.teams(year):
+        leagues.setdefault(t["league"], []).append(
+            {k: t[k] for k in ("team_id", "name", "league", "division", "W", "L", "G", "rank")})
+    first, last = db.team_years()
+    return jsonify(year=year, first_year=first, last_year=last,
+                   leagues=[{"league": lg, "teams": teams}
+                            for lg, teams in leagues.items()])
+
+
+def _team_args():
+    year = _year(request.args.get("year"))
+    team_id = _text(request.args.get("team"), "team", max_len=8)
+    if not re.match(r"^[A-Za-z0-9]{1,8}$", team_id):
+        raise ApiError("Unknown team.", 404)
+    return year, team_id
+
+
+@app.route("/api/team")
+def api_team():
+    year, team_id = _team_args()
+    ts = service.team_set(default_db(), year, team_id)
+    data = ts.to_api()
+    data["downloads"] = {s: f"/download/team?year={year}&team={team_id}&sides={s}"
+                         for s in service.SIDES}
+    return jsonify(data)
+
+
+@app.route("/download/team")
+def download_team():
+    year, team_id = _team_args()
+    sides = _sides(request.args.get("sides"))
+    ts = service.team_set(default_db(), year, team_id)
+    resp = Response(service.team_document(ts, sides), mimetype="text/html")
+    name = _filename(f"{ts.title} {sides}")
+    resp.headers["Content-Disposition"] = f'attachment; filename="{name}.html"'
+    return resp
+
+
+# --- launcher -----------------------------------------------------------------------
+
+def _ours(port: int, timeout: float = 1.5) -> bool:
+    """Does this app already answer on the port?"""
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/health",
+                                    timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8")).get("app") == APP_ID
+    except Exception:
+        return False
+
+
+def _port_free(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        if os.name == "nt":
+            # Windows: refuse to share a port someone else is listening on.
+            exclusive = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
+            if exclusive is not None:
+                sock.setsockopt(socket.SOL_SOCKET, exclusive, 1)
+        else:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind(("127.0.0.1", port))
+        except OSError:
+            return False
+    return True
+
+
+def _make_server(port: int):
+    """Bind the first free port from `port` on (port 0 = any) and return
+    (server, port). Never shares a port with another program."""
+    from werkzeug import serving
+    serving.BaseWSGIServer.allow_reuse_address = os.name != "nt"
+    candidates = [port] + [p for p in range(port + 1, port + 20)] + [0]
+    for candidate in candidates:
+        if candidate and not _port_free(candidate):
+            continue
+        try:
+            server = serving.make_server("127.0.0.1", candidate, app, threaded=True)
+        except (OSError, SystemExit):
+            continue
+        return server, server.server_port
+    raise SystemExit("Couldn't find a free network port to run on.")
+
+
+def _open_when_ready(port: int, url: str, timeout: float = 60.0) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if _ours(port, timeout=1.0):
+            webbrowser.open(url)
+            return
+        time.sleep(0.15)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Strat-O-Matic Card Maker web app")
+    parser.add_argument("--port", type=int,
+                        default=int(os.environ.get("STRATOGEN_PORT") or DEFAULT_PORT),
+                        help=f"port to use (default {DEFAULT_PORT}, or STRATOGEN_PORT)")
+    parser.add_argument("--no-browser", action="store_true",
+                        help="don't open a browser window")
+    args = parser.parse_args(argv)
+
+    if _ours(args.port):
+        url = f"http://localhost:{args.port}/"
+        print(f"The Card Maker is already running at {url} - opening it in your browser.")
+        if not args.no_browser:
+            webbrowser.open(url)
+        return 0
+
+    # Quiet console: no development-server banner, no line per request.
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+    logging.basicConfig(level=logging.ERROR, format="%(message)s")
+    server, port = _make_server(args.port)
+    url = f"http://localhost:{port}/"
+    warm_in_background()
+    print("=" * 60)
+    print(f"  Strat-O-Matic Card Maker is running at  {url}")
+    print("  Keep this window open while you use it; close it to quit.")
+    print("=" * 60, flush=True)
+    if not args.no_browser:
+        threading.Thread(target=_open_when_ready, args=(port, url), daemon=True).start()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return 0
 
 
 if __name__ == "__main__":
-    import webbrowser
-
-    warm_in_background()
-    threading.Timer(1.5, lambda: webbrowser.open("http://localhost:5001")).start()
-    app.run(host="127.0.0.1", port=5001, debug=False)
+    sys.exit(main())

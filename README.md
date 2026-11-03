@@ -7,7 +7,9 @@ era, fully offline.
 ## Quick start
 
 **Windows:** double-click `Start Strat-O-Gen.vbs` (first time: see
-[WINDOWS_SETUP.md](WINDOWS_SETUP.md)).
+[WINDOWS_SETUP.md](WINDOWS_SETUP.md)). The app starts in a minimized window
+on the taskbar and your browser opens by itself; close that window to quit.
+Starting it again while it runs just opens the browser again.
 
 **Mac / Linux (with [uv](https://docs.astral.sh/uv/) — easiest):**
 ```bash
@@ -15,21 +17,32 @@ uv run app.py        # uv reads the script's dependency metadata and
                      # provisions Flask itself; no venv, no pip
 ```
 
-**Mac / Linux (plain Python):**
+**Mac / Linux (plain Python 3.9 or newer):**
 ```bash
 python3 -m pip install flask     # 'python3 -m pip' ensures pip and python3
 python3 app.py                   # match; bare 'pip' may be a different Python
 ```
 If pip refuses with an "externally managed environment" error (newer
-Homebrew/Debian Pythons), use uv above, or
-`python3 -m pip install --user flask`.
+Homebrew/Debian Pythons; `--user` installs are refused too), use uv above
+or a virtual environment:
+```bash
+python3 -m venv .venv && .venv/bin/python -m pip install flask
+.venv/bin/python app.py
+```
+The app opens your browser once it is ready, at http://localhost:5001 (or
+the next free port when another program has 5001). Options: `--port N`
+(or `STRATOGEN_PORT=N`) and `--no-browser`.
 
 **Command line:**
 ```bash
 python3 generate_card.py "Willie Mays" 1965
-python3 generate_card.py "Nolan Ryan" 1972 --pitcher
-python3 generate_card.py "Tom Seaver" 1969 --pitcher --html seaver.html
+python3 generate_card.py "Nolan Ryan" 1972               # pitchers get pitcher cards
+python3 generate_card.py "Babe Ruth" 1918 --pitcher      # choose for a two-way season
+python3 generate_card.py "Tom Seaver" 1969 --html seaver.html
 python3 generate_card.py "Aaron Judge" 2024 --advanced   # L/R platoon side
+python3 generate_card.py "Frank Thomas"                  # lists players, IDs, seasons
+python3 generate_card.py --id thomafr04 2000             # pick one by ID
+python3 generate_card.py --team NYA --year 1927          # printable team sheet
 ```
 
 The only dependency is Flask (pure Python — no compilers, no native
@@ -39,19 +52,58 @@ averages come from the bundled [Lahman database](https://sabr.org/lahman-databas
 
 ## What you get
 
-- A printable card in the classic 3-column × 11-row layout with d20 splits,
-  baserunning symbols (`SINGLE*`, `DOUBLE**`), groundball A/B/C ratings,
-  X-chart chances on pitcher cards, stealing/running ratings, one injury
-  result and one max-effort lineout per batter card — like the real thing.
-- The advanced (platoon) side too: two full grids vs left- and
-  right-handed opponents, each with its printed share of PA and, for
-  batters, a Power-N/W rating (command line `--advanced`; see below).
-- An honesty table: what the card produces over the season's plate
-  appearances vs. what actually happened (hits, HR, BB, SO, ...).
-- Warnings whenever the card can't fully capture the season (see
-  *Known limitations* below) or the era's data is incomplete.
+- **Name autocomplete:** start typing and pick the player (career span and
+  position shown; "Griffey Jr.", "A.J. Pierzynski" and curly apostrophes
+  work). Pitchers default to their pitcher card; two-way seasons (Ruth
+  1918, Ohtani) offer both.
+- **Both sides of every card.** The basic side: the classic 3-column ×
+  11-row grid with d20 splits, baserunning symbols (`SINGLE*`,
+  `DOUBLE**`), groundball A/B/C ratings, X-chart chances on pitcher
+  cards, stealing/running ratings, one injury result and one max-effort
+  lineout per batter card, and the season record. The advanced side
+  (`--advanced` on the command line): two full grids vs left- and
+  right-handed opponents, each under a banner with its share of plate
+  appearances ("28% AGAINST LEFT-HANDED PITCHERS") and, for batters, a
+  Power-N/W rating, topped by the advanced ratings (error numbers, arms,
+  bunting, hit & run, hold, wp/bk, endurance).
+- **An honesty table for each side:** what the card produces over the
+  season's plate appearances (batters faced), against a league-average
+  opponent, vs. what actually happened (hits, HR, BB, SO, ...; the
+  advanced side is share-weighted and includes HBP).
+- **Warnings** in plain English whenever the card can't fully capture the
+  season (see *Known limitations* below) or the era's data is incomplete.
+- **Team sets:** every card for a team-season (see *Team sets*).
+- **Printing at real size:** a basic side prints 2.6 in wide (6.7 pt
+  type), the advanced side's two grids side by side at 5.2 in; print the
+  side shown or both; team sheets print 4 basic sides or 2 advanced sides
+  per page (Letter or A4). Keep the browser's print scale at 100%.
+- **Downloads:** "Save card" writes a standalone HTML file (both sides,
+  printable, with the warnings and honesty tables); "Save card data"
+  writes JSON `{"basic": ..., "advanced": ...}`, each side in the
+  transcription schema of `data/real_cards/transcriptions` (`3col` with
+  its stat record; `6col` from `card_json.advanced_card_to_json`).
 
 Same player + year always produces the same card.
+
+## Team sets
+
+Real Strat-O-Matic is played with whole teams. In the app's **Team set**
+tab, pick a season to list its teams (by league, in standings order, with
+W-L), then a team: every card on the roster is made in well under a second
+and shown as a grid (basic or advanced sides), with **Print sheets** (basic
+sides, advanced sides, or both) and **Save team sheet** (a standalone
+printable HTML file). Command line:
+`python3 generate_card.py --team NYA --year 1927 [--sides basic|advanced|both] [--html FILE]`.
+
+- **Who gets a card:** batters with about 50 plate appearances *for this
+  team* over a 154-game season and pitchers with about 20 innings, scaled
+  to the schedule (0.32 PA and 0.13 IP per team game, at least 10 PA /
+  3 IP). Everyone else is listed under "Left out" with the reason.
+- **Pitchers who batted** get only their pitcher card unless they also
+  played 15+ games off the mound (Wes Ferrell); two-way players (Ruth
+  1918, Ohtani) get both cards.
+- **Traded players** use their full-season line, as Strat-O-Matic does;
+  their card prints the set's team, and they are labeled in the set.
 
 ## How it works
 
@@ -338,13 +390,20 @@ its meaning.
 ## Repository layout
 
 ```
-app.py                  Flask web app (simple web interface)
-generate_card.py        Command-line interface
+app.py                  Web app (Flask): page, JSON API, quiet launcher
+templates/index.html    The page
+static/                 Page script (app.js), styles (app.css), icon
+generate_card.py        Command-line interface (cards, team sheets)
+start_windows.bat       Windows launcher (finds Python, installs Flask once)
+Start Strat-O-Gen.vbs   Windows double-click launcher (minimized window)
 stratogen/
+  service.py            The one card pipeline (web, CLI, team sets): both
+                        sides, warnings, honesty tables, team sets, files
   model.py              Card data model, chance accounting, validation
   card_text.py          Parser/serializer for the plain-text card format
   card_json.py          JSON transcriptions: loader (both sides) + export
-  lahman.py             Offline stats, league averages, handedness (1871-2025)
+  lahman.py             Offline stats, league averages, handedness, teams,
+                        rosters, name autocomplete (1871-2025)
   simulate.py           Statistical tester (exact expected rates + Monte Carlo)
   platoon.py            Platoon model: matchup rates, splits, shares, Power
   generate.py           Chance targets, clamping/redistribution, card layout
@@ -354,13 +413,15 @@ stratogen/
   ratings.py            Stealing/running ratings (fitted to real cards)
   fielding.py           Fielding ratings 1-5 (calibrated to real cards)
   advanced_ratings.py   Advanced-side ratings: e, arms, bunt, hold, wp/bk, endurance
-  render.py             HTML card rendering
+  render.py             Card HTML, print CSS, stat formatting, honesty
+                        tables, printable sheets
 data/
   lahman/               Bundled Lahman database (gzipped CSVs)
   real_cards/           Transcribed real cards = ground truth fixtures
     *.txt               14 cards in the plain-text format
     transcriptions/     25 more in JSON (basic + advanced sides, symbols)
-tests/                  pytest suite (parser, data, benchmark, platoon, app)
+tests/                  pytest suite (parser, data, benchmark, platoon, app,
+                        CLI, service)
 ```
 
 `STRAT_CARD_MAKER_SPEC_v2.md` is the original project spec, kept for

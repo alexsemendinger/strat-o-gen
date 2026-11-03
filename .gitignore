@@ -33,11 +33,10 @@ env/
 *.swo
 *~
 
-# Project specific
-data/cache/
-data/league_averages.json
-*.html
-*.pdf
+# Generated output (cards / team sheets written by the command line)
+/*.html
+/*.pdf
+/*.json
 
 # OS
 .DS_Store
@@ -45,6 +44,3 @@ Thumbs.db
 
 # Logs
 *.log
-
-# pybaseball cache
-~/.pybaseball/
