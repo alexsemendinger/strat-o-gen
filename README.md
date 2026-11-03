@@ -153,6 +153,46 @@ engine omits steals, non-X errors, HBP and small-ball, costing a
 consistent ~12-14%), eras order correctly, and symbol profiles and
 running ratings measurably move run scoring.
 
+## Advanced-side ratings
+
+`stratogen/advanced_ratings.py` computes, from the Lahman data, the extra
+ratings printed on the *advanced* side of real cards, each calibrated
+against the official JSON transcriptions (the four unofficial pitchers are
+weak evidence only; the Sewell HOF composite and the undated McDaniel are
+excluded). Entry points: `advanced_batter_ratings` /
+`advanced_batter_header_lines` and `advanced_pitcher_ratings` /
+`advanced_pitcher_header_lines`, producing lines like `cf-1(+2) e7`,
+`c-3(0) e1, T-1-7(pb-4)`, `bunting-D`, `hit & run-C`, `pitcher-2 e15`,
+`starter(6) relief(3)/N`, `hold -4`, `wp-18`, `bk-4`. Not yet wired into
+card generation. Agreement below is with the official cards and is
+enforced by `tests/test_advanced_ratings.py`; "LOO" = leave-one-out.
+
+| Rating | Basis | Agreement |
+|---|---|---|
+| Error `eN` (fielders) | Errors per full game × season length (154/162): an absolute rate, not peer-relative. Cameo positions pool two prior seasons, then are floored at 2× the league rate; catchers net out 0.055 throwing errors per steal attempt | 11/19 exact, 16/19 within 1, all within 3 |
+| Error `eN` (pitchers) | Errors per 9 IP × season length | 7/7 exact (unofficial 4/4 within 1) |
+| Outfield arm `(±N)` | Assists vs expectation, standardized among the season's regular outfielders (lower = stronger) | 2/6 exact, 4/6 within 1 (LOO 1/6, 4/6) |
+| Catcher arm `c-N(±N)` | Caught-stealing % vs league (assists when steals weren't recorded) | 1/2 exact, 2/2 within 1 |
+| Catcher `T-1-N` | 7 + 2 × arm — **not grounded**, meaning unconfirmed | 1/2 exact |
+| Passed balls `pb-N` | Passed balls per season ÷ 4 | 2/2 exact |
+| Bunting A-D | Sacrifice hits vs league expectation (+3 pseudo-bunts) | 12/12 exact (LOO 9/12, 12/12 within 1) |
+| Hit & run A-D | Strikeout rate vs league (contact) | 12/12 exact (LOO 11/12, 12/12 within 1); A cut unfitted |
+| Pitcher `wp-N` | Wild pitches per 216 IP | 6/7 exact, 7/7 within 1 |
+| Pitcher `bk-N` | Balks per 300 IP | 6/7 exact, 7/7 within 1 |
+| Pitcher `hold ±N` | **No Lahman basis** (no steals are charged to pitchers): handedness prior, LHP −3 / RHP 0 | 3/7 exact, 4/7 within 1 (LOO 2/7, 4/7) |
+| Pitcher bunting | Own sacrifice bunts vs pitchers' league rate; no plate appearances → C | 7/7 exact |
+| `starter(N)` | Estimated innings per start, shrunk toward a spot-starter prior | 5/5 exact (LOO 3/5, 5/5 within 1) |
+| `relief(N)` | Innings per relief outing; pitchers who also start get ⌈starter/2⌉ | 5/5 exact |
+| `relief(N)/X` suffix | Inferred closer rating: N without saves, else ⌊1.7 ln SV⌋ — **weakly grounded** | 5/5 exact (one card constrains it) |
+
+Range (1-5), stealing and running come from `fielding.py` and
+`ratings.py` unchanged. On these twelve advanced batter cards they score
+range 11/27 exact (24/27 within 1), stealing 10/12, running only 3/12 —
+the running formula predates these cards and is the next calibration
+target. The stealing detail (`*2-6,9/- (15-12)`) is parsed
+(`parse_stealing_detail`) but not generated: the corpus doesn't pin down
+its meaning.
+
 ## Repository layout
 
 ```
@@ -169,6 +209,7 @@ stratogen/
   game.py               Simplified game engine (innings, baserunners)
   ratings.py            Stealing/running ratings (fitted to real cards)
   fielding.py           Fielding ratings 1-5 (calibrated to real cards)
+  advanced_ratings.py   Advanced-side ratings: e, arms, bunt, hold, wp/bk, endurance
   render.py             HTML card rendering
 data/
   lahman/               Bundled Lahman database (gzipped CSVs)
