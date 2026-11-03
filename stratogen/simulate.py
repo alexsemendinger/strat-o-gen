@@ -55,14 +55,26 @@ def resolve_x(chances: dict[str, float],
 
 
 def combined_rates(batter, pitcher,
-                   x_single_rate: float = X_SINGLE_RATE) -> dict[str, float]:
+                   x_single_rate: float = X_SINGLE_RATE,
+                   batter_power: str = "N") -> dict[str, float]:
     """Exact per-PA outcome probabilities for a batter/pitcher card pairing.
 
     Either argument may be a laid-out Card or a {category: chances} dict
     (out of 108). Each card supplies half the 216-chance cycle.
+
+    `batter_power` is the batter's advanced Power rating: against a
+    Power-W batter the pitcher card's home runs (printed N-HR on advanced
+    cards) read as SINGLE**. Every HR chance on the pitcher card is taken
+    to be an N-HR (a chances dict can't tell them apart, and basic-game
+    cards have no power ratings). The batter's own homers always count.
     """
     b = resolve_x(card_chances(batter), x_single_rate)
     p = resolve_x(card_chances(pitcher), x_single_rate)
+    if batter_power == "W":
+        p[SINGLE] += p[HR]
+        p[HR] = 0.0
+    elif batter_power != "N":
+        raise ValueError(f"batter_power must be 'N' or 'W', got {batter_power!r}")
     return {cat: (b[cat] + p[cat]) / CHANCES_PER_CYCLE for cat in RATE_CATEGORIES}
 
 

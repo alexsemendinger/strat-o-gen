@@ -47,7 +47,9 @@ def categorize(text: str) -> str:
         return DOUBLE
     if upper.startswith("TRIPLE"):
         return TRIPLE
-    if upper.startswith("HOMERUN") or upper.startswith("HOME RUN"):
+    if upper.startswith(("HOMERUN", "HOME RUN", "N-HR")):
+        # N-HR: advanced pitcher grids; a homer for Power-N batters, a
+        # SINGLE** for Power-W ones (see simulate.combined_rates).
         return HR
     if upper.startswith("WALK"):
         return WALK
@@ -134,4 +136,71 @@ class Card:
                         categorize(s.text)
                     except ValueError as e:
                         problems.append(f"column {col} row {dice_sum}: {e}")
+        return problems
+
+
+# --- advanced (platoon) cards ---------------------------------------------------
+
+BATTER_SIDES = ("LHP", "RHP")   # a batter's grids: vs left/right-handed pitchers
+PITCHER_SIDES = ("LHB", "RHB")  # a pitcher's grids: vs left/right-handed batters
+
+
+@dataclass
+class PlatoonSide:
+    """One grid of an advanced card: a full 108-chance Card used against
+    one opposing hand, the share of PA in that matchup (printed as a
+    percentage), and for batters the Power rating ('N' or 'W')."""
+    vs: str                      # 'LHP'/'RHP' (batters) or 'LHB'/'RHB'
+    share: float                 # 0-1; the sides of a card sum to 1
+    card: Card
+    power: str | None = None     # 'N'/'W' on batter sides, None on pitchers
+
+    @property
+    def percent(self) -> int:
+        return int(round(self.share * 100))
+
+
+@dataclass
+class AdvancedCard:
+    """The advanced side of a card: two platoon grids.
+
+    `header_lines` are the ratings printed above the grids; they are kept
+    separate from the grids so richer advanced ratings can replace them
+    without touching the platoon content.
+    """
+    name: str
+    card_type: str               # 'batter' | 'pitcher'
+    hand: str                    # bats ('L'/'R'/'S') or throws ('L'/'R')
+    team: str | None = None
+    year: int | None = None
+    header_lines: list[str] = field(default_factory=list)
+    stats: dict = field(default_factory=dict)
+    sides: list[PlatoonSide] = field(default_factory=list)
+
+    def side(self, vs: str) -> PlatoonSide:
+        for s in self.sides:
+            if s.vs == vs:
+                return s
+        raise KeyError(vs)
+
+    def validate(self) -> list[str]:
+        """Structural problems across both grids (empty list = valid)."""
+        problems = []
+        expected = PITCHER_SIDES if self.card_type == "pitcher" else BATTER_SIDES
+        if tuple(s.vs for s in self.sides) != expected:
+            problems.append(f"expected sides {expected}, got "
+                            f"{tuple(s.vs for s in self.sides)}")
+        if abs(sum(s.share for s in self.sides) - 1.0) > 1e-9:
+            problems.append("side shares don't sum to 1")
+        for s in self.sides:
+            if not 0.0 <= s.share <= 1.0:
+                problems.append(f"vs {s.vs}: share {s.share} out of range")
+            if self.card_type == "batter" and s.power not in ("N", "W"):
+                problems.append(f"vs {s.vs}: power must be N or W")
+            if s.card.card_type != self.card_type:
+                problems.append(f"vs {s.vs}: grid is a {s.card.card_type} card")
+            problems.extend(f"vs {s.vs}: {p}" for p in s.card.validate())
+            total = sum(s.card.chances().values())
+            if abs(total - CHANCES_PER_CARD) > 1e-6:
+                problems.append(f"vs {s.vs}: grid holds {total} chances")
         return problems
