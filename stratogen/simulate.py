@@ -21,11 +21,7 @@ checks; the exact computation is what the tests use.
 
 from __future__ import annotations
 
-import csv
-import gzip
 import random
-from functools import lru_cache
-from pathlib import Path
 
 from .model import (
     Card, DICE_WEIGHTS, CHANCES_PER_CARD, CHANCES_PER_CYCLE,
@@ -172,32 +168,20 @@ def _pitching_batters_faced(stats: dict) -> tuple[float, bool]:
             + stats.get("BB", 0) + (stats.get("HBP") or 0)), True
 
 
-@lru_cache(maxsize=1)
-def _league_pitching_sums() -> dict:
-    """{(year, lg): (sum of BFP - IBB over rows with BFP, the same sum of
-    the IP/H/BB/HBP estimate over every row)} from the Lahman Pitching
-    table, read once."""
-    from .lahman import DATA_DIR
-    sums: dict = {}
-    with gzip.open(Path(DATA_DIR) / "Pitching.csv.gz", "rt",
-                   encoding="utf-8-sig", newline="") as fh:
-        reader = csv.reader(fh)
-        idx = {h: i for i, h in enumerate(next(reader))}
-
-        def num(row, key):
-            value = row[idx[key]].strip()
-            return int(float(value)) if value else None
-
-        for row in reader:
-            slot = sums.setdefault((int(row[idx["yearID"]]), row[idx["lgID"]]),
-                                   [0, 0])
-            ibb = num(row, "IBB") or 0
-            bfp = num(row, "BFP")
-            if bfp is not None:
-                slot[0] += bfp - ibb
-            slot[1] += (sum(num(row, k) or 0 for k in ("IPouts", "H", "BB", "HBP"))
-                        - ibb)
-    return {key: tuple(v) for key, v in sums.items()}
+def _league_pitching_sums(year, lg) -> tuple[float, float] | None:
+    """(sum of BFP - IBB, sum of the IP/H/BB/HBP estimate - IBB) over a
+    league-season's pitchers, from LahmanDB.league_pitching_totals (which
+    drops implausible partial BFP counts, as pitching_season does)."""
+    from .lahman import default_db
+    try:
+        t = default_db().league_pitching_totals(year, lg)
+    except KeyError:
+        return None
+    ibb = t["IBB"].total
+    batters_faced = t["BFP"].total - ibb
+    estimate = (t["IPouts"].total + t["H"].total + t["BB"].total
+                + t["HBP"].total - ibb)
+    return batters_faced, estimate
 
 
 def _resolve_league(stats: dict, league: dict | None) -> dict | None:
@@ -243,8 +227,7 @@ def pitcher_effective_pa(stats: dict, league: dict | None = None) -> float:
     league = _resolve_league(stats, league)
     if not league or not league.get("PA_eff"):
         return pa
-    key = (league.get("year"), league.get("league"))
-    sums = _league_pitching_sums().get(key)
+    sums = _league_pitching_sums(league.get("year"), league.get("league"))
     if not sums:
         return pa
     total = sums[1] if estimated else sums[0]

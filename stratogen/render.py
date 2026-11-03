@@ -19,7 +19,7 @@ import math
 from .model import AdvancedCard, Card, HR, TRIPLE, DOUBLE, SINGLE, WALK, HBP, SO
 from .simulate import (
     actual_batting_rates, actual_pitching_rates, combined_rates,
-    derived_stats, effective_pa, hits_from_stats,
+    derived_stats, effective_pa, hits_from_stats, pitcher_effective_pa,
 )
 
 CARD_CSS = """
@@ -346,13 +346,10 @@ def _count(x: float) -> str:
 
 
 def pitcher_batters_faced(actual_stats: dict) -> float:
-    """Batters faced the pitcher's rates are per: TBF - IBB (estimated
-    from IP/H/BB where TBF wasn't kept). Kept in one place so it can move
-    to the shared simulate helper."""
-    tbf = (actual_stats.get("TBF") or
-           actual_stats.get("IP", 0) * 3 + actual_stats.get("H", 0)
-           + actual_stats.get("BB", 0)) - actual_stats.get("IBB", 0)
-    return tbf
+    """Batters faced the pitcher's rates are per: simulate's
+    pitcher_effective_pa (BFP - IBB - SH, league-calibrated where SH or BFP
+    weren't kept), so the honesty table uses the generator's denominator."""
+    return pitcher_effective_pa(actual_stats)
 
 
 def _pitcher_rows(actual_stats: dict, implied: dict) -> list[tuple[str, str, str]]:

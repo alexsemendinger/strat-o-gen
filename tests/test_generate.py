@@ -287,7 +287,7 @@ def test_pitcher_effective_pa_leaves_out_sacrifices():
     # SH untracked (pre-1970): scaled by the league's PA_eff / sum(BFP - IBB),
     # which is the league's sacrifice share (1930 NL: 2.8% of BFP)
     league = db.league_batting(1930, "NL")
-    factor = league["PA_eff"] / _league_pitching_sums()[(1930, "NL")][0]
+    factor = league["PA_eff"] / _league_pitching_sums(1930, "NL")[0]
     assert 1 / factor == pytest.approx(1 + league["raw"]["SH"] / league["PA_eff"],
                                        abs=0.001)
     hubbell = db.pitching_season("hubbeca01", 1930)
