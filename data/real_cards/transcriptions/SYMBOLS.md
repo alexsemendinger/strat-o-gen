@@ -32,9 +32,12 @@ to be transcribed separately).
   Recorded; treated as an ordinary out for rates. Not separately modeled.
 - `max` (e.g. `lo (3b) max`) — "into as many outs as possible" (double/triple
   play). **Modeled** as a max-DP lineout.
-- `N-HR` — ballpark-dependent home run (homer in some parks, out/lesser hit
-  in others). Recorded; counted as a home run for rates. Park effects not
-  modeled.
+- `N-HR` — how advanced pitcher grids print home runs: a homer for a
+  Power-N batter, a `SINGLE**` for a Power-W batter (Advanced rules, via
+  secondary sources). **Modeled**: generated advanced pitcher grids print
+  `N-HR`, `simulate.combined_rates(batter_power="W")` reads them as
+  singles, and their count is amplified for the share of Power-W hitters
+  (see the README's *Advanced (platoon) cards*). Kept as `N-HR` on import.
 
 ## Situational marker glyphs (inferred; recorded, not modeled)
 These print *before the roll number* on the advanced (6col) side, attached to
@@ -68,8 +71,10 @@ the JSON. Exact trigger per glyph is **unconfirmed**:
 - `(+N)` / `(-N)` next to an outfield rating (e.g. `cf-3(-4)`) — outfield
   **throwing arm** rating. Not modeled.
 - `Power-N` / `Power-W` — N = can hit HRs off the pitcher card; W = those
-  become singles. Per platoon group on the advanced side. Not yet modeled
-  (we don't yet special-case weak power).
+  become singles. Per platoon group on the advanced side. **Modeled**:
+  W below 1.35% HR/PA on the grid (capped at 1.35x the league rate in
+  low-HR eras), and whenever the N formula would clamp. Agrees with 20 of
+  the 24 labels here; a W grid carries all of the batter's homers itself.
 - `bunting-A..E`, `hit & run-A..E` — bunt / hit-and-run ratings. Not modeled.
 - `stealing-(X)` plus a detail like `*3/- (20-6)` — steal rating and its
   lead/secondary detail. We model the letter only.
@@ -77,6 +82,12 @@ the JSON. Exact trigger per glyph is **unconfirmed**:
   `T-1-7-9` / "T ratings" (throwing), `#1WL`/`#2WR` (batting card id),
   `starter(N)`/`relief(N)` (rest/usage). Not modeled.
 - `%` per advanced grid (e.g. "24% AGAINST LEFT-HAND PITCHERS") — share of
-  plate appearances vs that handedness. Used to weight the two platoon grids
-  when computing combined rates for benchmarking; full platoon **card
-  generation** is not implemented.
+  plate appearances vs that handedness. **Modeled**: generated advanced
+  cards print it from the league's handedness shares (part-time righty
+  hitters platooned toward 50%; pitchers 0.91x the league's left-side
+  share). Mean error 3.3 points on the batters here, 3.6 on the official
+  pitchers. Also weights the two grids when scoring.
+- `HBP` on advanced batter grids — whole chances, 2 x HBP rate x 108, the
+  same on both grids, on edge rows (2/12, 3/11, 4/10). **Modeled** on
+  generated advanced batter grids (basic sides and pitcher grids carry
+  none, as here).
