@@ -45,8 +45,71 @@ from . import platoon, ratings
 
 # Smallest chance worth placing: a 1-in-20 split of a weight-1 row is 0.05.
 _EPSILON = 0.026
-# Smallest miss worth a warning, per PA: anything less prints as "~0.0%".
+# Smallest miss worth a warning: 0.1% of PA (anything less prints as
+# "~0.0%") and, when the season's PA are known, about two events.
 _WARN_PER_PA = 0.001
+_WARN_EVENTS = 1.5
+# Below this many PA a season's rates are blended toward the league's (as
+# if it had _SHRINK_PA), so a 1-for-1 cup of coffee doesn't print a card
+# of 108 singles. Real cards from 65 PA up match the unblended formula.
+_SHRINK_PA = 50
+
+
+def _miss(per_pa: float, pa: float | None, label: str, direction: str,
+          reason: str) -> str | None:
+    """'walks will run ~1.2% of PA high (about 7 over his 600 PA): reason',
+    or None when the miss is too small to be news."""
+    if per_pa < _WARN_PER_PA or (pa and per_pa * pa < _WARN_EVENTS):
+        return None
+    events = f" (about {per_pa * pa:.0f} over the season)" if pa else ""
+    return f"{label} will run ~{per_pa:.1%} of PA {direction}{events}: {reason}"
+
+
+def _warn(warnings: list[str], message: str | None) -> None:
+    if message:
+        warnings.append(message)
+
+
+def _shrink(rates: dict, league_rates: dict, pa: float) -> dict:
+    """Blend per-PA rates toward the league's below _SHRINK_PA."""
+    k = max(0.0, _SHRINK_PA - pa)
+    if not k:
+        return dict(rates)
+    return {c: (pa * r + k * league_rates.get(c, r)) / (pa + k)
+            for c, r in rates.items()}
+
+
+def _batting_league_rates(league: dict) -> dict:
+    return {WALK: league["BB_per_PA"], SO: league["K_per_PA"],
+            HR: league["HR_per_PA"], TRIPLE: league["3B_per_PA"],
+            DOUBLE: league["2B_per_PA"], SINGLE: league["1B_per_PA"],
+            HBP: league.get("HBP_per_PA", 0.0)}
+
+
+def _small_sample_note(pa: float, unit: str) -> str | None:
+    if pa < _SHRINK_PA:
+        return (f"small sample: only {pa:.0f} {unit}; the card is blended toward "
+                f"league average (as if {_SHRINK_PA}) so a few games can't fill it "
+                f"with one result")
+    if pa < 100:
+        return f"small sample: only {pa:.0f} {unit}"
+    return None
+
+
+def _hbp_note(stats: dict, league: dict, pa: float) -> str | None:
+    """Basic cards print no HBP (official ones drop them too), so a
+    hit-by-pitch magnet's on-base % runs low in play: say by how much."""
+    hbp = stats.get("HBP") or 0
+    if hbp / pa - league.get("HBP_per_PA", 0.0) < 0.004:
+        return None
+    h = hits_from_stats(stats)
+    den = (stats.get("AB", 0) + stats.get("BB", 0) + hbp + (stats.get("SF") or 0))
+    obp = (h + stats.get("BB", 0) + hbp) / den
+    drop = hbp / den
+    return (f"{hbp} hit-by-pitches aren't on basic cards (official cards drop "
+            f"them too): on-base % will run about {drop:.3f} low in play "
+            f"({obp:.3f} -> {obp - drop:.3f}); the advanced side carries them"
+            ).replace(" 0.", " .").replace("(0.", "(.")
 
 
 def _deviation(player_rate: float, league_rate: float) -> tuple[float, float]:
@@ -62,8 +125,8 @@ def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     pa = effective_pa(stats)
     if pa <= 0:
         raise ValueError("player has no effective plate appearances")
-    if pa < 100:
-        warnings.append(f"small sample: only {pa:.0f} effective PA")
+    _warn(warnings, _small_sample_note(pa, "effective PA"))
+    _warn(warnings, _hbp_note(stats, league, pa))
 
     h = hits_from_stats(stats)
     singles = h - stats.get("2B", 0) - stats.get("3B", 0) - stats.get("HR", 0)
@@ -75,18 +138,18 @@ def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
         DOUBLE: stats.get("2B", 0) / pa,
         SINGLE: singles / pa,
     }
-    league_rate = {
-        WALK: league["BB_per_PA"], SO: league["K_per_PA"], HR: league["HR_per_PA"],
-        TRIPLE: league["3B_per_PA"], DOUBLE: league["2B_per_PA"],
-        SINGLE: league["1B_per_PA"],
-    }
-    return batter_targets_from_rates(rate, league_rate, warnings), warnings
+    league_rate = _batting_league_rates(league)
+    league_rate.pop(HBP)
+    rate = _shrink(rate, league_rate, pa)
+    return (batter_targets_from_rates(rate, league_rate, warnings,
+                                      pa=max(pa, _SHRINK_PA)), warnings)
 
 
 def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str],
                               *, weak_power: bool = False,
                               hbp_chances: int = 0,
-                              overflow: list | None = None) -> dict:
+                              overflow: list | None = None,
+                              pa: float | None = None) -> dict:
     """Chance targets for one batter grid from per-PA rates.
 
     Shared by the basic card and each advanced platoon side. `rate` and
@@ -100,6 +163,7 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
     his home runs (2 * rate * 108, no league subtraction — never clamps)
     and the pitcher's HR chances count against his singles.
     `hbp_chances` (advanced batter sides): whole HBP chances placed as-is.
+    `pa`: the plate appearances this grid stands for, to size warnings.
     """
     if weak_power:
         league_rate = dict(league_rate)
@@ -113,28 +177,33 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
     # an excess of league HR/3B/2B coming from the pitcher card is paid for
     # by removing singles from this card (and vice versa).
     xbh_deficit = deficits[HR] + deficits[TRIPLE] + deficits[DOUBLE]
+    unpaid = 0.0
     if xbh_deficit > 0:
         take = min(targets[SINGLE], xbh_deficit)
         targets[SINGLE] -= take
-        if take < xbh_deficit - _EPSILON:
-            warnings.append(
-                "hit total runs high: below-average XBH deficit couldn't be fully "
-                "absorbed by singles")
+        unpaid += xbh_deficit - take
+        for cat, label in ((HR, "home runs"), (TRIPLE, "triples"),
+                           (DOUBLE, "doubles")):
+            _warn(warnings, _miss(
+                deficits[cat] / 216, pa, label, "high",
+                "below league average and the card can't go negative "
+                "(singles were cut to keep total hits)"))
     if deficits[SINGLE] > 0:
         remaining = deficits[SINGLE]
         for cat in (DOUBLE, TRIPLE, HR):
             take = min(targets[cat], remaining)
             targets[cat] -= take
             remaining -= take
-        if remaining > _EPSILON:
-            warnings.append(
-                "hit total runs high: player far below league average; "
-                "the average pitcher card supplies more hits than the player earned")
+        unpaid += remaining
+    if unpaid / 216 >= _WARN_PER_PA and (not pa or unpaid / 216 * pa >= _WARN_EVENTS):
+        warnings.append(
+            f"hit total runs high (~{unpaid / 216:.1%} of PA): the player is far "
+            f"below league average and the average pitcher card supplies more "
+            f"hits than he earned")
     for cat, label in ((WALK, "walks"), (SO, "strikeouts")):
-        if deficits[cat] > _EPSILON:
-            warnings.append(
-                f"{label} will run ~{deficits[cat] / 216:.1%} of PA high: player is "
-                f"below league average and the card can't go negative")
+        _warn(warnings, _miss(deficits[cat] / 216, pa, label, "high",
+                              "player is below league average and the card "
+                              "can't go negative"))
 
     if hbp_chances:
         targets[HBP] = float(hbp_chances)  # whole chances
@@ -147,9 +216,9 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
         fixed = targets.get(HBP, 0)
         rest = non_out - hbp_chances
         scale = (CHANCES_PER_CARD - fixed) / rest if rest else 0.0
+        _scaled_warnings(targets, scale, pa, warnings)
         targets = {cat: (t * scale if cat != HBP else t)
                    for cat, t in targets.items()}
-        warnings.append("extreme stat line: chances scaled to fit the card")
         non_out = CHANCES_PER_CARD
     targets[OUT] = CHANCES_PER_CARD - non_out
     return targets
@@ -158,8 +227,9 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
 def pitcher_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     warnings = []
     rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, league, warnings)
-    targets = pitcher_targets_from_rates(rate_bb, rate_k, rate_hr, rate_h,
-                                         league, warnings)
+    targets = pitcher_targets_from_rates(
+        rate_bb, rate_k, rate_hr, rate_h, league, warnings,
+        pa=max(pitcher_effective_pa(stats, league), _SHRINK_PA))
     return targets, warnings
 
 
@@ -173,20 +243,27 @@ def _pitching_rates(stats: dict, league: dict,
     if not stats.get("TBF"):
         warnings.append("batters faced not recorded this season: estimated "
                         "from innings, hits, walks and hit batsmen")
-    if tbf_eff < 100:
-        warnings.append(f"small sample: only {tbf_eff:.0f} batters faced")
+    _warn(warnings, _small_sample_note(tbf_eff, "batters faced"))
 
-    rate_bb = (stats.get("BB", 0) - stats.get("IBB", 0)) / tbf_eff
-    rate_k = stats.get("SO", 0) / tbf_eff
-    rate_hr = stats.get("HR", 0) / tbf_eff
-    rate_h = stats.get("H", 0) / tbf_eff
-    return rate_bb, rate_k, rate_hr, rate_h
+    rates = {WALK: (stats.get("BB", 0) - stats.get("IBB", 0)) / tbf_eff,
+             SO: stats.get("SO", 0) / tbf_eff,
+             HR: stats.get("HR", 0) / tbf_eff,
+             "H": stats.get("H", 0) / tbf_eff}
+    lg = {WALK: league["BB_per_PA"], SO: league["K_per_PA"],
+          HR: league["HR_per_PA"], "H": league["H_per_PA"]}
+    if "HR" in (stats.get("missing") or ()):
+        rates[HR] = lg[HR]
+        warnings.append("home runs allowed not recorded this season: the card "
+                        "assumes the league rate")
+    rates = _shrink(rates, lg, tbf_eff)
+    return rates[WALK], rates[SO], rates[HR], rates["H"]
 
 
 def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
                                rate_h: float, league: dict, warnings: list[str],
                                *, weak_share: float = 0.0,
-                               overflow: list | None = None) -> dict:
+                               overflow: list | None = None,
+                               pa: float | None = None) -> dict:
     """Chance targets for one pitcher grid from per-batter rates.
 
     Shared by the basic card and each advanced platoon side. `league`
@@ -197,24 +274,27 @@ def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
 
     `weak_share` (advanced sides): the share of this matchup's PA taken by
     Power-W batters, against whom this grid's N-HR chances read as
-    singles. See _amplify_n_hr for the exact accounting.
+    singles. See _amplify_n_hr for the exact accounting. `pa`: the batters
+    faced this grid stands for, to size warnings.
     """
     targets = {}
     targets[WALK], d_bb = _deviation(rate_bb, league["BB_per_PA"])
     targets[SO], d_k = _deviation(rate_k, league["K_per_PA"])
     targets[HR], d_hr = _deviation(rate_hr, league["HR_per_PA"])
     for deficit, label in ((d_bb, "walks"), (d_k, "strikeouts")):
-        if deficit > _EPSILON:
-            warnings.append(
-                f"{label} will run ~{deficit / 216:.1%} of PA high: pitcher is "
-                f"better than league average and the card can't go negative")
+        _warn(warnings, _miss(deficit / 216, pa, label, "high",
+                              "pitcher is better than league average and the "
+                              "card can't go negative"))
+    if not weak_share:   # advanced sides: _amplify_n_hr accounts for HR
+        _warn(warnings, _miss(d_hr / 216, pa, "home runs allowed", "high",
+                              "pitcher allowed fewer than league average and "
+                              "the card can't go negative"))
 
     # Total hits the card must yield, X-chart singles included.
     total_hits, d_h = _deviation(rate_h, league["H_per_PA"])
-    if d_h / 216 >= _WARN_PER_PA:
-        warnings.append(
-            f"hits allowed will run ~{d_h / 216:.1%} of PA high: pitcher allows "
-            f"far fewer hits than league average and the card can't go negative")
+    _warn(warnings, _miss(d_h / 216, pa, "hits allowed", "high",
+                          "pitcher allows far fewer hits than league average "
+                          "and the card can't go negative"))
 
     # The X block is normally 30 chances, but an extreme card may not have
     # room for it: a modern strikeout reliever's line can overflow the card
@@ -237,10 +317,8 @@ def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
     if targets[HR] > regular_hits:
         trimmed = targets[HR] - regular_hits
         targets[HR] = regular_hits
-        if trimmed / 216 >= _WARN_PER_PA:
-            warnings.append(
-                f"home runs allowed will run ~{trimmed / 216:.1%} of PA low: "
-                f"the card's hit total can't hold them all")
+        _warn(warnings, _miss(trimmed / 216, pa, "home runs allowed", "low",
+                              "the card's hit total can't hold them all"))
     # 2B/3B allowed aren't tracked historically, so every non-HR hit the
     # card yields (X-chart singles included) follows the league's 1B/2B/3B
     # mix; the X block only ever yields singles, so its hits come out of
@@ -265,12 +343,26 @@ def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
         if overflow is not None:
             overflow.append(non_out - CHANCES_PER_CARD)
         scale = (CHANCES_PER_CARD - targets[XCHANCE]) / (non_out - targets[XCHANCE])
+        _scaled_warnings(targets, scale, pa, warnings, pitcher=True)
         targets = {cat: (t * scale if cat != XCHANCE else t)
                    for cat, t in targets.items()}
-        warnings.append("extreme stat line: chances scaled to fit the card")
         non_out = CHANCES_PER_CARD
     targets[OUT] = CHANCES_PER_CARD - non_out
     return targets
+
+
+def _scaled_warnings(targets: dict, scale: float, pa: float | None,
+                     warnings: list[str], pitcher: bool = False) -> None:
+    """A line too big for 108 chances is scaled down: say which results
+    run low, and by how much."""
+    lost = {label: sum(targets.get(c, 0.0) for c in cats) * (1.0 - scale) / 216
+            for label, cats in (("walks", (WALK,)), ("strikeouts", (SO,)),
+                                ("hits allowed" if pitcher else "hits",
+                                 (HR, TRIPLE, DOUBLE, SINGLE)))}
+    named = [_miss(v, pa, label, "low", "extreme stat line, chances scaled "
+                   "to fit the card") for label, v in lost.items()]
+    named = [m for m in named if m]
+    warnings.extend(named or ["extreme stat line: chances scaled to fit the card"])
 
 
 # Largest Power-W share the N-HR amplification honors (1/(1-w) <= 4). In
@@ -465,15 +557,14 @@ def generate_advanced_batter_card(
     pa = effective_pa(stats)
     if pa <= 0:
         raise ValueError("player has no effective plate appearances")
-    if pa < 100:
-        warnings.append(f"small sample: only {pa:.0f} effective PA")
+    _warn(warnings, _small_sample_note(pa, "effective PA"))
     ctx = context or platoon.league_context(league)
     hand = platoon.batting_hand(bats or _lahman_hand(stats, "bats"))
     if hand == "?":
         warnings.append("batting hand unknown: treated as right-handed")
         hand = "R"
 
-    rates = actual_batting_rates(stats)
+    rates = _shrink(actual_batting_rates(stats), _batting_league_rates(league), pa)
     s_lhp = platoon.printed_share(platoon.batter_lhp_share(hand, pa, ctx))
     shares = {"L": s_lhp, "R": 1.0 - s_lhp}
     # Pitcher grids carry no HBP, so the batter's grids carry all of his:
@@ -498,7 +589,7 @@ def generate_advanced_batter_card(
             targets[p] = batter_targets_from_rates(
                 r, league_rate, side_warnings[f"{p}HP"],
                 weak_power=(power[p] == "W"), hbp_chances=hbp,
-                overflow=overflow)
+                overflow=overflow, pa=shares[p] * max(pa, _SHRINK_PA))
             lost += shares[p] * sum(overflow)
         return targets, side_warnings, lost
 
@@ -515,7 +606,7 @@ def generate_advanced_batter_card(
             profile=profile, seed_extra=f"advanced vs {p}HP")
         sides.append(PlatoonSide(vs=f"{p}HP", share=shares[p], card=card,
                                  power=power[p]))
-    warnings = (list(league.get("warnings", [])) + _missing_data_warnings(stats)
+    warnings = (_missing_data_warnings(stats, "batter", league)
                 + list(ctx.warnings) + warnings + notes
                 + merge_side_warnings(side_warnings))
     return AdvancedCard(name=name, card_type="batter", hand=hand,
@@ -538,6 +629,7 @@ def generate_advanced_pitcher_card(
     """
     warnings = []
     rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, league, warnings)
+    tbf = max(pitcher_effective_pa(stats, league), _SHRINK_PA)
     ctx = context or platoon.league_context(league)
     hand = platoon.throwing_hand(throws or _lahman_hand(stats, "throws"))
     if hand == "?":
@@ -558,7 +650,7 @@ def generate_advanced_pitcher_card(
             targets[h] = pitcher_targets_from_rates(
                 r[WALK], r[SO], r[HR], r["H"], ctx.cell_league(hand, h),
                 side_warnings[f"{h}HB"], weak_share=ctx.weak_share[(hand, h)],
-                overflow=overflow)
+                overflow=overflow, pa=shares[h] * tbf)
             lost += shares[h] * sum(overflow)
         return targets, side_warnings, lost
 
@@ -574,7 +666,7 @@ def generate_advanced_pitcher_card(
             team=stats.get("team"), stats=display, header_lines=header,
             profile=profile, seed_extra=f"advanced vs {h}HB", hr_text="N-HR")
         sides.append(PlatoonSide(vs=f"{h}HB", share=shares[h], card=card))
-    warnings = (list(league.get("warnings", [])) + _missing_data_warnings(stats)
+    warnings = (_missing_data_warnings(stats, "pitcher", league)
                 + list(ctx.warnings) + warnings + notes
                 + merge_side_warnings(side_warnings))
     return AdvancedCard(name=name, card_type="pitcher", hand=hand,
@@ -1212,11 +1304,40 @@ def _pitching_display_stats(stats: dict) -> dict:
     return out
 
 
-def _missing_data_warnings(stats: dict) -> list[str]:
-    notable = {"IBB", "SF", "HBP", "SO", "TBF", "IP"}
-    warnings = [f"{f} not tracked for this season (treated as 0)"
-                for f in stats.get("missing", []) if f in notable]
-    if "CS" in stats.get("missing", []) and (stats.get("SB") or 0) > 0:
+_FIELD_NAMES = {"IBB": "intentional walks", "SF": "sacrifice flies",
+                "HBP": "hit-by-pitches", "SO": "strikeouts"}
+# Untracked fields that change a card of each type: batter rates use all
+# four; a pitcher's use his own IBB/SO and the league's IBB/SO (its BB and
+# K rates feed the formula). Pitcher HR and batters faced are reported
+# where they're imputed (_pitching_rates).
+_RELEVANT = {"batter": {"IBB", "SF", "HBP", "SO"}, "pitcher": {"IBB", "SO"}}
+_LEAGUE_GAP = re.compile(r"^(\w+) not tracked in ")
+
+
+def _missing_data_warnings(stats: dict, card_type: str = "batter",
+                           league: dict | None = None) -> list[str]:
+    """One plain-English line for the stats this season didn't record
+    (league-wide or for this player, merged by field and limited to the
+    ones that matter to this card type), plus the caught-stealing note for
+    a base stealer. Other league notes pass through."""
+    fields, passthrough = set(), []
+    for note in (league or {}).get("warnings", []):
+        m = _LEAGUE_GAP.match(note)
+        if m:
+            fields.add(m.group(1))
+        else:
+            passthrough.append(note)
+    missing = set(stats.get("missing") or [])
+    fields |= missing
+    fields &= _RELEVANT[card_type]
+    warnings = list(passthrough)
+    if fields:
+        names = ", ".join(f"{_FIELD_NAMES[f]} ({f})"
+                          for f in sorted(fields, key=list(_FIELD_NAMES).index))
+        year = stats.get("year") or (league or {}).get("year")
+        when = f"in {year}" if year else "this season"
+        warnings.append(f"not recorded {when}: {names}; the card treats them as 0")
+    if card_type == "batter" and "CS" in missing and (stats.get("SB") or 0) > 0:
         warnings.append(
             "caught-stealing not tracked this season: stealing rating "
             "estimated from steal volume (capped at A)")
@@ -1232,8 +1353,7 @@ def generate_batter_card(stats: dict, league: dict,
     stratogen.fielding.position_ratings().
     """
     targets, warnings = batter_chance_targets(stats, league)
-    warnings = (list(league.get("warnings", []))
-                + _missing_data_warnings(stats) + warnings)
+    warnings = _missing_data_warnings(stats, "batter", league) + warnings
     card = layout_card(
         targets, card_type="batter",
         name=stats.get("name", "UNKNOWN").upper(),
@@ -1248,8 +1368,7 @@ def generate_batter_card(stats: dict, league: dict,
 def generate_pitcher_card(stats: dict, league: dict,
                           fielding_rating: int = 3) -> tuple[Card, list[str]]:
     targets, warnings = pitcher_chance_targets(stats, league)
-    warnings = (list(league.get("warnings", []))
-                + _missing_data_warnings(stats) + warnings)
+    warnings = _missing_data_warnings(stats, "pitcher", league) + warnings
     card = layout_card(
         targets, card_type="pitcher",
         name=stats.get("name", "UNKNOWN").upper(),

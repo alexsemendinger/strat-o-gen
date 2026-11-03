@@ -6,7 +6,7 @@ from stratogen.generate import generate_batter_card, generate_pitcher_card
 from stratogen.benchmark import score_batter_card, score_pitcher_card
 from stratogen.lahman import default_db
 from stratogen.model import DICE_WEIGHTS, HR, SO, WALK
-from stratogen.simulate import simulate_season, combined_rates, card_chances
+from stratogen.simulate import simulate_season, combined_rates, card_chances, derived_stats
 from stratogen.generate import average_pitcher_chances
 
 db = default_db()
@@ -374,3 +374,76 @@ def test_decorations_sit_where_real_cards_put_them():
         for _c, _d, s in card.iter_splits():
             if s.text.endswith("++"):
                 assert s.text[:-2].endswith("A"), s.text
+
+
+# --- warnings ---------------------------------------------------------------------
+
+def _batter_warnings(pid, year):
+    stats = db.batting_season(pid, year)
+    league = db.league_batting(year, stats["league"])
+    return generate_batter_card(stats, league)
+
+
+def _pitcher_warnings(pid, year):
+    stats = db.pitching_season(pid, year)
+    league = db.league_batting(year, stats["league"])
+    return generate_pitcher_card(stats, league)
+
+
+def test_hbp_heavy_hitter_is_told_his_obp_runs_low():
+    """Basic cards print no HBP (official ones drop them too), so Ron Hunt
+    1971 (50 HBP) gets on base ~.08 less in play: say so."""
+    _card, warnings = _batter_warnings("huntro01", 1971)
+    assert any("50 hit-by-pitches" in w and "on-base %" in w for w in warnings)
+    _card, warnings = _batter_warnings("mayswi01", 1965)
+    assert not any("hit-by-pitches" in w for w in warnings)
+
+
+@pytest.mark.parametrize("pid,year,kind,label", [
+    ("lopezni01", 2022, "batter", "home runs will run"),        # 0 HR -> ~7
+    ("kingmda01", 1982, "batter", "doubles will run"),
+    ("zieglbr01", 2009, "pitcher", "home runs allowed will run"),
+    ("gagneer01", 2003, "pitcher", "home runs allowed will run")])
+def test_clamped_categories_are_named(pid, year, kind, label):
+    """A below-average category clamps at 0 chances and runs high in play;
+    the warning names it (total hits stay exact)."""
+    fn = _batter_warnings if kind == "batter" else _pitcher_warnings
+    _card, warnings = fn(pid, year)
+    assert any(w.startswith(label) and "% of PA high" in w for w in warnings), warnings
+
+
+def test_warnings_are_meaningful_and_not_duplicated():
+    """No '~0.0%' noise, one line per missing field (league and player
+    merged), and nothing about batting-only fields on a pitcher card."""
+    _card, warnings = _batter_warnings("cobbty01", 1911)
+    assert sum("IBB" in w for w in warnings) == 1
+    assert sum("SF" in w for w in warnings) == 1
+    _card, warnings = _batter_warnings("alomasa02", 1998)
+    assert not any("~0.0%" in w for w in warnings), warnings
+    _card, warnings = _pitcher_warnings("seaveto01", 1969)
+    assert not any("SF" in w or "caught" in w for w in warnings), warnings
+
+
+def test_tiny_samples_are_blended_toward_league():
+    """Gus Schlosser 2014 went 1-for-1: the card used to be 108 singles.
+    Below 50 PA the line is blended toward league average (real cards from
+    65 PA up match the unblended formula, so nothing else moves)."""
+    card, warnings = _batter_warnings("schlogu01", 2014)
+    assert max(card.chances().values()) < 70
+    assert any("blended toward league" in w for w in warnings)
+    assert card.validate() == []
+
+
+def test_implied_line_matches_hits_and_ba_on_one_denominator():
+    """The card's BA over the season's own AB: matching hits means
+    matching BA (the per-PA BA counted sac flies as at-bats, so Gwynn 1994
+    read .394 -> .387 with hits 165 -> 165)."""
+    from stratogen.simulate import implied_batting_line
+    stats = db.batting_season("gwynnto01", 1994)
+    league = db.league_batting(1994, stats["league"])
+    card, _ = generate_batter_card(stats, league)
+    implied = derived_stats(combined_rates(card, average_pitcher_chances(league)))
+    line = implied_batting_line(implied, stats)
+    assert line["H"] == pytest.approx(stats["H"], abs=0.5)
+    assert line["BA"] == pytest.approx(line["actual_BA"], abs=0.002)
+    assert line["OBP"] <= line["actual_OBP"]   # his HBP aren't on the card

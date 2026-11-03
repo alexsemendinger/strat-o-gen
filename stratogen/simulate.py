@@ -96,9 +96,12 @@ def combined_rates(batter, pitcher,
 def derived_stats(rates: dict[str, float]) -> dict[str, float]:
     """BA / OBP / SLG and component rates implied by per-PA probabilities.
 
-    AB per PA here is 1 - BB - HBP (sacrifices aren't modeled on cards),
-    and errors are folded into outs, so ROE counts as a hitless AB —
-    matching how official scoring treats it.
+    Per effective PA (AB + BB - IBB + HBP + SF): AB per PA here is
+    1 - BB - HBP, so a sacrifice fly counts as a hitless at-bat, and on a
+    basic card (no HBP results) so does every hit-by-pitch. Errors are
+    folded into outs, so ROE counts as a hitless AB, as official scoring
+    has it. To compare with a real season use implied_batting_line, which
+    puts the card's rates over the season's own AB and PA.
     """
     hit = rates[HR] + rates[TRIPLE] + rates[DOUBLE] + rates[SINGLE]
     ab = 1.0 - rates[WALK] - rates[HBP]
@@ -269,15 +272,44 @@ def actual_pitching_rates(stats: dict, league: dict | None = None,
     }
 
 
+def implied_batting_line(implied: dict[str, float], stats: dict) -> dict:
+    """A card's implied rates (derived_stats) as the season's line: hits,
+    walks and HBP over the season's effective PA, BA over its actual AB and
+    OBP over AB + BB + HBP + SF (intentional walks, which bypass the cards,
+    added as drawn), next to the same figures from the real line. Both
+    sides share denominators, so matching hits means matching BA (the
+    per-PA BA of derived_stats counts sacrifice flies, and on basic cards
+    HBP, as at-bats)."""
+    pa = effective_pa(stats)
+    ab = stats.get("AB", 0)
+    bb, ibb = stats.get("BB", 0), stats.get("IBB") or 0
+    hbp, sf = stats.get("HBP") or 0, stats.get("SF") or 0
+    obp_den = ab + bb + hbp + sf
+    h = implied["H_per_PA"] * pa
+    walks = implied[WALK] * pa + ibb
+    hbps = implied[HBP] * pa
+    actual_h = hits_from_stats(stats)
+    return {
+        "H": h, "BB": walks, "HBP": hbps,
+        "BA": h / ab if ab else 0.0,
+        "OBP": (h + walks + hbps) / obp_den if obp_den else 0.0,
+        "actual_BA": actual_h / ab if ab else 0.0,
+        "actual_OBP": (actual_h + bb + hbp) / obp_den if obp_den else 0.0,
+    }
+
+
 def batting_errors(implied: dict[str, float],
                    actual: dict[str, float]) -> dict[str, float]:
-    """Absolute rate errors between card-implied and actual batting rates."""
+    """Absolute rate errors between card-implied and actual batting rates.
+    BA is compared on one denominator (the actual line's AB per PA), so it
+    is the hit-rate miss scaled to at-bats: a card that matches hits
+    matches BA."""
     actual_hit = actual[HR] + actual[TRIPLE] + actual[DOUBLE] + actual[SINGLE]
     actual_ab = 1.0 - actual[WALK] - actual[HBP]
     errors = {cat: abs(implied[cat] - actual[cat])
               for cat in (HR, TRIPLE, DOUBLE, SINGLE, WALK, SO)}
     errors["H_per_PA"] = abs(implied["H_per_PA"] - actual_hit)
-    errors["BA"] = abs(implied["BA"] - actual_hit / actual_ab)
+    errors["BA"] = errors["H_per_PA"] / actual_ab if actual_ab > 0 else 0.0
     return errors
 
 
