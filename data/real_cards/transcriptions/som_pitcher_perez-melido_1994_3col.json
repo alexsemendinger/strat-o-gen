@@ -1,0 +1,78 @@
+{
+  "cardId": "pitcher_perez-melido_1994",
+  "sourceImage": "som_pitcher_perez-melido_1994_3col.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "player": {
+    "name": "Melido Perez",
+    "throws": null,
+    "bats": null,
+    "team": "New York (AL)",
+    "year": 1994,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "type": "starter" },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": "#1",
+    "notes": "Header reads: 'MELIDO PEREZ   pitcher-2   batting #1   starter' and 'PITCHING CARD   NEW YORK (AL)'. 'pitcher-2' is the pitcher's fielding rating; 'batting #1' is his bunting/batting designation; 'starter' is the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "flyball (lf) C", "outcomes": [ { "range": null, "result": "flyball (lf) C" } ] },
+          { "roll": 3, "raw": "FLYBALL (rf) X", "outcomes": [ { "range": null, "result": "FLYBALL (rf) X" } ] },
+          { "roll": 4, "raw": "GROUND-BALL (3b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (3b) X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "GROUND-BALL (2b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (2b) X" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "SINGLE* 1-6 / lineout (1b) 7-20", "outcomes": [ { "range": [1,6], "result": "SINGLE*" }, { "range": [7,20], "result": "lineout (1b)" } ] },
+          { "roll": 10, "raw": "GROUND-BALL (ss) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (ss) X" } ] },
+          { "roll": 11, "raw": "FLYBALL (lf) X", "outcomes": [ { "range": null, "result": "FLYBALL (lf) X" } ] },
+          { "roll": 12, "raw": "flyball (lf) C", "outcomes": [ { "range": null, "result": "flyball (lf) C" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "groundball (2b) C", "outcomes": [ { "range": null, "result": "groundball (2b) C" } ] },
+          { "roll": 3, "raw": "GROUND-BALL (1b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (1b) X" } ] },
+          { "roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 8, "raw": "TRIPLE 1-3 / DOUBLE 4-20", "outcomes": [ { "range": [1,3], "result": "TRIPLE" }, { "range": [4,20], "result": "DOUBLE" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-12 / DOUBLE 13-20", "outcomes": [ { "range": [1,12], "result": "HOMERUN" }, { "range": [13,20], "result": "DOUBLE" } ] },
+          { "roll": 10, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 11, "raw": "GROUND-BALL (p) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (p) X" } ] },
+          { "roll": 12, "raw": "flyball (lf) B", "outcomes": [ { "range": null, "result": "flyball (lf) B" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "flyball (lf) C", "outcomes": [ { "range": null, "result": "flyball (lf) C" } ] },
+          { "roll": 3, "raw": "groundball (p) B", "outcomes": [ { "range": null, "result": "groundball (p) B" } ] },
+          { "roll": 4, "raw": "groundball (2b) C", "outcomes": [ { "range": null, "result": "groundball (2b) C" } ] },
+          { "roll": 5, "raw": "GROUND-BALL (ss) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (ss) X" } ] },
+          { "roll": 6, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 7, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 8, "raw": "DOUBLE** 1 / SINGLE** 2-20", "outcomes": [ { "range": [1,1], "result": "DOUBLE**" }, { "range": [2,20], "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "FLYBALL (cf) X", "outcomes": [ { "range": null, "result": "FLYBALL (cf) X" } ] },
+          { "roll": 11, "raw": "groundball (1b) C", "outcomes": [ { "range": null, "result": "groundball (1b) C" } ] },
+          { "roll": 12, "raw": "flyball (lf) C", "outcomes": [ { "range": null, "result": "flyball (lf) C" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 1994,
+    "stats": { "W": 9, "L": 4, "ERA": "4.10", "STARTS": 22, "SAVES": 0, "IP": 151, "HITS ALLOWED": 134, "BB": 58, "SO": 109, "HOMERUNS ALLOWED": 16 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy of the rotated original. Basic side uses full-word vocabulary (flyball/FLYBALL, groundball/GROUND-BALL, CATCHER'S CARD X, HOMERUN/DOUBLE/TRIPLE/SINGLE) vs. the advanced side's abbreviations (fly/FLY, gb/GB, DO/TR/SI/N-HR, CATCH-X)."
+  }
+}

@@ -1,0 +1,902 @@
+{
+  "cardId": "pitcher_drysdale-don_1965",
+  "sourceImage": null,
+  "sourceUrl": "https://365.strat-o-matic.com/help/pitchercard",
+  "cardType": "pitcher",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Don Drysdale",
+    "throws": "R",
+    "bats": null,
+    "team": null,
+    "year": 1965,
+    "cardNumber": "#8NR",
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": {
+      "starter": 8
+    },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": null,
+    "hold": "0",
+    "wildPitch": "wp- 8",
+    "balk": "bk- 0",
+    "bunting": "bunting-C",
+    "errorRating": "e43",
+    "notes": "Header reads: 'bk- 0 wp- 8' / 'e43 #8NR pitcher-2 starter(8)' / 'DON DRYSDALE (1965)' / 'throws RIGHT  hold 0' / 'bunting-C'. Grid banners: '44% VS.LEFTY BATTERS' and '56% VS.RIGHTY BATTERS'. '#8NR' is recorded as cardNumber, as '#1WR' is on the Perez card. Team is not printed (Lahman: LAN)."
+  },
+  "grids": [
+    {
+      "vs": "LHB",
+      "percent": 44,
+      "columns": [
+        {
+          "col": 4,
+          "cells": [
+            {
+              "roll": 2,
+              "raw": "2- fly(rf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(rf)B"
+                }
+              ]
+            },
+            {
+              "roll": 3,
+              "raw": "3- fly(cf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(cf)B"
+                }
+              ]
+            },
+            {
+              "roll": 4,
+              "raw": "4- FB(cf)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "FLY (cf) X"
+                }
+              ]
+            },
+            {
+              "roll": 5,
+              "raw": "5- fly(cf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(cf)B"
+                }
+              ]
+            },
+            {
+              "roll": 6,
+              "raw": "6- WALK",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "WALK"
+                }
+              ]
+            },
+            {
+              "roll": 7,
+              "raw": "7- gb(2b)A",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "gb(2b)A"
+                }
+              ]
+            },
+            {
+              "roll": 8,
+              "raw": "8- TR 1-2 / SI** 3-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    2
+                  ],
+                  "result": "TR"
+                },
+                {
+                  "range": [
+                    3,
+                    20
+                  ],
+                  "result": "SI**"
+                }
+              ]
+            },
+            {
+              "roll": 9,
+              "raw": "9- HR 1-12 / DO 13-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    12
+                  ],
+                  "result": "HR"
+                },
+                {
+                  "range": [
+                    13,
+                    20
+                  ],
+                  "result": "DO"
+                }
+              ]
+            },
+            {
+              "roll": 10,
+              "raw": "10- strikeout",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "strikeout"
+                }
+              ]
+            },
+            {
+              "roll": 11,
+              "raw": "#11- HR 1-14 / fly(rf)B 15-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    14
+                  ],
+                  "result": "HR"
+                },
+                {
+                  "range": [
+                    15,
+                    20
+                  ],
+                  "result": "fly(rf)B"
+                }
+              ],
+              "markers": [
+                "ballparkHR"
+              ]
+            },
+            {
+              "roll": 12,
+              "raw": "#12- fly(rf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(rf)B"
+                }
+              ],
+              "markers": [
+                "ballparkHR"
+              ]
+            }
+          ]
+        },
+        {
+          "col": 5,
+          "cells": [
+            {
+              "roll": 2,
+              "raw": "#2- fly(rf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(rf)B"
+                }
+              ],
+              "markers": [
+                "ballparkHR"
+              ]
+            },
+            {
+              "roll": 3,
+              "raw": "3- FB(rf)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "FLY (rf) X"
+                }
+              ]
+            },
+            {
+              "roll": 4,
+              "raw": "4- CATCH-X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "CATCH-X"
+                }
+              ]
+            },
+            {
+              "roll": 5,
+              "raw": "@5- strikeout",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "strikeout"
+                }
+              ],
+              "markers": [
+                "atSign"
+              ]
+            },
+            {
+              "roll": 6,
+              "raw": "6- gb(1b)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "gb(1b)B"
+                }
+              ]
+            },
+            {
+              "roll": 7,
+              "raw": "7- GB(2b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(2b)X"
+                }
+              ]
+            },
+            {
+              "roll": 8,
+              "raw": "8- popout(2b)",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "popout(2b)"
+                }
+              ]
+            },
+            {
+              "roll": 9,
+              "raw": "9- GB(ss)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(ss)X"
+                }
+              ]
+            },
+            {
+              "roll": 10,
+              "raw": "10- GB(ss)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(ss)X"
+                }
+              ]
+            },
+            {
+              "roll": 11,
+              "raw": "11- FB(lf)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "FLY (lf) X"
+                }
+              ]
+            },
+            {
+              "roll": 12,
+              "raw": "12- GB(1b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(1b)X"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "col": 6,
+          "cells": [
+            {
+              "roll": 2,
+              "raw": "#2- fly(rf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(rf)B"
+                }
+              ],
+              "markers": [
+                "ballparkHR"
+              ]
+            },
+            {
+              "roll": 3,
+              "raw": "3- GB(p)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(p)X"
+                }
+              ]
+            },
+            {
+              "roll": 4,
+              "raw": "4- GB(3b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(3b)X"
+                }
+              ]
+            },
+            {
+              "roll": 5,
+              "raw": "5- SI* 1-2 / lineout 3-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    2
+                  ],
+                  "result": "SI*"
+                },
+                {
+                  "range": [
+                    3,
+                    20
+                  ],
+                  "result": "lineout"
+                }
+              ]
+            },
+            {
+              "roll": 6,
+              "raw": "6- fly(lf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(lf)B"
+                }
+              ]
+            },
+            {
+              "roll": 7,
+              "raw": "@7- strikeout",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "strikeout"
+                }
+              ],
+              "markers": [
+                "atSign"
+              ]
+            },
+            {
+              "roll": 8,
+              "raw": "8- SI* 1-5 / gb(2b)B 6-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    5
+                  ],
+                  "result": "SI*"
+                },
+                {
+                  "range": [
+                    6,
+                    20
+                  ],
+                  "result": "gb(2b)B"
+                }
+              ]
+            },
+            {
+              "roll": 9,
+              "raw": "9- DO** 1-15 / SI** 16-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    15
+                  ],
+                  "result": "DO**"
+                },
+                {
+                  "range": [
+                    16,
+                    20
+                  ],
+                  "result": "SI**"
+                }
+              ]
+            },
+            {
+              "roll": 10,
+              "raw": ">10- fly(cf)C",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(cf)C"
+                }
+              ],
+              "markers": [
+                "ballparkSingle"
+              ]
+            },
+            {
+              "roll": 11,
+              "raw": ">11- SINGLE(lf)",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "SINGLE(lf)"
+                }
+              ],
+              "markers": [
+                "ballparkSingle"
+              ]
+            },
+            {
+              "roll": 12,
+              "raw": "12- GB(1b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(1b)X"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "vs": "RHB",
+      "percent": 56,
+      "columns": [
+        {
+          "col": 4,
+          "cells": [
+            {
+              "roll": 2,
+              "raw": "2- gb(ss)A",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "gb(ss)A"
+                }
+              ]
+            },
+            {
+              "roll": 3,
+              "raw": "3- gb(ss)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "gb(ss)B"
+                }
+              ]
+            },
+            {
+              "roll": 4,
+              "raw": "4- FB(cf)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "FLY (cf) X"
+                }
+              ]
+            },
+            {
+              "roll": 5,
+              "raw": "5- fly(rf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(rf)B"
+                }
+              ]
+            },
+            {
+              "roll": 6,
+              "raw": "@6- strikeout",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "strikeout"
+                }
+              ],
+              "markers": [
+                "atSign"
+              ]
+            },
+            {
+              "roll": 7,
+              "raw": "7- strikeout",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "strikeout"
+                }
+              ]
+            },
+            {
+              "roll": 8,
+              "raw": "8- TR 1-2 / SI** 3-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    2
+                  ],
+                  "result": "TR"
+                },
+                {
+                  "range": [
+                    3,
+                    20
+                  ],
+                  "result": "SI**"
+                }
+              ]
+            },
+            {
+              "roll": 9,
+              "raw": "9- HR 1-6 / DO 7-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    6
+                  ],
+                  "result": "HR"
+                },
+                {
+                  "range": [
+                    7,
+                    20
+                  ],
+                  "result": "DO"
+                }
+              ]
+            },
+            {
+              "roll": 10,
+              "raw": "10- gb(1b)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "gb(1b)B"
+                }
+              ]
+            },
+            {
+              "roll": 11,
+              "raw": ">11- SINGLE(rf)",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "SINGLE(rf)"
+                }
+              ],
+              "markers": [
+                "ballparkSingle"
+              ]
+            },
+            {
+              "roll": 12,
+              "raw": "#12- HR 1-11 / fly(lf)B 12-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    11
+                  ],
+                  "result": "HR"
+                },
+                {
+                  "range": [
+                    12,
+                    20
+                  ],
+                  "result": "fly(lf)B"
+                }
+              ],
+              "markers": [
+                "ballparkHR"
+              ]
+            }
+          ]
+        },
+        {
+          "col": 5,
+          "cells": [
+            {
+              "roll": 2,
+              "raw": "#2- fly(lf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(lf)B"
+                }
+              ],
+              "markers": [
+                "ballparkHR"
+              ]
+            },
+            {
+              "roll": 3,
+              "raw": "3- FB(rf)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "FLY (rf) X"
+                }
+              ]
+            },
+            {
+              "roll": 4,
+              "raw": "4- CATCH-X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "CATCH-X"
+                }
+              ]
+            },
+            {
+              "roll": 5,
+              "raw": "5- fly(lf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(lf)B"
+                }
+              ]
+            },
+            {
+              "roll": 6,
+              "raw": "6- gb(ss)A",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "gb(ss)A"
+                }
+              ]
+            },
+            {
+              "roll": 7,
+              "raw": "7- GB(2b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(2b)X"
+                }
+              ]
+            },
+            {
+              "roll": 8,
+              "raw": "8- gb(3b)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "gb(3b)B"
+                }
+              ]
+            },
+            {
+              "roll": 9,
+              "raw": "9- GB(ss)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(ss)X"
+                }
+              ]
+            },
+            {
+              "roll": 10,
+              "raw": "10- GB(ss)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(ss)X"
+                }
+              ]
+            },
+            {
+              "roll": 11,
+              "raw": "11- FB(lf)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "FLY (lf) X"
+                }
+              ]
+            },
+            {
+              "roll": 12,
+              "raw": "12- GB(1b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(1b)X"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "col": 6,
+          "cells": [
+            {
+              "roll": 2,
+              "raw": "2- WALK",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "WALK"
+                }
+              ]
+            },
+            {
+              "roll": 3,
+              "raw": "3- GB(p)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(p)X"
+                }
+              ]
+            },
+            {
+              "roll": 4,
+              "raw": "4- GB(3b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(3b)X"
+                }
+              ]
+            },
+            {
+              "roll": 5,
+              "raw": "5- fly(cf)B",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(cf)B"
+                }
+              ]
+            },
+            {
+              "roll": 6,
+              "raw": "6- strikeout",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "strikeout"
+                }
+              ]
+            },
+            {
+              "roll": 7,
+              "raw": "@7- strikeout",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "strikeout"
+                }
+              ],
+              "markers": [
+                "atSign"
+              ]
+            },
+            {
+              "roll": 8,
+              "raw": "8- SI* 1-10 / lineout 11-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    10
+                  ],
+                  "result": "SI*"
+                },
+                {
+                  "range": [
+                    11,
+                    20
+                  ],
+                  "result": "lineout"
+                }
+              ]
+            },
+            {
+              "roll": 9,
+              "raw": "9- DO** 1-6 / SI** 7-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    6
+                  ],
+                  "result": "DO**"
+                },
+                {
+                  "range": [
+                    7,
+                    20
+                  ],
+                  "result": "SI**"
+                }
+              ]
+            },
+            {
+              "roll": 10,
+              "raw": ">10- fly(lf)C",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "fly(lf)C"
+                }
+              ],
+              "markers": [
+                "ballparkSingle"
+              ]
+            },
+            {
+              "roll": 11,
+              "raw": "11- SI* 1-3 / lineout 4-20",
+              "outcomes": [
+                {
+                  "range": [
+                    1,
+                    3
+                  ],
+                  "result": "SI*"
+                },
+                {
+                  "range": [
+                    4,
+                    20
+                  ],
+                  "result": "lineout"
+                }
+              ]
+            },
+            {
+              "roll": 12,
+              "raw": "12- GB(1b)X",
+              "outcomes": [
+                {
+                  "range": null,
+                  "result": "GB(1b)X"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Not a photograph: transcribed from the text of the official Strat-O-Matic Baseball 365 example pitcher card (Don Drysdale 1965) published on Strat-O-Matic's own help page https://365.strat-o-matic.com/help/pitchercard (retrieved 2026-11-03). The card is HTML text, so every cell is exact. Read twice independently: (1) parsed from the HTML table structure, (2) re-split from the tag-stripped text by roll prefixes; 0 differences across 66 cells. 'raw' keeps the 365 rendering verbatim, roll prefix and glyph included. 365 prints flyball X-chances as 'FB(cf)X'; outcomes spell them 'FLY (cf) X', the corpus spelling the importer reads, and raw keeps 'FB'. The 365 glyphs are recorded in 'markers' under the meanings in the page's legend: '#' = ballparkHR, '>' = ballparkSingle, and '@' = atSign. The legend says 365 ignores '@' because it uses pitch-count fatigue instead; it is probably the board game's fatigue mark, but that is unconfirmed. Outcomes hold the printed result, which is what the importer reads. The 365 card is Strat-O-Matic's own digital rendering of its 1965 season advanced card. It is official product data, but not a photographed physical card."
+  }
+}

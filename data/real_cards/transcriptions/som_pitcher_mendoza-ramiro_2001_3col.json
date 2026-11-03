@@ -1,0 +1,83 @@
+{
+  "cardId": "pitcher_mendoza-ramiro_2001",
+  "sourceImage": "som_pitcher_mendoza-ramiro_2001_3col.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Ramiro Mendoza",
+    "throws": null,
+    "bats": null,
+    "team": "New York (AL)",
+    "year": 2001,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "relief": true, "starter": true },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": "batting # 1",
+    "hold": null,
+    "wildPitch": null,
+    "balk": null,
+    "bunting": null,
+    "notes": "Header reads: 'RAMIRO MENDOZA   pitcher-2   batting # 1   relief  starter' and 'PITCHING CARD   NEW YORK (AL)'. 'relief' is printed underlined (above 'starter'); both role labels appear with no numeric rating. 'pitcher-2' is the pitcher's fielding rating; 'batting # 1' is the batting/bunting designation."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "flyball (cf)C", "outcomes": [ { "range": null, "result": "flyball (cf)C" } ] },
+          { "roll": 3, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] },
+          { "roll": 4, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 5, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "GROUND-BALL(2b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b)X" } ] },
+          { "roll": 8, "raw": "lineout (ss)", "outcomes": [ { "range": null, "result": "lineout (ss)" } ] },
+          { "roll": 9, "raw": "TRIPLE 1 / SINGLE** 2-20", "outcomes": [ { "range": [1,1], "result": "TRIPLE" }, { "range": [2,20], "result": "SINGLE**" } ] },
+          { "roll": 10, "raw": "FLYBALL (cf)X", "outcomes": [ { "range": null, "result": "FLYBALL (cf)X" } ] },
+          { "roll": 11, "raw": "FLYBALL (rf)X", "outcomes": [ { "range": null, "result": "FLYBALL (rf)X" } ] },
+          { "roll": 12, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 3, "raw": "FLYBALL (lf)X", "outcomes": [ { "range": null, "result": "FLYBALL (lf)X" } ] },
+          { "roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(3b)X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-18 / lineout (1b) 19-20", "outcomes": [ { "range": [1,18], "result": "SINGLE*" }, { "range": [19,20], "result": "lineout (1b)" } ] },
+          { "roll": 8, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 11, "raw": "GROUND-BALL(1b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(1b)X" } ] },
+          { "roll": 12, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "GROUND-BALL(p)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(p)X" } ] },
+          { "roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 7, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 8, "raw": "DOUBLE** 1-11 / SINGLE** 12-20", "outcomes": [ { "range": [1,11], "result": "DOUBLE**" }, { "range": [12,20], "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-9 / DOUBLE 10-20", "outcomes": [ { "range": [1,9], "result": "HOMERUN" }, { "range": [10,20], "result": "DOUBLE" } ] },
+          { "roll": 10, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "flyball (cf)C", "outcomes": [ { "range": null, "result": "flyball (cf)C" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2001,
+    "stats": { "W": 8, "L": 4, "ERA": "3.75", "STARTS": 2, "SAVES": 6, "IP": 101, "HITS ALLOWED": 89, "BB": 23, "SO": 70, "HOMERUNS ALLOWED": 9 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy of the rotated_ccw original (rotated 270). Basic-side full-word vocabulary. Header role labels 'relief' (underlined) and 'starter' carry no numeric ratings on this card."
+  }
+}

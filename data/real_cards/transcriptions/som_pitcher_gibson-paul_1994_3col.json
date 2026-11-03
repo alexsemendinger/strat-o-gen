@@ -1,0 +1,79 @@
+{
+  "cardId": "pitcher_gibson-paul_1994",
+  "sourceImage": "som_pitcher_gibson-paul_1994_3col.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Paul Gibson",
+    "throws": null,
+    "bats": null,
+    "team": "New York (AL)",
+    "year": 1994,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "type": "relief" },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": "batting # 1",
+    "notes": "Header reads: 'PAUL GIBSON   pitcher-2   batting # 1   relief' and 'PITCHING CARD   NEW YORK (AL)'. 'pitcher-2' is the pitcher's fielding rating; 'batting # 1' is his batting/bunting designation; 'relief' is the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 3, "raw": "GROUND-BALL(1b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(1b)X" } ] },
+          { "roll": 4, "raw": "FLYBALL(cf)X", "outcomes": [ { "range": null, "result": "FLYBALL(cf)X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "SINGLE* 1-6 / lineout (ss) 7-20", "outcomes": [ { "range": [1,6], "result": "SINGLE*" }, { "range": [7,20], "result": "lineout (ss)" } ] },
+          { "roll": 9, "raw": "DOUBLE** 1-14 / SINGLE** 15-20", "outcomes": [ { "range": [1,14], "result": "DOUBLE**" }, { "range": [15,20], "result": "SINGLE**" } ] },
+          { "roll": 10, "raw": "GROUND-BALL(3b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(3b)X" } ] },
+          { "roll": 11, "raw": "GROUND-BALL(p)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(p)X" } ] },
+          { "roll": 12, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 10, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "flyball (lf)C", "outcomes": [ { "range": null, "result": "flyball (lf)C" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 3, "raw": "FLYBALL(rf)X", "outcomes": [ { "range": null, "result": "FLYBALL(rf)X" } ] },
+          { "roll": 4, "raw": "flyball (lf)C", "outcomes": [ { "range": null, "result": "flyball (lf)C" } ] },
+          { "roll": 5, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 6, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 7, "raw": "GROUND-BALL(2b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b)X" } ] },
+          { "roll": 8, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-7 / DOUBLE 8-20", "outcomes": [ { "range": [1,7], "result": "HOMERUN" }, { "range": [8,20], "result": "DOUBLE" } ] },
+          { "roll": 10, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 11, "raw": "FLYBALL(lf)X", "outcomes": [ { "range": null, "result": "FLYBALL(lf)X" } ] },
+          { "roll": 12, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 1994,
+    "stats": { "W": 1, "L": 1, "ERA": "4.97", "STARTS": 0, "SAVES": 0, "IP": 29, "HITS ALLOWED": 26, "BB": 17, "SO": 21, "HOMERUNS ALLOWED": 5 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic (3col) side, read from a 270-degree-uprighted copy of a rotated_ccw original plus full-res per-column crops. Spacing preserved verbatim: lowercase forms print a space before the fielder parenthesis with no space before the trailing class letter (e.g. 'groundball (2b)C', 'flyball (lf)C'); CAPITAL forms print with no space (e.g. 'GROUND-BALL(1b)X', 'FLYBALL(cf)X'). Basic-side vocabulary (groundball/GROUND-BALL, flyball/FLYBALL, CATCHER'S CARD X, HOMERUN/DOUBLE/SINGLE). Role on this side is 'relief'."
+  }
+}

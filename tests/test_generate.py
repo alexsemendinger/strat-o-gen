@@ -5,8 +5,8 @@ import pytest
 from stratogen.generate import generate_batter_card, generate_pitcher_card
 from stratogen.benchmark import score_batter_card, score_pitcher_card
 from stratogen.lahman import default_db
-from stratogen.model import HR, SO, WALK
-from stratogen.simulate import simulate_season, combined_rates, card_chances
+from stratogen.model import DICE_WEIGHTS, HR, SO, WALK
+from stratogen.simulate import simulate_season, combined_rates, card_chances, derived_stats
 from stratogen.generate import average_pitcher_chances
 
 db = default_db()
@@ -118,13 +118,42 @@ def _card_for(pid, year):
     return card
 
 
-def test_hit_symbols_track_player_power():
-    """Hard contact (McGwire) earns more automatic-two-base ** singles;
-    soft contact (Vince Coleman) earns more one-base * singles."""
-    mcgwire = _card_for("mcgwima01", 1998)   # ISO ~.450
-    coleman = _card_for("colemvi01", 1987)   # ISO ~.070
-    assert _text_share(mcgwire, "SINGLE", "**") > _text_share(coleman, "SINGLE", "**")
-    assert _text_share(coleman, "SINGLE", "*") > _text_share(mcgwire, "SINGLE", "*")
+def test_hit_symbol_shares_are_the_real_card_means():
+    """The */** shares are the official basic batter cards' means (isolated
+    power, which used to set them, anti-correlates with the real shares),
+    recomputed here from the fixtures, chance-weighted within each card."""
+    import statistics
+    from stratogen.benchmark import transcription_cases
+    from stratogen.card_text import load_real_cards
+    from stratogen.generate import (DOUBLE_2STAR_SHARE, SINGLE_2STAR_SHARE,
+                                    SINGLE_STAR_SHARE)
+    cards = [c for stem, c in load_real_cards().items()
+             if c.card_type == "batter"
+             and stem not in ("posnanski_2014", "raines_hero")]
+    cards += [c.reps["basic"] for c in transcription_cases()
+              if c.card_type == "batter" and c.official and "basic" in c.reps]
+    shares = {"SINGLE**": [], "SINGLE*": [], "DOUBLE**": []}
+    for card in cards:
+        for base in ("SINGLE", "DOUBLE"):
+            parts = {}
+            for _c, d, s in card.iter_splits():
+                if s.text.startswith(base):
+                    suffix = s.text[len(base):].strip()
+                    parts[suffix] = parts.get(suffix, 0.0) + DICE_WEIGHTS[d] * s.fraction
+            total = sum(parts.values())
+            if not total:
+                continue
+            if base == "SINGLE":
+                shares["SINGLE**"].append(parts.get("**", 0.0) / total)
+                shares["SINGLE*"].append(parts.get("*", 0.0) / total)
+            else:
+                shares["DOUBLE**"].append(parts.get("**", 0.0) / total)
+    assert len(shares["SINGLE**"]) >= 19
+    for key, value in (("SINGLE**", SINGLE_2STAR_SHARE),
+                       ("SINGLE*", SINGLE_STAR_SHARE),
+                       ("DOUBLE**", DOUBLE_2STAR_SHARE)):
+        assert statistics.mean(shares[key]) == pytest.approx(value, abs=0.02), (
+            key, statistics.mean(shares[key]))
 
 
 def test_dp_letters_track_gidp_tendency():
@@ -209,3 +238,212 @@ def test_monte_carlo_agrees_with_exact_rates():
     counts = simulate_season(card, avg, num_pa=n, seed=42)
     for cat in (HR, WALK, SO):
         assert counts[cat] / n == pytest.approx(exact[cat], abs=0.004), cat
+
+
+# --- pitcher hit targets ---------------------------------------------------------
+
+@pytest.mark.parametrize("year,lg", [(1908, "NL"), (1930, "NL"), (1968, "AL"),
+                                     (2001, "NL"), (2024, "AL")])
+def test_league_average_pitcher_line_is_the_average_card(year, lg):
+    """A pitcher with exactly the league's line gets exactly the average
+    pitcher card: the X block's singles come out of the singles share
+    alone, so doubles and triples allowed keep the league mix (they used
+    to be scaled down ~25% along with the singles)."""
+    from stratogen.generate import pitcher_targets_from_rates
+    league = db.league_batting(year, lg)
+    targets = pitcher_targets_from_rates(
+        league["BB_per_PA"], league["K_per_PA"], league["HR_per_PA"],
+        league["H_per_PA"], league, [])
+    for cat, value in average_pitcher_chances(league).items():
+        assert targets[cat] == pytest.approx(value, abs=1e-6), cat
+
+
+def test_dominant_reliever_x_block_never_adds_hits():
+    """Brandon Workman 2019 allowed 29 hits in 71.2 IP, fewer than the 30
+    X chances' own singles: the block shrinks so it can't add hits he
+    never allowed (39 in play before), and one quantified warning says
+    how far above his line the card's floor still is."""
+    stats = db.pitching_season("workmbr01", 2019)
+    league = db.league_batting(2019, stats["league"])
+    card, warnings = generate_pitcher_card(stats, league)
+    assert card.chances()["X"] < 30
+    hit_warnings = [w for w in warnings if "hits allowed" in w]
+    assert len(hit_warnings) == 1 and "% of PA high" in hit_warnings[0]
+    from stratogen.simulate import pitcher_effective_pa
+    err = score_pitcher_card(card, stats, league)
+    floor = league["H_per_PA"] / 2 - stats["H"] / pitcher_effective_pa(stats)
+    assert err["H_per_PA"] == pytest.approx(floor, abs=1e-9)
+
+
+# --- pitcher denominators -----------------------------------------------------
+
+def test_pitcher_effective_pa_leaves_out_sacrifices():
+    """Pitcher rates use the league's footing (AB + BB - IBB + HBP + SF):
+    Lahman BFP also counts sacrifice hits, which are a manager's call, not
+    a card result."""
+    from stratogen.simulate import _league_pitching_sums, pitcher_effective_pa
+    ryan = db.pitching_season("ryanno01", 1972)          # SH tracked
+    assert pitcher_effective_pa(ryan) == ryan["TBF"] - ryan["IBB"] - ryan["SH"]
+    # SH untracked (pre-1970): scaled by the league's PA_eff / sum(BFP - IBB),
+    # which is the league's sacrifice share (1930 NL: 2.8% of BFP)
+    league = db.league_batting(1930, "NL")
+    factor = league["PA_eff"] / _league_pitching_sums(1930, "NL")[0]
+    assert 1 / factor == pytest.approx(1 + league["raw"]["SH"] / league["PA_eff"],
+                                       abs=0.001)
+    hubbell = db.pitching_season("hubbeca01", 1930)
+    assert "SH" in hubbell["missing"]
+    assert pitcher_effective_pa(hubbell, league) == pytest.approx(
+        (hubbell["TBF"] - hubbell["IBB"]) * factor)
+    assert pitcher_effective_pa(hubbell) == pitcher_effective_pa(hubbell, league)
+    # BFP untracked (1925 NNL): the IP/H/BB/HBP estimate, calibrated per league
+    dean = db.pitching_season("deanne01", 1925)
+    assert "TBF" in dean["missing"]
+    raw = round(dean["IP"] * 3) + dean["H"] + dean["BB"] + dean["HBP"]
+    assert 0.94 * raw < pitcher_effective_pa(dean) < 0.98 * raw
+    _card, warnings = generate_pitcher_card(
+        dean, db.league_batting(1925, dean["league"]))
+    assert any("batters faced not recorded" in w and "estimated" in w
+               for w in warnings)
+    # a bare stat line with no league to look up is taken as printed
+    assert pitcher_effective_pa({"TBF": 600, "IBB": 5}) == 595
+
+
+def test_ryan_1972_strikeouts_match_the_real_card():
+    """The real card carries 47 strikeout chances; with sacrifices out of
+    the denominator the formula gives 46.1 (45.5 with them in)."""
+    from stratogen.generate import pitcher_chance_targets
+    stats = db.pitching_season("ryanno01", 1972)
+    league = db.league_batting(1972, stats["league"])
+    targets, _ = pitcher_chance_targets(stats, league)
+    assert targets[SO] == pytest.approx(46.1, abs=0.05)
+
+
+# --- out content and decorations -------------------------------------------------
+
+@pytest.mark.parametrize("pid,year,kind", [
+    ("mayswi01", 1965, "batter"), ("riceji01", 1984, "batter"),
+    ("colemvi01", 1987, "batter"), ("maddugr01", 1995, "pitcher"),
+    ("seaveto01", 1969, "pitcher")])
+def test_out_mix_is_allocated_not_drawn(pid, year, kind):
+    """Out types, letters and fielders are allocated by quota once every
+    out piece is known, so each card realizes its mix (and its profile's
+    groundball-A share) instead of scattering around it cell by cell."""
+    from stratogen.generate import _OutFlavors, hit_profile
+    from stratogen.model import DICE_WEIGHTS, OUT
+    if kind == "batter":
+        stats = db.batting_season(pid, year)
+        card = _card_for(pid, year)
+    else:
+        stats = db.pitching_season(pid, year)
+        card, _ = generate_pitcher_card(stats, db.league_batting(year, stats["league"]))
+    mix = dict(zip(_OutFlavors._TYPES, _OutFlavors._MIX[kind]))
+    got, gb = {}, {}
+    for _c, d, s in card.iter_splits():
+        if s.category == OUT:
+            w = DICE_WEIGHTS[d] * s.fraction
+            out_type = s.text.split()[0]
+            got[out_type] = got.get(out_type, 0.0) + w
+            if out_type == "groundball":
+                letter = s.text.rstrip("+")[-1]
+                gb[letter] = gb.get(letter, 0.0) + w
+    total = sum(got.values())
+    for t, share in mix.items():
+        assert got.get(t, 0.0) / total == pytest.approx(share / 100, abs=0.035), (t, got)
+    if kind == "batter":
+        assert set(gb) <= {"A", "B"}
+        assert gb.get("A", 0) / sum(gb.values()) == pytest.approx(
+            hit_profile(stats)["gb_a"], abs=0.05)
+    else:
+        assert "A" not in gb
+
+
+def test_decorations_sit_where_real_cards_put_them():
+    """Max-effort lineout on a 1-chance row (every real card puts it
+    there) and the injury on a light row, also on cards with no whole out row to spare
+    (Gallo 2019, Sano 2015, Cust 2007 used to lose one or both); ++ only on
+    groundball-A results."""
+    from stratogen.model import DICE_WEIGHTS
+    for pid, year in [("mayswi01", 1965), ("judgeaa01", 2024), ("gallojo01", 2019),
+                      ("sanomi01", 2015), ("custja01", 2007), ("colemvi01", 1987)]:
+        card = _card_for(pid, year)
+        maxlo = [d for _c, d, s in card.iter_splits() if "as many outs" in s.text]
+        injury = {(c, d) for c, d, s in card.iter_splits() if s.injury}
+        assert len(maxlo) == 1 and DICE_WEIGHTS[maxlo[0]] == 1, (pid, maxlo)
+        # real cards: injury on 1-chance rows 17 times of 22, else 2 or 3
+        assert len(injury) == 1 and DICE_WEIGHTS[next(iter(injury))[1]] <= 3, pid
+        for _c, _d, s in card.iter_splits():
+            if s.text.endswith("++"):
+                assert s.text[:-2].endswith("A"), s.text
+
+
+# --- warnings ---------------------------------------------------------------------
+
+def _batter_warnings(pid, year):
+    stats = db.batting_season(pid, year)
+    league = db.league_batting(year, stats["league"])
+    return generate_batter_card(stats, league)
+
+
+def _pitcher_warnings(pid, year):
+    stats = db.pitching_season(pid, year)
+    league = db.league_batting(year, stats["league"])
+    return generate_pitcher_card(stats, league)
+
+
+def test_hbp_heavy_hitter_is_told_his_obp_runs_low():
+    """Basic cards print no HBP (official ones drop them too), so Ron Hunt
+    1971 (50 HBP) gets on base ~.08 less in play: say so."""
+    _card, warnings = _batter_warnings("huntro01", 1971)
+    assert any("50 hit-by-pitches" in w and "on-base %" in w for w in warnings)
+    _card, warnings = _batter_warnings("mayswi01", 1965)
+    assert not any("hit-by-pitches" in w for w in warnings)
+
+
+@pytest.mark.parametrize("pid,year,kind,label", [
+    ("lopezni01", 2022, "batter", "home runs will run"),        # 0 HR -> ~7
+    ("kingmda01", 1982, "batter", "doubles will run"),
+    ("zieglbr01", 2009, "pitcher", "home runs allowed will run"),
+    ("gagneer01", 2003, "pitcher", "home runs allowed will run")])
+def test_clamped_categories_are_named(pid, year, kind, label):
+    """A below-average category clamps at 0 chances and runs high in play;
+    the warning names it (total hits stay exact)."""
+    fn = _batter_warnings if kind == "batter" else _pitcher_warnings
+    _card, warnings = fn(pid, year)
+    assert any(w.startswith(label) and "% of PA high" in w for w in warnings), warnings
+
+
+def test_warnings_are_meaningful_and_not_duplicated():
+    """No '~0.0%' noise, one line per missing field (league and player
+    merged), and nothing about batting-only fields on a pitcher card."""
+    _card, warnings = _batter_warnings("cobbty01", 1911)
+    assert sum("IBB" in w for w in warnings) == 1
+    assert sum("SF" in w for w in warnings) == 1
+    _card, warnings = _batter_warnings("alomasa02", 1998)
+    assert not any("~0.0%" in w for w in warnings), warnings
+    _card, warnings = _pitcher_warnings("seaveto01", 1969)
+    assert not any("SF" in w or "caught" in w for w in warnings), warnings
+
+
+def test_tiny_samples_are_blended_toward_league():
+    """Gus Schlosser 2014 went 1-for-1: the card used to be 108 singles.
+    Below 50 PA the line is blended toward league average (real cards from
+    65 PA up match the unblended formula, so nothing else moves)."""
+    card, warnings = _batter_warnings("schlogu01", 2014)
+    assert max(card.chances().values()) < 70
+    assert any("blended toward league" in w for w in warnings)
+    assert card.validate() == []
+
+
+def test_implied_line_matches_hits_and_ba_on_one_denominator():
+    """The card's BA over the season's own AB: matching hits means
+    matching BA (the per-PA BA counted sac flies as at-bats, so Gwynn 1994
+    read .394 -> .387 with hits 165 -> 165)."""
+    from stratogen.simulate import implied_batting_line
+    stats = db.batting_season("gwynnto01", 1994)
+    league = db.league_batting(1994, stats["league"])
+    card, _ = generate_batter_card(stats, league)
+    implied = derived_stats(combined_rates(card, average_pitcher_chances(league)))
+    line = implied_batting_line(implied, stats)
+    assert line["H"] == pytest.approx(stats["H"], abs=0.5)
+    assert line["BA"] == pytest.approx(line["actual_BA"], abs=0.002)
+    assert line["OBP"] <= line["actual_OBP"]   # his HBP aren't on the card

@@ -1,0 +1,83 @@
+{
+  "cardId": "batter_lemahieu-dj_2021",
+  "sourceImage": "som_batter_lemahieu-dj_2021_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "DJ LeMahieu",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 2021,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "2b", "rating": 1, "error": null },
+      { "pos": "1b", "rating": 2, "error": null },
+      { "pos": "3b", "rating": 3, "error": null }
+    ],
+    "stealing": "D",
+    "running": "1-13",
+    "notes": "Header reads: 'DJ LeMAHIEU   2nd base-1   1st base-2   3rd base-3   stealing-D   running 1-13' and 'NEW YORK (AL)'. Basic side; no bats indicator printed here."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "lineout (2b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (2b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (2b)B", "outcomes": [ { "range": null, "result": "groundball (2b)B" } ] },
+          { "roll": 4, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 5, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 8, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 9, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 10, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 11, "raw": "groundball (3b)B", "outcomes": [ { "range": null, "result": "groundball (3b)B" } ] },
+          { "roll": 12, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] },
+          { "roll": 3, "raw": "lineout (3b)", "outcomes": [ { "range": null, "result": "lineout (3b)" } ] },
+          { "roll": 4, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 8, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 9, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 10, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 11, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 12, "raw": "lineout (ss) plus injury", "outcomes": [ { "range": null, "result": "lineout (ss) plus injury" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "lineout (3b)", "outcomes": [ { "range": null, "result": "lineout (3b)" } ] },
+          { "roll": 3, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 4, "raw": "DOUBLE** 1-16 / SINGLE** 17-20", "outcomes": [ { "range": [1,16], "result": "DOUBLE**" }, { "range": [17,20], "result": "SINGLE**" } ] },
+          { "roll": 5, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 10, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "SINGLE* 1 / lineout (ss) 2-20", "outcomes": [ { "range": [1,1], "result": "SINGLE*" }, { "range": [2,20], "result": "lineout (ss)" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 2021,
+    "stats": { "AVG": ".268", "AB": 597, "2B": 24, "3B": 1, "HR": 10, "RBI": 57, "BB": 73, "SO": 94, "SB": 4, "CS": 2, "SLG%": ".362", "ON BASE%": ".349" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy (rotate 90 then 180) of the rotated-ccw original; confirmed via full-res left/right column crops and a stat-box crop. Player surname printed 'LeMAHIEU'. Col1 roll2 prints a verbose instruction-style result ('lineout (2b) into as many outs as possible') captured verbatim. Fielding-class letters are printed flush against the parenthesized fielder ('(ss)A++', '(2b)B') and recorded that way in raw."
+  }
+}
