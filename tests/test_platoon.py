@@ -384,7 +384,7 @@ def test_real_advanced_cards_score_well_side_by_side():
     land in the same ballpark as the basic-side bars."""
     for c in ADV_CASES:
         if not c.official or c.card_id == "pitcher_bruney-brian_2008":
-            continue   # Bruney: 36-IP reliever, documented tolerance
+            continue   # Bruney: 34-IP reliever, documented tolerance
         s = c.actual_stats
         info = db.player_info(s["player_id"])
         ctx = pl.league_context(c.league, db)

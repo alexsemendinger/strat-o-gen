@@ -29,8 +29,11 @@ source of truth. Notation is catalogued in `SYMBOLS.md`.
   against its own matchup's average opposing grid, with the printed
   percentages and Power labels. This is the bar generated advanced cards
   must clear, and the source of the share-model and Power-rule fits.
-- **Unofficial cards** (see below) are included but **tolerant**: a failure
-  that only they exhibit is allowed.
+- **Unofficial cards** (see below) are held to the same per-card bars but
+  left out of the aggregate accuracy guard.
+- **Printed stat lines** are cross-checked against Lahman (AB/HR/SO for
+  batters, W/L/SO/BB/IP for pitchers), and generated basic cards must stay
+  within 0.002 per PA of each real basic side.
 
 ## Official vs unofficial
 Four pitcher cards are flagged `"official": false` (filename `_unofficial`):
@@ -41,12 +44,16 @@ confirmed regulation Strat-O-Matic product, so they may be less reliable
 along some dimension. They are advanced-side only.
 
 ## Notes / known points
-- **Aaron Judge 2024 (basic side)** legitimately under-represents home runs
-  (~10 HR chances vs the ~15 his rate implies): his extreme HR *and* walk
-  totals can't both fit in 108 chances, so the real card trades away HR —
-  the kind of compromise real cards make for extreme seasons. The advanced
-  side captures his HR rate accurately. Treated as a documented tolerance,
-  not a transcription error (confirmed verbatim from the photo).
+- **Aaron Judge 2024** under-prints home runs on the basic side (~10 HR
+  chances vs the ~15 his rate implies) and strikeouts on both sides
+  (scored errors HR .024, SO .030/.033), while his walks fit. It isn't a
+  108-chance limit: the generated card fits his HR, BB and SO exactly. It
+  is the real card's compromise (confirmed verbatim from the photo), and
+  only those categories are tolerated (tests/test_transcriptions.py).
+- **Brian Bruney 2008** (34 IP): the combined advanced grids' hit rate is
+  tolerated; tiny platoon samples make it noisy.
+- **Phil Linz 1963**: the statRecord prints 6 HR, but the card's own SLG
+  (.349) and Lahman both say 2; recorded as a known print difference.
 - **Joe Sewell** is an all-time "SOM Hall of Famer" card (no single season;
   composite stat line) and **Lindy McDaniel** is an official card with only
   its advanced side photographed and no year. Both are parsed and

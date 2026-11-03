@@ -69,15 +69,35 @@ card_chances(outcome) = (2 × player_rate − league_rate) × 108
 
 League rates are computed per year and league from the Lahman data (all
 eras, including the Negro Leagues), so a 1908 card and a 2019 card are
-built against their own run environments. Pitcher cards additionally carry
-the standard 30-chance X-chart block (defense-dependent results), shrunk
-automatically for extreme modern relievers whose strikeouts don't fit
-otherwise.
+built against their own run environments. Rates are per effective PA
+(AB + BB − IBB + HBP + SF); for pitchers that means batters faced less
+intentional walks and sacrifice hits (`simulate.pitcher_effective_pa`;
+where pitching SH or batters faced weren't recorded, a per-league factor
+from the Pitching table stands in). Pitcher cards additionally carry the
+standard 30-chance X-chart block (defense-dependent results, yielding
+X_SINGLE_RATE = 4.9 singles per 30 with average defense), shrunk
+automatically for extreme modern relievers whose strikeouts don't fit or
+who allowed fewer hits than the block's own singles. 2B/3B allowed aren't
+recorded, so a pitcher's non-HR hits follow the league's 1B/2B/3B mix,
+with the X singles taken out of his singles.
 
 This formula was validated against real cards: hand-counting Barry Bonds's
 2001 card gives 22 HR / 41 BB / 12 K chances; the formula predicts 21.8 /
-40.3 / 10.9. Nolan Ryan's 1972 card carries 47 strikeout chances; the
-formula predicts 46.8.
+40.2 / 12.1. Nolan Ryan's 1972 card carries 47 strikeout chances; the
+formula predicts 46.1.
+
+Below 50 PA (or batters faced) a season's rates are blended toward the
+league's as if it had 50, so a 1-for-1 cup of coffee doesn't print 108
+singles; real cards from 65 PA up match the unblended formula.
+
+Outs are allocated, not drawn: once the hits, walks and strikeouts are
+placed, every remaining out piece is assigned a type (batter cards 55%
+groundball / 22% flyball / 10% lineout / 12% popout / 1% foulout, pitcher
+cards 26/48/10/16/0, as measured on the real cards), a letter (the
+player's groundball-A share from his GIDP rate) and a fielder by quota,
+so every card realizes its mix. The max-effort lineout and the injury sit
+on 1-chance rows (dice 2/12) as on every real card, and `++` goes on
+groundball-A results.
 
 ## How we know the cards are good
 
@@ -89,16 +109,32 @@ suite computes each card's **exact** expected outcome rates (no simulation
 noise — the dice probabilities are summed in closed form) against a
 league-average opponent and compares them to the player's actual season line:
 
-- Real official cards land within **~0.003–0.009 of the season batting
-  average** (their own d20 granularity and clamping cost them the rest).
-  Extreme seasons cost more: the real Aaron Judge 2024 card can't fit both
-  his home runs and his walks in 108 chances, so it trades away HR — a
-  limitation generated cards share.
-- Generated cards must match or beat the real card's error **on every
-  category of every benchmark case** — `tests/test_benchmark.py` enforces
-  this, and currently generated cards do at least as well across the board.
-- A few unofficial cards (uncertain provenance, probably genuine) are
-  included but tested *tolerantly*: a failure only they exhibit is allowed.
+- Real official basic batter cards land within **.000–.008 of the
+  season batting average** (median .004; BA compared on the season's own
+  at-bats, so matching hits means matching BA). Extreme seasons cost
+  more: the real Aaron Judge 2024 card under-prints his HR (basic side)
+  and strikeouts (both sides), though a card can hold all of them — the
+  generated one fits HR, BB and SO exactly. That card is tolerated for
+  exactly those categories; every other category is held to the bars.
+- Generated cards must stay **within 0.002 per PA of the real card in
+  every category**: the 14 fixtures (`tests/test_benchmark.py`), the basic
+  sides of the JSON cards with a real season
+  (`tests/test_transcriptions.py`, one named trade-off: Silvera 1949's
+  singles, where his clamped extra-base hits come out of singles to keep
+  total hits exact) and the advanced sides (`tests/test_platoon.py`). On
+  the fixtures they currently match or beat the real card everywhere.
+- That comparison is not neutral: generated cards are built by inverting
+  the tester (same X hit rate, average cards, HBP and sacrifice handling),
+  so an error in those assumptions counts against the real cards only.
+  The tester's own parameters are checked against the real cards: e.g.
+  the X hit rate the 11 official pitcher cards imply is 4.2 ± 0.5 per 30,
+  so the published 4.9 stays (1.4 standard errors off, short of the 2
+  that would justify refitting).
+- A deterministic sweep of ~600 random pool seasons (`tests/test_sweep.py`)
+  checks validity, layout precision (every category within 0.11 chances
+  of its target) and the batter-card conventions beyond the fixtures.
+- Unofficial cards (uncertain provenance, probably genuine) are held to
+  the same per-card bars, but left out of the aggregate accuracy guard.
 
 Run the suite:
 ```bash
@@ -194,17 +230,26 @@ Other simplifications:
   the 20 ratings printed on the fixture cards (10 exact, 19 within ±1).
   Box-score stats can't see range a fielder never reaches or scouting
   judgment, so expect occasional ±1 disagreement with official cards.
-- Baserunning symbols are player-derived but heuristic: isolated power
-  sets the `**` share (automatic two-base advancement), soft contact the
-  `*` share, GIDP tendency the groundball-A (double play) share, and
-  speed the `++` count. Directionally right, not reverse-engineered from
-  official cards.
+- Baserunning symbols: the `*`/`**` shares are the real cards' means for
+  every batter (SINGLE** .33, SINGLE* .19, DOUBLE** .39); isolated power,
+  which used to set them, anti-correlates with the real cards' shares.
+  GIDP tendency sets the groundball-A (double play) share and speed the
+  `++` count. With whole cells and only a few hit cells per category, a
+  card's realized `*`/`**` mix only approximates the shares.
 - Stealing ratings cap at A for seasons where caught-stealing wasn't
   tracked (mostly pre-1951): success rate is unknowable, so volume alone
   decides and the card carries a warning. AA requires a measured elite
   rate.
-- HBP isn't placed on basic cards (matching all 14 fixture cards);
-  advanced batter grids carry it, as the real advanced cards do.
+- HBP isn't placed on basic cards (official basic cards drop it too: their
+  walk chances fit BB alone far better than BB + HBP); advanced batter
+  grids carry it, as the real advanced cards do. A hit-by-pitch magnet's
+  basic card warns how far his on-base % will run low (Ron Hunt 1971:
+  .402 → .322 in play).
+- X-chart fielders on generated pitcher cards are random (60% grounders);
+  every real pitcher card spreads its 30 X chances ss 7 / 2b 6 / 3b 3 /
+  c 3 / cf 3 / 1b 2 / lf 2 / p 2 / rf 2. Switching to the real budget
+  raises X groundballs about a quarter, which the game engine's
+  double-play calibration has to absorb first.
 - Errors/X-chart resolution assumes league-average defense.
 
 ## Game dynamics are tested too
