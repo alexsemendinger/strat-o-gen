@@ -15,16 +15,18 @@ import random
 
 import pytest
 
+from stratogen import platoon
 from stratogen.game import (
     NEUTRAL_CONTEXT, GameSimulator, HalfInning, LeagueContext, Runner,
-    apply_outcome, average_cards, average_lineup, card_power_rating,
+    apply_outcome, average_advanced_card, average_cards, average_lineup,
+    card_power_rating, platoon_grid, platoon_power,
     card_running_rating, card_stealing_rating, league_average_rates,
     league_context, league_game_rates, steal_attempt_probability,
     steal_success_probability, synthetic_average_stats,
 )
 from stratogen.generate import average_batter_chances, layout_card
 from stratogen.lahman import default_db
-from stratogen.model import Card, DICE_WEIGHTS, Split
+from stratogen.model import AdvancedCard, Card, DICE_WEIGHTS, PlatoonSide, Split
 
 db = default_db()
 
@@ -600,6 +602,77 @@ def test_stealing_letter_drives_steals():
 def test_average_lineup_layouts_differ():
     lineup = average_lineup(db.league_batting(2001, "NL"))
     assert len({str(card.columns) for card in lineup}) == 9
+
+
+# --- platoon play: advanced cards ------------------------------------------------
+
+def _advanced(card_type, hand, texts, powers=(None, None)):
+    vs = ("LHB", "RHB") if card_type == "pitcher" else ("LHP", "RHP")
+    return AdvancedCard(name="T", card_type=card_type, hand=hand, sides=[
+        PlatoonSide(v, 0.5, _uniform_card(card_type, t), power)
+        for v, t, power in zip(vs, texts, powers)])
+
+
+def test_advanced_cards_read_their_platoon_grids():
+    """Batter grid by the pitcher's throwing hand, pitcher grid by the
+    batter's effective hand (a switch hitter bats opposite the pitcher),
+    N-HR by the power of the grid the batter reads (W: SINGLE**), and no
+    league HBP added for advanced batters (their grids carry it all)."""
+    lefty = _advanced("pitcher", "L", ("N-HR", "flyball (cf)C"))
+    righty = _advanced("pitcher", "R", ("N-HR", "flyball (cf)C"))
+    switch = _advanced("batter", "S", ("WALK", "strikeout"), ("N", "W"))
+    lhb = _advanced("batter", "L", ("WALK", "strikeout"), ("N", "W"))
+    assert platoon_grid(switch, lefty) is switch.side("LHP").card
+    assert platoon_grid(lefty, switch) is lefty.side("RHB").card
+    assert platoon_grid(righty, switch) is righty.side("LHB").card
+    assert platoon_grid(righty, lhb) is righty.side("LHB").card
+    assert platoon_power(switch, lefty) == "N" and platoon_power(switch, righty) == "W"
+    basic = _uniform_card("batter", "WALK")
+    assert platoon_grid(basic, righty) is basic                  # basic cards: as is
+    assert platoon_grid(righty, basic) is righty.side("RHB").card  # unknown hand: R
+
+    sim = GameSimulator([lhb] * 9, righty, context=NEUTRAL_CONTEXT)
+    sim.rng = FixedRNG([0.75])                  # white die 4-6: the pitcher card
+    text, card = sim._read_card(lhb)
+    assert (text, card) == ("N-HR", righty.side("LHB").card) and sim._power[0] == "W"
+    s = _play(_state(first=13), text, power=sim._power[0])
+    assert s.events["HR"] == 0 and s.bases == [13, None, 13]   # SINGLE**
+
+    flies = _advanced("pitcher", "R", ("flyball (cf)C", "flyball (cf)C"))
+    ctx = LeagueContext(hbp_per_out=1.0)
+    advanced = GameSimulator([lhb] * 9, flies, seed=1, context=ctx).game_rates(90)
+    basic = GameSimulator([_uniform_card("batter", "strikeout")] * 9, flies,
+                          seed=1, context=ctx).game_rates(90)
+    assert advanced.get("HBP", 0) == 0 and basic["HBP"] > 0
+
+
+ADVANCED_SEASONS = [(1930, "AL"), (1987, "NL"), (2019, "NL")]
+
+
+@pytest.mark.parametrize("year,lg", ADVANCED_SEASONS)
+def test_advanced_average_lineup_scores_like_the_league(year, lg):
+    """League-average advanced cards (generate.average_advanced_*_chances
+    laid out by average_advanced_card) score within the same 9% band as
+    the basic cards: nine batters split by the league's L/R/switch shares,
+    every third one Power-W (reading the pitchers' N-HR as SINGLE**),
+    against an average lefty and righty weighted by the league's share of
+    batters faced by left-handers."""
+    league = db.league_batting(year, lg)
+    ctx = platoon.league_context(league)
+    target = {h: 9 * ctx.batter_shares[h] for h in ("L", "R", "S")}
+    count = {h: int(v) for h, v in target.items()}
+    for h in sorted(target, key=lambda h: count[h] - target[h])[:9 - sum(count.values())]:
+        count[h] += 1
+    hands = [h for h in ("R", "L", "S") for _ in range(count[h])]
+    lineup = [average_advanced_card(league, "batter", h, "W" if i % 3 == 2 else "N", i)
+              for i, h in enumerate(hands)]
+    runs = 0.0
+    for hand, share in (("L", ctx.lhp_share), ("R", 1.0 - ctx.lhp_share)):
+        pitcher = average_advanced_card(league, "pitcher", hand)
+        sim = GameSimulator(lineup, pitcher, seed=7, context=league)
+        runs += share * sim.runs_per_game(int(HALF_INNINGS * share))
+    real = league_game_rates(year, lg)["R"]
+    assert runs / real == pytest.approx(1.0, abs=0.09), (year, lg, runs, real)
 
 
 # --- generated player cards behave sanely in play ------------------------------

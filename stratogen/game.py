@@ -42,6 +42,12 @@ Card readings (rulebook-faithful where the rule is known):
   shorthand (`gb (ss) A+`, `fly (lf) B?`, `SI**`, `lo (2b) max`, `HBP
   plus injury`) reads like the canonical text, and a printed hit location
   (`SINGLE** (lf)`) is ignored; anything unrecognizable is a plain out.
+- Platoon play (advanced cards, see platoon_grid): an AdvancedCard batter
+  reads his grid for the pitcher's throwing hand, an AdvancedCard pitcher
+  his grid for the batter's effective hand (switch hitters bat opposite
+  the pitcher; unknown hands and basic cards count as right-handed), and
+  `N-HR` follows the power of the grid the batter reads. Advanced batter
+  grids print all of the batter's HBP, so none is added in his PAs.
 
 League context (LeagueContext, built per (year, league) and cached by
 league_context): what cards don't carry is added at the league-season's
@@ -74,7 +80,9 @@ at first) are linear in the league's times-on-base rate; those constants,
 ROE_SHARE and X_DP_SHARE were calibrated on training league-seasons
 (1904-2024, years divisible by 4) and verified on the other 1901-2024
 seasons. Pickoffs, hit-and-run, outfield arms, the infield-in / holding
-decisions and platoon reading are not simulated.
+decisions, and double plays other than DP grounders and max-effort
+lineouts (strike-'em-out-throw-'em-out, liners or flies doubling a runner
+off, outfield assists) are not simulated.
 """
 
 from __future__ import annotations
@@ -88,9 +96,11 @@ from functools import lru_cache
 from typing import NamedTuple
 
 from .model import (
-    Card, CHANCES_PER_CYCLE, X_CHANCES_PER_PITCHER_CARD,
+    AdvancedCard, Card, CHANCES_PER_CYCLE, PlatoonSide, X_CHANCES_PER_PITCHER_CARD,
     HR, TRIPLE, DOUBLE, SINGLE, WALK, HBP, SO, OUT, XCHANCE, categorize,
 )
+from . import platoon
+from .platoon import effective_hand
 from .simulate import X_SINGLE_RATE
 
 X_ERROR_RATE = 0.05         # one-base error share of X chances, modern era
@@ -890,6 +900,55 @@ def average_lineup(league: dict, size: int = 9, first_variant: int = 0) -> list[
             for v in range(first_variant, first_variant + size)]
 
 
+def average_advanced_card(league: dict, card_type: str, hand: str,
+                          power: str = "N", variant: int = 0) -> AdvancedCard:
+    """A league-average advanced card: a batter who bats `hand` ('L'/'R'/
+    'S') with grids of `power` ('N' or 'W', the same on both), or a
+    pitcher who throws `hand`. Each grid holds the league's rates in its
+    matchup (platoon.league_context(league).cell_league), laid out like
+    the average basic cards: generate.average_advanced_batter_chances
+    (weak share 0 for N, 1 for W: a Power-W grid carries the N-HR it can't
+    read off pitcher grids as its own homers) or average_advanced_pitcher_
+    chances (home runs printed N-HR). Printed shares are the league's
+    matchup frequencies."""
+    from .generate import (average_advanced_batter_chances,
+                           average_advanced_pitcher_chances, hit_profile,
+                           layout_card, pitcher_hit_profile)
+    ctx = platoon.league_context(league)
+    year, tag = league.get("year"), f"{hand}{power}v{variant}"
+    sides = []
+    if card_type == "batter":
+        profile = hit_profile(synthetic_average_stats(league))
+        try:
+            profile["gb_a"] = league_context(year, league["league"]).batter_gb_a
+        except (KeyError, TypeError):
+            pass
+        for p in platoon.HANDS:
+            cell = ctx.cell_league(p, effective_hand(hand, p))
+            grid = layout_card(
+                average_advanced_batter_chances(cell, 1.0 if power == "W" else 0.0),
+                card_type="batter", name="LEAGUE AVERAGE", year=year, team=None,
+                stats={}, header_lines=["running 1-13"], profile=profile,
+                seed_extra=f"advanced vs {p}HP {tag}")
+            share = ctx.lhp_share if p == "L" else 1.0 - ctx.lhp_share
+            sides.append(PlatoonSide(vs=f"{p}HP", share=share, card=grid, power=power))
+        header = ["running 1-13"]
+    else:
+        profile = pitcher_hit_profile({"TBF": 600}, league)
+        freq = {h: ctx.freq(hand, h) for h in platoon.HANDS}
+        for h in platoon.HANDS:
+            grid = layout_card(
+                average_advanced_pitcher_chances(ctx.cell_league(hand, h)),
+                card_type="pitcher", name="LEAGUE AVERAGE", year=year, team=None,
+                stats={}, header_lines=[], profile=profile,
+                seed_extra=f"advanced vs {h}HB {tag}", hr_text="N-HR")
+            sides.append(PlatoonSide(vs=f"{h}HB", share=freq[h] / sum(freq.values()),
+                                     card=grid))
+        header = []
+    return AdvancedCard(name="LEAGUE AVERAGE", card_type=card_type, hand=hand,
+                        year=year, header_lines=header, sides=sides)
+
+
 def league_average_rates(league: dict, half_innings: int = 24000, seed: int = 0,
                          lineups: int = 3, pitchers: int = 4,
                          context: LeagueContext | None = None) -> dict[str, float]:
@@ -912,35 +971,69 @@ def league_average_rates(league: dict, half_innings: int = 24000, seed: int = 0,
     return dict(totals)
 
 
+# --- platoon (advanced) cards ----------------------------------------------------
+
+def _throws(card) -> str:
+    """A pitcher's throwing hand: an AdvancedCard's, else right-handed (basic
+    cards carry no hand; unknown hands count as right-handed, as the
+    generator treats them)."""
+    hand = card.hand if isinstance(card, AdvancedCard) else None
+    return hand if hand in ("L", "R") else "R"
+
+
+def platoon_grid(card, opponent) -> Card:
+    """The default grid_selector: the grid `card` reads against `opponent`.
+    An AdvancedCard batter reads his grid for the pitcher's throwing hand;
+    an AdvancedCard pitcher his grid for the batter's effective hand
+    (platoon.effective_hand: switch hitters bat opposite the pitcher,
+    unknown hands and basic cards count as right-handed). A basic card
+    reads itself."""
+    if not isinstance(card, AdvancedCard):
+        return card
+    if card.card_type == "pitcher":
+        bats = opponent.hand if isinstance(opponent, AdvancedCard) else None
+        return card.side(f"{effective_hand(bats, _throws(card))}HB").card
+    return card.side(f"{_throws(opponent)}HP").card
+
+
+def platoon_power(batter, pitcher) -> str | None:
+    """'N'/'W' for a batter's N-HR readings: an AdvancedCard batter's power
+    on the grid he reads against `pitcher`, else card_power_rating."""
+    if isinstance(batter, AdvancedCard) and batter.card_type == "batter":
+        return batter.side(f"{_throws(pitcher)}HP").power
+    return card_power_rating(batter)
+
+
 # --- the simulator -------------------------------------------------------------------
-
-def _default_grid(card: Card, opponent: Card) -> Card:
-    return card
-
 
 class GameSimulator:
     """Plays half-innings with a lineup of batter cards vs one pitcher card.
 
-    `context` is a LeagueContext, a league dict (LahmanDB.league_batting),
-    or None (the pitcher card's year, pooled over its leagues; rules-only
-    when the year is unknown). Hooks for platoon play: `grid_selector(card,
-    opponent)` returns the card/grid to read (default: the card itself —
-    an advanced card can return its vs-LHP/RHP grid), and `power_of(card)`
-    returns 'N'/'W' for N-HR readings (default: a 'Power-X' header line).
+    Cards may be basic (Card) or advanced (AdvancedCard, read by platoon:
+    see platoon_grid), mixed freely. `context` is a LeagueContext, a league
+    dict (LahmanDB.league_batting), or None (the pitcher card's year,
+    pooled over its leagues; rules-only when the year is unknown). Hooks:
+    `grid_selector(card, opponent)` returns the card/grid to read (default
+    platoon_grid), and `power_of(card)` returns 'N'/'W' for N-HR readings
+    (default platoon_power against this pitcher: an advanced batter's grid
+    power, else a 'Power-X' header line).
     """
 
-    def __init__(self, lineup: list[Card], pitcher: Card, seed: int = 0,
+    def __init__(self, lineup: list, pitcher, seed: int = 0,
                  context=None, *, grid_selector=None, power_of=None):
         self.lineup = list(lineup)
         self.pitcher = pitcher
         self.rng = random.Random(seed)
         self.context = resolve_context(context, pitcher)
-        self.grid_selector = grid_selector or _default_grid
-        power_of = power_of or card_power_rating
+        self.grid_selector = grid_selector or platoon_grid
         self._next_batter = 0
         self._runners = [Runner(card_running_rating(c), card_stealing_rating(c))
                          for c in self.lineup]
-        self._power = [power_of(c) for c in self.lineup]
+        self._power = [power_of(c) if power_of else platoon_power(c, pitcher)
+                       for c in self.lineup]
+        # Advanced batter grids print all of a batter's HBP (pitcher grids
+        # none), so his plate appearances get no league HBP added.
+        self._add_hbp = [not isinstance(c, AdvancedCard) for c in self.lineup]
         self._grids: dict[int, tuple] = {}
         self.totals: Counter = Counter()
 
@@ -1048,7 +1141,8 @@ class GameSimulator:
             text, card = self._read_card(self.lineup[idx])
             apply_outcome(state, text, runner, self.rng, self.context,
                           power=self._power[idx],
-                          inject_hbp=not self._card_has_hbp(card))
+                          inject_hbp=(self._add_hbp[idx]
+                                      and not self._card_has_hbp(card)))
             if state.bases[0] is runner:
                 state.fresh = runner
         self.totals.update(state.events)
