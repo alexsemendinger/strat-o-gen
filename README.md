@@ -211,15 +211,75 @@ Other simplifications:
 
 Per-PA rates aren't the whole game, so `stratogen/game.py` is a
 simplified basic-game engine that plays full innings with real
-baserunners: `*`/`**` advancement, the rulebook's no-asterisk running
-gamble (d20 vs the lead runner's rating, +2 with two outs), double plays
-off groundball-A, sacrifice-fly tags, max-effort lineouts, and X-chart
-errors. The test suite checks emergent behavior: a lineup of
-league-average cards scores within a documented band of the league's
-actual runs per game across run environments from 1968 to 1930 (the
-engine omits steals, non-X errors, HBP and small-ball, costing a
-consistent ~12-14%), eras order correctly, and symbol profiles and
-running ratings measurably move run scoring.
+baserunners. It has two layers.
+
+**Card rules.** `*`/`**` advancement; the no-asterisk running gamble
+(d20 vs the rating of the lead runner already on base, +2 with two outs;
+the batter-runner never goes); groundball A = double play, B = force at
+second with the batter safe, C = everyone moves up, with an unforced
+runner on third scoring on A/B grounders only when they're hit to the
+middle infield; flyball A = every runner tags, B = sacrifice fly, C =
+hold; "into as many outs as possible" lineouts (a triple play with two
+on); X chances resolved as singles, errors, or the batted-ball out they
+are (DP grounders and sac flies included); `N-HR` by the batter's power
+rating. The groundball/flyball readings follow the basic chart as SOM
+league rule sheets describe it; the official chart isn't reproduced.
+
+**League context.** What cards don't carry is added at each
+league-season's own rates, from the Lahman Teams, Pitching and catchers'
+Fielding tables (`league_context(year, league)`, cached): hit-by-pitch
+(taken from out readings, where card outs absorbed it); errors (70%
+reached-on-error — about 40% of all errors through the X chart, the rest
+from ordinary outs — and 30% extra-base errors on hits; card outs come
+from AB−H, so they already contain every ROE and nothing is counted
+twice); stolen-base attempts and success scaled by the runner's
+`stealing-X` letter (multipliers measured from 1951-2024 player-seasons;
+CS imputed from nearby seasons where it wasn't recorded); wild pitches,
+passed balls and balks; sacrifice bunts and intentional walks (both
+outside the cards' plate appearances; pre-1931 SH that include sacrifice
+flies are corrected). Opportunity rates and the two error/DP shares are
+small constants calibrated on **training** league-seasons (every year
+divisible by 4, 62 of them) and verified on the 186 **held-out** ones.
+
+**Accuracy.** League-average lineups (27 independently laid-out average
+batter cards against 4 average pitcher cards, 30,000 half-innings) vs
+the real league, per nine innings (27 outs — real games average ~8.9
+innings), all 248 AL/NL seasons 1901-2024:
+
+| era | train R sim/real | held-out R sim/real |
+|---|---|---|
+| 1901-1919 | 0.996 (sd 0.028) | 0.994 (sd 0.035) |
+| 1920-1941 | 1.008 (0.021) | 1.006 (0.026) |
+| 1942-1960 | 0.999 (0.020) | 1.005 (0.021) |
+| 1961-1976 | 1.006 (0.013) | 1.004 (0.014) |
+| 1977-1992 | 1.014 (0.018) | 1.018 (0.018) |
+| 1993-2009 | 1.012 (0.012) | 1.012 (0.014) |
+| 2010-2024 | 0.991 (0.028) | 1.003 (0.023) |
+| all | 1.004, range 0.934-1.051 | 1.006, range 0.926-1.066 |
+
+Every season lands within ±8% (96-97% within ±5%). On the held-out
+seasons the other rates average 1.00-1.01 of real; SB, CS, HBP, E, WP
+and SH are within ±10% in 97-100% of seasons, PB in 92%, double plays
+turned in 87%, IBB in 76% and GIDP in 71%. Weak spots: the AL of
+1905-1908 scores 5-7% low, sacrifice flies run 7-10% high, and balks are
+noisy.
+
+Before this, the engine had none of the league layer and scored about
+13% below real (sd 6%, as low as −35%); a 0.75-1.05 band hid the gap.
+Adding the mechanics one at a time (runs per 27 outs, 1901-2024 mean,
+in % of real runs): rule fixes and card recalibration +1%, HBP +4%,
+errors +9%, WP/PB/BK +3%, steals −2% (caught stealing outweighs stolen
+bases), sacrifice bunts −2.5%, IBB +1%. In the dead-ball era errors
+alone are worth +22%.
+
+The test suite pins each base-running rule with unit tests and checks
+fifteen sampled seasons (three of them training) for runs within ±9%
+per season and no era bias, SB/CS/HBP/E/DP/GIDP/WP/PB/SH near the
+league's rates, era ordering, and that symbols, running and stealing
+ratings measurably move scoring. Not simulated: pickoffs, hit-and-run,
+outfield arms, infield-in / holding decisions, and platoon (advanced)
+reading — `GameSimulator` takes `grid_selector` and `power_of` hooks for
+that.
 
 ## Advanced-side ratings
 
@@ -276,7 +336,7 @@ stratogen/
   generate.py           Chance targets, clamping/redistribution, card layout
                         (basic cards and advanced platoon grids)
   benchmark.py          Scoring vs the real-card fixtures (both sides)
-  game.py               Simplified game engine (innings, baserunners)
+  game.py               Game engine: innings, baserunners, league running game
   ratings.py            Stealing/running ratings (fitted to real cards)
   fielding.py           Fielding ratings 1-5 (calibrated to real cards)
   advanced_ratings.py   Advanced-side ratings: e, arms, bunt, hold, wp/bk, endurance

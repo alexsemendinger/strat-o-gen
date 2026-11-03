@@ -516,16 +516,19 @@ def test_cli_advanced(capsys, monkeypatch):
 
 # --- no regressions to the basic side ----------------------------------------------
 
-# Fingerprints of basic-card output (targets, grid, warnings) recorded from
-# the code before advanced generation existed. '++' is stripped and the
-# header excluded, so they only depend on the chance model and layout.
+# Fingerprints of basic-card output (targets, grid, warnings). First recorded
+# from the code before advanced generation existed, then re-recorded once when
+# the out-type mix and DP-grounder share were recalibrated to the real cards
+# (chances, hit cells and warnings were verified identical; only out texts
+# moved). '++' is stripped and the header excluded, so they only depend on the
+# chance model and layout.
 _BASIC_GOLDEN = [
-    ("mayswi01", 1965, "batter", "0c6d08164fe7e02f"),
-    ("gwynnto01", 1995, "batter", "ec9892e9d45dfe4c"),
-    ("cobbty01", 1911, "batter", "b4127f3d74893c75"),
-    ("judgeaa01", 2024, "batter", "0a2dd6f1b8a24f8e"),
-    ("ryanno01", 1974, "pitcher", "c5634fa549c63cd6"),
-    ("maddugr01", 1995, "pitcher", "c642183fe878c366"),
+    ("mayswi01", 1965, "batter", "9f2a5e9d8cfbc2db"),
+    ("gwynnto01", 1995, "batter", "97bd25606327eb01"),
+    ("cobbty01", 1911, "batter", "cbc297e924d0548d"),
+    ("judgeaa01", 2024, "batter", "81710993e5f25871"),
+    ("ryanno01", 1974, "pitcher", "7ea742355e783354"),
+    ("maddugr01", 1995, "pitcher", "013ab417a8b5d918"),
     ("chapmar01", 2014, "pitcher", "f7287c3cf44cce54"),
 ]
 
