@@ -12,8 +12,8 @@ their outcome depends on the defense, not the card. With league-average
 defense they yield roughly 4.9 singles per 30 chances (Bundy's analysis);
 everything else is an out or an error, and errors behave like outs for
 rate-stat purposes (batter reaches but gets no hit, pitcher is charged no
-hit). X_SINGLE_RATE captures this and can be recalibrated against real
-pitcher cards.
+hit). X_SINGLE_RATE captures this; see its comment for the check against
+the real pitcher cards.
 
 A Monte Carlo season simulator is also provided for demos and sanity
 checks; the exact computation is what the tests use.
@@ -34,6 +34,17 @@ from .model import (
 
 # Fraction of X-chart chances that become singles with average defense
 # (Bundy: ~4.9 hits per 30 X chances).
+#
+# Checked against the 11 official real pitcher cards with a real season
+# (4 .txt fixtures + 7 JSON basic sides; tests/test_benchmark.py::
+# test_x_single_rate_is_consistent_with_real_pitcher_cards): solving each
+# card's hit total for the X rate that reproduces his hits allowed gives
+# a mean of 4.2 per 30 (median 4.1, sd 1.7, SE 0.5; Kirby 1975 1.9 to
+# Colon 2016 8.2). 4.9 sits 1.4 SE above that mean: suggestive, not
+# conclusive (the bar for refitting was 2 SE plus a held-out gain), so the
+# published figure stays. Leave-one-out, the card mean would cut real
+# cards' mean |H/PA error| only from .0062 to .0050, and the game engine's
+# X error/DP/ROE constants (game.py) were calibrated at 4.9.
 X_SINGLE_RATE = 4.9 / 30.0
 
 RATE_CATEGORIES = (HR, TRIPLE, DOUBLE, SINGLE, WALK, HBP, SO, OUT)
