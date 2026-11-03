@@ -50,10 +50,10 @@ def _tolerant(card_id, official):
 # --- loading -----------------------------------------------------------------
 
 def test_loads_all_cards():
-    assert len(JSON_FILES) == 45
-    assert len(CARDS) == 25
-    assert sum(c.card_type == "batter" for c in CARDS.values()) == 13
-    assert sum(c.card_type == "pitcher" for c in CARDS.values()) == 12
+    assert len(JSON_FILES) == 47
+    assert len(CARDS) == 27
+    assert sum(c.card_type == "batter" for c in CARDS.values()) == 14
+    assert sum(c.card_type == "pitcher" for c in CARDS.values()) == 13
 
 
 def test_unofficial_cards_flagged():
@@ -273,6 +273,7 @@ RESOLVED = {
     "batter_linz-phil_1963", "batter_pipp-wally_1921",
     "batter_posada-jorge_2003", "batter_rizzuto-phil_1949",
     "batter_silvera-charlie_1949", "batter_strawberry-darryl_1985",
+    "batter_yastrzemski-carl_1967", "pitcher_drysdale-don_1965",
     "pitcher_bruney-brian_2008", "pitcher_capuano-chris_2014",
     "pitcher_gibson-paul_1994", "pitcher_mendoza-ramiro_2001",
     "pitcher_monroe-zach_1958", "pitcher_orth-al_1906",

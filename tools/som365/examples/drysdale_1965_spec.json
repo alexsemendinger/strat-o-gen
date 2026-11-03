@@ -1,0 +1,35 @@
+{
+  "cardId": "pitcher_drysdale-don_1965",
+  "sourceUrl": "https://365.strat-o-matic.com/help/pitchercard",
+  "cardType": "pitcher",
+  "official": true,
+  "player": {
+    "name": "Don Drysdale",
+    "throws": "R",
+    "bats": null,
+    "team": null,
+    "year": 1965,
+    "cardNumber": "#8NR",
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "starter": 8 },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": null,
+    "hold": "0",
+    "wildPitch": "wp- 8",
+    "balk": "bk- 0",
+    "bunting": "bunting-C",
+    "errorRating": "e43",
+    "notes": "Header reads: 'bk- 0 wp- 8' / 'e43 #8NR pitcher-2 starter(8)' / 'DON DRYSDALE (1965)' / 'throws RIGHT  hold 0' / 'bunting-C'. Grid banners: '44% VS.LEFTY BATTERS' and '56% VS.RIGHTY BATTERS'. '#8NR' is recorded as cardNumber, as '#1WR' is on the Perez card. Team is not printed (Lahman: LAN)."
+  },
+  "gridsMeta": [
+    { "vs": "LHB", "percent": 44 },
+    { "vs": "RHB", "percent": 56 }
+  ],
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Not a photograph: transcribed from the text of the official Strat-O-Matic Baseball 365 example pitcher card (Don Drysdale 1965) published on Strat-O-Matic's own help page https://365.strat-o-matic.com/help/pitchercard (retrieved 2026-11-03). The card is HTML text, so every cell is exact. Read twice independently: (1) parsed from the HTML table structure, (2) re-split from the tag-stripped text by roll prefixes; 0 differences across 66 cells. 'raw' keeps the 365 rendering verbatim, roll prefix and glyph included. 365 prints flyball X-chances as 'FB(cf)X'; outcomes spell them 'FLY (cf) X', the corpus spelling the importer reads, and raw keeps 'FB'. The 365 glyphs are recorded in 'markers' under the meanings in the page's legend: '#' = ballparkHR, '>' = ballparkSingle, and '@' = atSign. The legend says 365 ignores '@' because it uses pitch-count fatigue instead; it is probably the board game's fatigue mark, but that is unconfirmed. Outcomes hold the printed result, which is what the importer reads. The 365 card is Strat-O-Matic's own digital rendering of its 1965 season advanced card. It is official product data, but not a photographed physical card."
+  }
+}

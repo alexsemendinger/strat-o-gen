@@ -219,11 +219,11 @@ grid_chances = (2 × player_rate_in_matchup − league_rate_in_matchup) × 108
 - **Printed percentages.** Batters face lefties at the league's LHP share,
   part-time righties more (platoon players start against lefties);
   pitchers face left-side hitters (switch hitters included vs a righty) at
-  0.91× the league share. Mean error vs the real cards: 3.3 points (12
-  batters), 3.6 (7 official pitchers).
+  0.91× the league share. Mean error vs the real cards: 3.6 points (13
+  batters), 4.0 (8 official pitchers).
 - **Power N/W**, per batter grid: W below 1.35% HR per PA (capped at 1.35×
   the league rate in low-HR eras), and always when the N formula would
-  clamp. Matches 20 of the 24 labels on the real cards. A pitcher grid's
+  clamp. Matches 22 of the 26 labels on the real cards. A pitcher grid's
   N-HR is a `SINGLE**` for a W batter, so a W grid carries all of the
   batter's homers (2 × rate × 108): it never clamps, so a 0-HR season is
   exact.

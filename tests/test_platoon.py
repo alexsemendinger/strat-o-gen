@@ -141,10 +141,12 @@ REAL = transcription_cases()
 
 def test_share_model_against_printed_percentages():
     """Printed share vs LHP (batters) / LHB (pitchers) on the official
-    cards. Achieved: batters MAE 3.3 points (12 cards; 5.7 with the plain
-    league share), pitchers 3.6 points (7 official cards). Bounded here
-    at the achieved level; the unofficial cards (made without split data)
-    miss by ~7.8 and aren't bounded."""
+    cards. Fitted on 12 batters / 7 pitchers (MAE 3.3 / 3.6 points); with
+    the two exact 365 cards added (Yastrzemski 1967 prints 23% vs our 30%,
+    Drysdale 1965 44% vs 37%) it is 3.6 points over 13 batters and 4.0
+    over 8 official pitchers. Bounded here at that achieved level; the
+    unofficial cards (made without split data) miss by ~7.8 and aren't
+    bounded."""
     bat, pit = [], []
     for c in REAL:
         s = c.actual_stats
@@ -158,9 +160,9 @@ def test_share_model_against_printed_percentages():
         elif c.official:
             pred = pl.printed_share(pl.pitcher_lhb_share(info["throws"], ctx))
             pit.append(abs(pred - grids["LHB"]))
-    assert len(bat) == 12 and len(pit) == 7
-    assert sum(bat) / len(bat) <= 0.034
-    assert sum(pit) / len(pit) <= 0.036
+    assert len(bat) == 13 and len(pit) == 8
+    assert sum(bat) / len(bat) <= 0.037
+    assert sum(pit) / len(pit) <= 0.041
     assert max(bat + pit) <= 0.10 + 1e-9   # Gibson 1994: 24% vs printed 34%
 
 
@@ -174,8 +176,9 @@ def test_part_time_righties_are_platooned():
 
 
 def test_power_labels_against_real_cards():
-    """24 side labels on the 12 official batter cards with a season.
-    Achieved 20/24 (absolute and league-relative thresholds both top out
+    """26 side labels on the 13 official batter cards with a season.
+    Achieved 22/26 (20/24 on the 12 cards it was fitted on; Yastrzemski
+    1967 adds two agreeing N labels) (absolute and league-relative thresholds both top out
     at 20; see platoon.POWER_HR_THRESHOLD). All misses are printed N
     where the split model says W."""
     agree = total = 0
@@ -190,8 +193,8 @@ def test_power_labels_against_real_cards():
         for g in c.transcription.advanced.grids:
             total += 1
             agree += sides[g["vs"][0]][2] == g["power"]
-    assert total == 24
-    assert agree >= 20
+    assert total == 26
+    assert agree >= 22
 
 
 def test_power_rule():

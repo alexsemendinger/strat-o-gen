@@ -1,8 +1,16 @@
 # JSON card transcriptions
 
-25 additional real Strat-O-Matic cards (13 batters, 12 pitchers),
-transcribed from photographs into a richer, lossless JSON schema than the
-plain-text fixtures in the parent directory. Provided 2026-06-17.
+27 additional real Strat-O-Matic cards (14 batters, 13 pitchers) in a
+richer, lossless JSON schema than the plain-text fixtures in the parent
+directory. 25 were transcribed from photographs (provided 2026-06-17).
+Two more are exact: Carl Yastrzemski 1967 and Don Drysdale 1965, the
+advanced cards Strat-O-Matic publishes as HTML text on its Baseball 365
+help pages (https://365.strat-o-matic.com/help/hittercard and
+/help/pitchercard; `sourceUrl` in each file). 365 prints its own glyphs
+(`#` ballpark HR, `>` ballpark single, `$` clutch, `@` ignored by 365);
+they stay verbatim in `raw` and are named that way in `markers`, since
+their mapping to the printed card's glyphs is unconfirmed. 365 cards
+print no season record.
 
 Each physical card has up to two photographed **sides**, one JSON file each
 (joined by `cardId`):

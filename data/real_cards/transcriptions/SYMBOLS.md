@@ -92,8 +92,8 @@ ratings" section; not yet wired into card generation).
 - `Power-N` / `Power-W` — N = can hit HRs off the pitcher card; W = those
   become singles. Per platoon group on the advanced side. **Modeled**:
   W below 1.35% HR/PA on the grid (capped at 1.35x the league rate in
-  low-HR eras), and whenever the N formula would clamp. Agrees with 20 of
-  the 24 labels here; a W grid carries all of the batter's homers itself.
+  low-HR eras), and whenever the N formula would clamp. Agrees with 22 of
+  the 26 labels here; a W grid carries all of the batter's homers itself.
 - `bunting-A..E`, `hit & run-A..E` — bunt / hit-and-run ratings.
   **Modeled** (sacrifice-hit rate and strikeout rate vs the league).
 - `stealing-(X)` plus a detail like `*3/- (20-6)` — steal rating and its
@@ -116,7 +116,7 @@ ratings" section; not yet wired into card generation).
   plate appearances vs that handedness. **Modeled**: generated advanced
   cards print it from the league's handedness shares (part-time righty
   hitters platooned toward 50%; pitchers 0.91x the league's left-side
-  share). Mean error 3.3 points on the batters here, 3.6 on the official
+  share). Mean error 3.6 points on the batters here, 4.0 on the official
   pitchers. Also weights the two grids when scoring.
 - `HBP` on advanced batter grids — whole chances, 2 x HBP rate x 108, the
   same on both grids, on edge rows (2/12, 3/11, 4/10). **Modeled** on
