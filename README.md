@@ -326,33 +326,42 @@ Per-PA rates aren't the whole game, so `stratogen/game.py` is a
 simplified basic-game engine that plays full innings with real
 baserunners. It has two layers.
 
-**Card rules.** `*`/`**` advancement; the no-asterisk running gamble
-(d20 vs the rating of the lead runner already on base, +2 with two outs;
-the batter-runner never goes); groundball A = double play, B = force at
-second with the batter safe, C = everyone moves up, with an unforced
-runner on third scoring on A/B grounders only when they're hit to the
-middle infield; flyball A = every runner tags, B = sacrifice fly, C =
-hold; "into as many outs as possible" lineouts (a triple play with two
-on); X chances resolved as singles, errors, or the batted-ball out they
-are (DP grounders and sac flies included); `N-HR` by the batter's power
-rating. The groundball/flyball readings follow the basic chart as SOM
-league rule sheets describe it; the official chart isn't reproduced.
+**Card rules.** `*`/`**` advancement (`**` on a single or a double moves
+every runner exactly two bases, no further; `*` one base on a single);
+the no-asterisk running gamble (d20 vs the rating of the lead runner
+already on base, +2 with two outs; the batter-runner never goes);
+groundball A = double play, B = force at second with the batter safe,
+C = everyone moves up, with an unforced runner on third scoring on A/B
+grounders only when they're hit to the middle infield; flyball A = every
+runner tags, B = sacrifice fly, C = hold; "into as many outs as
+possible" lineouts (a triple play with two on); X chances resolved as
+singles, errors, or the batted-ball out they are (DP grounders and sac
+flies included; lineout/popout X hold the runners); `N-HR` by the
+batter's power rating. The groundball/flyball readings follow the basic
+chart as SOM league rule sheets describe it; the official chart isn't
+reproduced. Advanced (platoon) cards play too: a batter reads his grid
+for the pitcher's throwing hand, a pitcher his grid for the batter's
+effective hand (switch hitters bat opposite the pitcher), and a Power-W
+batter reads the pitcher's `N-HR` as `SINGLE**`.
 
 **League context.** What cards don't carry is added at each
-league-season's own rates, from the Lahman Teams, Pitching and catchers'
-Fielding tables (`league_context(year, league)`, cached): hit-by-pitch
-(taken from out readings, where card outs absorbed it); errors (70%
-reached-on-error — about 40% of all errors through the X chart, the rest
-from ordinary outs — and 30% extra-base errors on hits; card outs come
-from AB−H, so they already contain every ROE and nothing is counted
-twice); stolen-base attempts and success scaled by the runner's
-`stealing-X` letter (multipliers measured from 1951-2024 player-seasons;
-CS imputed from nearby seasons where it wasn't recorded); wild pitches,
-passed balls and balks; sacrifice bunts and intentional walks (both
-outside the cards' plate appearances; pre-1931 SH that include sacrifice
-flies are corrected). Opportunity rates and the two error/DP shares are
-small constants calibrated on **training** league-seasons (every year
-divisible by 4, 62 of them) and verified on the 186 **held-out** ones.
+league-season's own rates, from the Lahman league totals of the Teams,
+Pitching and catchers' Fielding tables (`league_context(year, league)`,
+cached): hit-by-pitch (taken from out readings, where card outs absorbed
+it; advanced batter grids print it themselves); errors (56%
+reached-on-error — about 37% of all errors, two-thirds of the ROE,
+through the X chart, the rest from ordinary outs — and 44% extra-base
+errors on hits; card outs come from AB−H, so they already contain every
+ROE and nothing is counted twice); stolen-base attempts and success
+scaled by the runner's `stealing-X` letter (multipliers measured from
+1951-2024 player-seasons; CS imputed from nearby seasons where it wasn't
+recorded); wild pitches, passed balls and balks; sacrifice bunts and
+intentional walks (both outside the cards' plate appearances; pre-1931
+SH that include sacrifice flies are corrected). Opportunity rates and
+the two error/DP shares are small constants calibrated on **training**
+league-seasons (every year divisible by 4, 62 of them) and verified on
+the 186 **held-out** ones; they were last re-fit after the card changes
+(quota-allocated outs, fixed `*`/`**` shares) and the `DOUBLE**` fix.
 
 **Accuracy.** League-average lineups (27 independently laid-out average
 batter cards against 4 average pitcher cards, 30,000 half-innings) vs
@@ -361,38 +370,44 @@ innings), all 248 AL/NL seasons 1901-2024:
 
 | era | train R sim/real | held-out R sim/real |
 |---|---|---|
-| 1901-1919 | 0.996 (sd 0.028) | 0.994 (sd 0.035) |
-| 1920-1941 | 1.008 (0.021) | 1.006 (0.026) |
-| 1942-1960 | 0.999 (0.020) | 1.005 (0.021) |
-| 1961-1976 | 1.006 (0.013) | 1.004 (0.014) |
-| 1977-1992 | 1.014 (0.018) | 1.018 (0.018) |
-| 1993-2009 | 1.012 (0.012) | 1.012 (0.014) |
-| 2010-2024 | 0.991 (0.028) | 1.003 (0.023) |
-| all | 1.004, range 0.934-1.051 | 1.006, range 0.926-1.066 |
+| 1901-1919 | 1.005 (sd 0.034) | 0.991 (sd 0.042) |
+| 1920-1941 | 0.998 (0.018) | 0.998 (0.022) |
+| 1942-1960 | 1.010 (0.017) | 1.008 (0.019) |
+| 1961-1976 | 1.006 (0.015) | 1.006 (0.020) |
+| 1977-1992 | 1.012 (0.014) | 1.019 (0.015) |
+| 1993-2009 | 1.009 (0.016) | 1.015 (0.013) |
+| 2010-2024 | 0.991 (0.023) | 1.000 (0.020) |
+| all | 1.004 (sd 0.022), range 0.951-1.075 | 1.005 (sd 0.026), range 0.922-1.091 |
 
-Every season lands within ±8% (96-97% within ±5%). On the held-out
-seasons the other rates average 1.00-1.01 of real; SB, CS, HBP, E, WP
-and SH are within ±10% in 97-100% of seasons, PB in 92%, double plays
-turned in 87%, IBB in 76% and GIDP in 71%. Weak spots: the AL of
-1905-1908 scores 5-7% low, sacrifice flies run 7-10% high, and balks are
-noisy.
+247 of the 248 seasons land within ±8% (1919 AL is +9%); 98% of the
+training and 95% of the held-out seasons are within ±5%. On the held-out
+seasons the other rates average 0.99-1.02 of real; SB, CS, HBP, E, WP
+and SH are within ±10% in 97-100% of seasons, PB in 90%, GIDP in 92% and
+IBB in 83%. Double plays turned run 0.89 of real by design: the engine
+turns DP grounders and max-effort lineouts only, not strike-'em-out-
+throw-'em-out, liners or flies doubling a runner off, or outfield
+assists. Weak spots: the dead-ball era drifts with the year (1901-1907
+seasons score up to 8% low, 1914-1919 up to 9% high), sacrifice flies run
+~12% high, and balks are noisy.
 
-Before this, the engine had none of the league layer and scored about
-13% below real (sd 6%, as low as −35%); a 0.75-1.05 band hid the gap.
-Adding the mechanics one at a time (runs per 27 outs, 1901-2024 mean,
-in % of real runs): rule fixes and card recalibration +1%, HBP +4%,
-errors +9%, WP/PB/BK +3%, steals −2% (caught stealing outweighs stolen
-bases), sacrifice bunts −2.5%, IBB +1%. In the dead-ball era errors
-alone are worth +22%.
+Before the league layer, the engine scored about 13% below real (sd 6%,
+as low as −35%); a 0.75-1.05 band hid the gap. Adding the mechanics one
+at a time (runs per 27 outs, 1901-2024 mean, in % of real runs): rule
+fixes and card recalibration +1%, HBP +4%, errors +9%, WP/PB/BK +3%,
+steals −2% (caught stealing outweighs stolen bases), sacrifice bunts
+−2.5%, IBB +1%. In the dead-ball era errors alone are worth +22%.
 
 The test suite pins each base-running rule with unit tests and checks
 fifteen sampled seasons (three of them training) for runs within ±9%
-per season and no era bias, SB/CS/HBP/E/DP/GIDP/WP/PB/SH near the
-league's rates, era ordering, and that symbols, running and stealing
-ratings measurably move scoring. Not simulated: pickoffs, hit-and-run,
-outfield arms, infield-in / holding decisions, and platoon (advanced)
-reading — `GameSimulator` takes `grid_selector` and `power_of` hooks for
-that.
+per season and no era bias, SB/CS/HBP/E/GIDP/WP/PB/SH near the league's
+rates (DP turned near its 0.89 expectation; per-season bands never
+tighter than three standard errors of the season's event count), era
+ordering, and that symbols, running and stealing ratings measurably move
+scoring. League-average advanced cards (`average_advanced_card`, the
+league's L/R/switch mix with Power-W batters, against an average lefty
+and righty) score within the same ±9% in three sampled seasons. Not
+simulated: pickoffs, hit-and-run, outfield arms, and infield-in /
+holding decisions.
 
 ## Advanced-side ratings
 

@@ -10,20 +10,23 @@ the sampled seasons below are held out. The full 1901-2024 sweep (248
 league-seasons, 30k half-innings each) is reported in the README.
 """
 
+import math
 import random
 
 import pytest
 
+from stratogen import platoon
 from stratogen.game import (
     NEUTRAL_CONTEXT, GameSimulator, HalfInning, LeagueContext, Runner,
-    apply_outcome, average_cards, average_lineup, card_power_rating,
+    apply_outcome, average_advanced_card, average_cards, average_lineup,
+    card_power_rating, platoon_grid, platoon_power,
     card_running_rating, card_stealing_rating, league_average_rates,
     league_context, league_game_rates, steal_attempt_probability,
     steal_success_probability, synthetic_average_stats,
 )
 from stratogen.generate import average_batter_chances, layout_card
 from stratogen.lahman import default_db
-from stratogen.model import Card, DICE_WEIGHTS, Split
+from stratogen.model import AdvancedCard, Card, DICE_WEIGHTS, PlatoonSide, Split
 
 db = default_db()
 
@@ -80,10 +83,23 @@ def test_double_star_advances_exactly_two():
     assert s.runs == 1 and s.bases == [None, 13, 11]
 
 
-def test_double_double_star_clears_bases():
+def test_double_double_star_advances_runners_exactly_two():
+    """SOM: a SINGLE or DOUBLE followed by ** moves every runner exactly
+    two bases, no further (bug fix: DOUBLE** used to move them three, so
+    the runner from first scored)."""
     s = _play(_state(first=13, second=13, third=13), "DOUBLE**")
-    assert s.runs == 3
-    assert s.bases == [None, 13, None]
+    assert s.runs == 2
+    assert s.bases == [None, 13, 13]
+    # no extra-base gamble either, however fast the runner
+    s = _play(_state(first=17), "DOUBLE**", rng=FixedRNG(randints=[1]))
+    assert s.runs == 0 and s.events["XB_try"] == 0 and s.bases == [None, 13, 17]
+
+
+def test_hit_location_does_not_change_the_reading():
+    s = _play(_state(first=11, second=12), "SINGLE** (lf)")
+    assert s.runs == 1 and s.bases == [13, None, 11]
+    s = _play(_state(first=11), "DOUBLE (cf)", rng=FixedRNG(randints=[20]))
+    assert s.bases == [None, 13, 11]
 
 
 def test_triple_clears_bases():
@@ -302,6 +318,15 @@ def test_x_chance_out_resolves_as_a_batted_ball():
     assert pop.outs == 1 and pop.runs == 0
 
 
+@pytest.mark.parametrize("text", ["LINEOUT (ss) X", "POPOUT (2b) X", "lo (3b) X"])
+def test_lineout_and_popout_x_are_air_outs(text):
+    """Bug fix: every non-FLY X used to resolve as a groundball, so a
+    lineout X could turn a double play."""
+    for u in (0.0, 0.5, 0.99):
+        s = _play(_state(first=11, third=13), text, rng=FixedRNG([0.9, u]))
+        assert s.outs == 1 and s.runs == 0 and s.bases == [11, None, 13]
+
+
 def test_n_hr_depends_on_power():
     s = _play(_state(first=13), "N-HR")
     assert s.runs == 2
@@ -461,8 +486,8 @@ def season_rates():
 def test_run_scoring_matches_the_league_season(season_rates, year, lg):
     """Average lineups score within 9% of the real league's runs per nine
     innings, in every era. (The full 1901-2024 sweep at 30k half-innings
-    has all 248 league-seasons within 8%; the extra point here is the
-    sampling noise of this smaller run.)"""
+    has 247 of the 248 league-seasons within 8%, 1919 AL at +9%; the
+    extra point here is the sampling noise of this smaller run.)"""
     sim, real = season_rates[(year, lg)]
     assert sim["R"] / real["R"] == pytest.approx(1.0, abs=0.09), (year, lg)
 
@@ -481,11 +506,19 @@ def test_run_scoring_orders_eras_correctly(season_rates):
     assert rg[(1968, "AL")] < rg[(2001, "NL")] < rg[(1930, "AL")]
 
 
-# per-season tolerance (sampling noise of ~1300 games included) and the
+# per-season tolerance (sampling noise of ~1300 games included; never
+# tighter than three standard errors of the season's event count, which
+# matters for rare events such as modern sacrifice bunts) and the
 # tolerance for the totals over all sampled seasons
 EVENT_TOLERANCE = {"SB": (0.20, 0.05), "CS": (0.25, 0.06), "HBP": (0.25, 0.06),
-                   "E": (0.12, 0.04), "DP": (0.25, 0.08), "GIDP": (0.25, 0.10),
+                   "E": (0.12, 0.04), "DP": (0.25, 0.06), "GIDP": (0.25, 0.06),
                    "WP": (0.20, 0.05), "PB": (0.30, 0.08), "SH": (0.20, 0.06)}
+# Expected sim/real ratio where the engine is short by design. Double
+# plays turned: the engine turns DP grounders (calibrated on GIDP) and
+# max-effort lineouts, not the rest of real DPs (strike-'em-out-throw-'em-
+# out, liners and flies doubling a runner off, outfield assists), so it
+# runs ~11% below real (0.89-0.90 in the full sweep, train and held-out).
+EVENT_EXPECTED = {"DP": 0.89}
 
 
 @pytest.mark.parametrize("stat", sorted(EVENT_TOLERANCE))
@@ -494,16 +527,19 @@ def test_running_game_matches_the_league(season_rates, stat):
     pitches, passed balls and sacrifice hits per nine innings land near
     each league-season's real rate (where the league tracked the stat)."""
     per_season, pooled = EVENT_TOLERANCE[stat]
+    expected = EVENT_EXPECTED.get(stat, 1.0)
     sim_total = real_total = 0.0
     for (year, lg), (sim, real) in season_rates.items():
         if not real.get(stat):
             continue
-        assert sim.get(stat, 0) / real[stat] == pytest.approx(1, abs=per_season), \
+        noise = 3.0 / math.sqrt(real[stat] * HALF_INNINGS / 9.0)
+        assert sim.get(stat, 0) / real[stat] == pytest.approx(
+            expected, abs=max(per_season, noise)), \
             (stat, year, lg, sim.get(stat, 0), real[stat])
         sim_total += sim.get(stat, 0)
         real_total += real[stat]
     assert real_total > 0
-    assert sim_total / real_total == pytest.approx(1, abs=pooled), stat
+    assert sim_total / real_total == pytest.approx(expected, abs=pooled), stat
 
 
 # --- emergent: symbols and ratings actually matter in play ----------------------------
@@ -566,6 +602,77 @@ def test_stealing_letter_drives_steals():
 def test_average_lineup_layouts_differ():
     lineup = average_lineup(db.league_batting(2001, "NL"))
     assert len({str(card.columns) for card in lineup}) == 9
+
+
+# --- platoon play: advanced cards ------------------------------------------------
+
+def _advanced(card_type, hand, texts, powers=(None, None)):
+    vs = ("LHB", "RHB") if card_type == "pitcher" else ("LHP", "RHP")
+    return AdvancedCard(name="T", card_type=card_type, hand=hand, sides=[
+        PlatoonSide(v, 0.5, _uniform_card(card_type, t), power)
+        for v, t, power in zip(vs, texts, powers)])
+
+
+def test_advanced_cards_read_their_platoon_grids():
+    """Batter grid by the pitcher's throwing hand, pitcher grid by the
+    batter's effective hand (a switch hitter bats opposite the pitcher),
+    N-HR by the power of the grid the batter reads (W: SINGLE**), and no
+    league HBP added for advanced batters (their grids carry it all)."""
+    lefty = _advanced("pitcher", "L", ("N-HR", "flyball (cf)C"))
+    righty = _advanced("pitcher", "R", ("N-HR", "flyball (cf)C"))
+    switch = _advanced("batter", "S", ("WALK", "strikeout"), ("N", "W"))
+    lhb = _advanced("batter", "L", ("WALK", "strikeout"), ("N", "W"))
+    assert platoon_grid(switch, lefty) is switch.side("LHP").card
+    assert platoon_grid(lefty, switch) is lefty.side("RHB").card
+    assert platoon_grid(righty, switch) is righty.side("LHB").card
+    assert platoon_grid(righty, lhb) is righty.side("LHB").card
+    assert platoon_power(switch, lefty) == "N" and platoon_power(switch, righty) == "W"
+    basic = _uniform_card("batter", "WALK")
+    assert platoon_grid(basic, righty) is basic                  # basic cards: as is
+    assert platoon_grid(righty, basic) is righty.side("RHB").card  # unknown hand: R
+
+    sim = GameSimulator([lhb] * 9, righty, context=NEUTRAL_CONTEXT)
+    sim.rng = FixedRNG([0.75])                  # white die 4-6: the pitcher card
+    text, card = sim._read_card(lhb)
+    assert (text, card) == ("N-HR", righty.side("LHB").card) and sim._power[0] == "W"
+    s = _play(_state(first=13), text, power=sim._power[0])
+    assert s.events["HR"] == 0 and s.bases == [13, None, 13]   # SINGLE**
+
+    flies = _advanced("pitcher", "R", ("flyball (cf)C", "flyball (cf)C"))
+    ctx = LeagueContext(hbp_per_out=1.0)
+    advanced = GameSimulator([lhb] * 9, flies, seed=1, context=ctx).game_rates(90)
+    basic = GameSimulator([_uniform_card("batter", "strikeout")] * 9, flies,
+                          seed=1, context=ctx).game_rates(90)
+    assert advanced.get("HBP", 0) == 0 and basic["HBP"] > 0
+
+
+ADVANCED_SEASONS = [(1930, "AL"), (1987, "NL"), (2019, "NL")]
+
+
+@pytest.mark.parametrize("year,lg", ADVANCED_SEASONS)
+def test_advanced_average_lineup_scores_like_the_league(year, lg):
+    """League-average advanced cards (generate.average_advanced_*_chances
+    laid out by average_advanced_card) score within the same 9% band as
+    the basic cards: nine batters split by the league's L/R/switch shares,
+    every third one Power-W (reading the pitchers' N-HR as SINGLE**),
+    against an average lefty and righty weighted by the league's share of
+    batters faced by left-handers."""
+    league = db.league_batting(year, lg)
+    ctx = platoon.league_context(league)
+    target = {h: 9 * ctx.batter_shares[h] for h in ("L", "R", "S")}
+    count = {h: int(v) for h, v in target.items()}
+    for h in sorted(target, key=lambda h: count[h] - target[h])[:9 - sum(count.values())]:
+        count[h] += 1
+    hands = [h for h in ("R", "L", "S") for _ in range(count[h])]
+    lineup = [average_advanced_card(league, "batter", h, "W" if i % 3 == 2 else "N", i)
+              for i, h in enumerate(hands)]
+    runs = 0.0
+    for hand, share in (("L", ctx.lhp_share), ("R", 1.0 - ctx.lhp_share)):
+        pitcher = average_advanced_card(league, "pitcher", hand)
+        sim = GameSimulator(lineup, pitcher, seed=7, context=league)
+        runs += share * sim.runs_per_game(int(HALF_INNINGS * share))
+    real = league_game_rates(year, lg)["R"]
+    assert runs / real == pytest.approx(1.0, abs=0.09), (year, lg, runs, real)
 
 
 # --- generated player cards behave sanely in play ------------------------------
