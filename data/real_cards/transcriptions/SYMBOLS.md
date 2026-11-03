@@ -62,20 +62,46 @@ the JSON. Exact trigger per glyph is **unconfirmed**:
   meaningful by the transcriber but the distinction is unconfirmed. We map
   both to the same category.
 
-## Header / rating tokens (partially modeled)
+## Header / rating tokens (mostly modeled)
+Modeled tokens are computed by `stratogen/advanced_ratings.py` (formulas,
+fits and agreement in its docstrings and the README's "Advanced-side
+ratings" section; not yet wired into card generation).
 - `e<NN>` (e.g. `e16`, `e0`) per fielding position — error rating (lower =
-  surer hands). **Not yet modeled** (we emit a 1-5 fielding rating only).
-- `(+N)` / `(-N)` next to an outfield rating (e.g. `cf-3(-4)`) — outfield
-  **throwing arm** rating. Not modeled.
+  surer hands). **Modeled.** It is an absolute rate: about NN errors per
+  full season (154/162 games) at the position, so dead-ball fielders carry
+  big numbers. Outfielders print one e for all three spots. Small samples
+  at a secondary position get a poor rating, not e0 (Linz 2B e41 with no
+  errors in 6 games). Pitchers: errors per 9 IP × season length.
+- `(+N)` / `(-N)` next to the first outfield position (e.g. `cf-3(-4)`) —
+  outfield **throwing arm**, lower = stronger (Combs +3, Judge -4).
+  **Modeled** from assists, loosely: strong arms that deter runners are
+  invisible in box scores.
+- Catcher `c-3(0) e1,T-1-7(pb-4)` — `(0)` catcher arm (lower = stronger;
+  **modeled** from caught-stealing %), `e1` error rating (**modeled**),
+  `pb-4` passed balls (**modeled**: ~1 point per 4 PB a season), `T-1-7`
+  throwing rating (**emitted but not grounded**: N rises with a weaker arm
+  on both cards, Posada arm 0 -> 7, Silvera +1 -> 9; meaning unconfirmed).
 - `Power-N` / `Power-W` — N = can hit HRs off the pitcher card; W = those
   become singles. Per platoon group on the advanced side. Not yet modeled
   (we don't yet special-case weak power).
-- `bunting-A..E`, `hit & run-A..E` — bunt / hit-and-run ratings. Not modeled.
+- `bunting-A..E`, `hit & run-A..E` — bunt / hit-and-run ratings.
+  **Modeled** (sacrifice-hit rate and strikeout rate vs the league).
 - `stealing-(X)` plus a detail like `*3/- (20-6)` — steal rating and its
-  lead/secondary detail. We model the letter only.
-- Pitcher: `hold ±N` (holding runners), `wp-NN` (wild pitch), `bk-N` (balk),
-  `T-1-7-9` / "T ratings" (throwing), `#1WL`/`#2WR` (batting card id),
-  `starter(N)`/`relief(N)` (rest/usage). Not modeled.
+  detail. The letter is modeled (`ratings.py`); the detail is **parsed**
+  (`parse_stealing_detail`) but not generated. Its meaning is unconfirmed:
+  the rolls before/after the slash look like jump rolls (`-` = none) and
+  the parenthesized pair like d20 safe ranges, but Linz's two roll sets
+  partition 2-12 and his 1-for-7 season prints 15 while Judge's 10-for-10
+  prints 20. Not printed on the Henderson, Strawberry and Combs cards.
+- Pitcher: `hold ±N` (holding runners; negative = better, Pettitte -3) —
+  **emitted as a handedness prior only** (Lahman charges no steals to
+  pitchers). `wp-NN` (wild pitch) and `bk-N` (balk) — **modeled** (per
+  inning). `pitcher-N eNN` — range and error, **modeled**.
+  `starter(N)`/`relief(N)` (endurance) — **modeled**. The `/N`, `/0`,
+  `/3` after `relief(N)` on modern cards reads as a closer rating (N = no
+  saves) — **modeled, inferred meaning**. `#1WL`/`#2WR` (batting card id)
+  — not modeled. Trailing `●` after the endurance tokens — unconfirmed,
+  not modeled.
 - `%` per advanced grid (e.g. "24% AGAINST LEFT-HAND PITCHERS") — share of
   plate appearances vs that handedness. Used to weight the two platoon grids
   when computing combined rates for benchmarking; full platoon **card
