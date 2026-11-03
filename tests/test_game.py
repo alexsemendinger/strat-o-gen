@@ -80,10 +80,23 @@ def test_double_star_advances_exactly_two():
     assert s.runs == 1 and s.bases == [None, 13, 11]
 
 
-def test_double_double_star_clears_bases():
+def test_double_double_star_advances_runners_exactly_two():
+    """SOM: a SINGLE or DOUBLE followed by ** moves every runner exactly
+    two bases, no further (bug fix: DOUBLE** used to move them three, so
+    the runner from first scored)."""
     s = _play(_state(first=13, second=13, third=13), "DOUBLE**")
-    assert s.runs == 3
-    assert s.bases == [None, 13, None]
+    assert s.runs == 2
+    assert s.bases == [None, 13, 13]
+    # no extra-base gamble either, however fast the runner
+    s = _play(_state(first=17), "DOUBLE**", rng=FixedRNG(randints=[1]))
+    assert s.runs == 0 and s.events["XB_try"] == 0 and s.bases == [None, 13, 17]
+
+
+def test_hit_location_does_not_change_the_reading():
+    s = _play(_state(first=11, second=12), "SINGLE** (lf)")
+    assert s.runs == 1 and s.bases == [13, None, 11]
+    s = _play(_state(first=11), "DOUBLE (cf)", rng=FixedRNG(randints=[20]))
+    assert s.bases == [None, 13, 11]
 
 
 def test_triple_clears_bases():
@@ -300,6 +313,15 @@ def test_x_chance_out_resolves_as_a_batted_ball():
     assert sf.outs == 1 and sf.runs == 1        # flyball B: sacrifice fly
     pop = _play(_state(third=13), "CATCHER'S CARD X", rng=FixedRNG([0.9]))
     assert pop.outs == 1 and pop.runs == 0
+
+
+@pytest.mark.parametrize("text", ["LINEOUT (ss) X", "POPOUT (2b) X", "lo (3b) X"])
+def test_lineout_and_popout_x_are_air_outs(text):
+    """Bug fix: every non-FLY X used to resolve as a groundball, so a
+    lineout X could turn a double play."""
+    for u in (0.0, 0.5, 0.99):
+        s = _play(_state(first=11, third=13), text, rng=FixedRNG([0.9, u]))
+        assert s.outs == 1 and s.runs == 0 and s.bases == [11, None, 13]
 
 
 def test_n_hr_depends_on_power():

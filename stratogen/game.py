@@ -8,15 +8,16 @@ plays, sacrifice flies, steals, errors and wild pitches interact to score
 runs.
 
 Card readings (rulebook-faithful where the rule is known):
-- `**` = all runners automatically advance two bases (three on a double);
-  `*` = exactly one (two on a double).
+- `**` = every runner advances exactly two bases, on a single or a double,
+  with no further advancement; `*` = exactly one base on a single (two on
+  a double).
 - No asterisk = one base (singles) / two bases (doubles), plus an optional
   gamble by the lead runner *already on base* (never the batter): d20 vs
   his running rating (+2 with two outs), attempted when the effective
   rating is at least GAMBLE_THRESHOLD. Make it and he and every trailing
   runner take an extra base; miss it and he is out while the trailing
   runners still advance. The batter-runner never takes the extra base.
-- LINEOUT "into as many outs as possible" (`lo (..) max`): batter out, then
+- LINEOUT "into as many outs as possible": batter out, then
   runners are doubled off, lead runner first, until the inning ends — a
   triple play with two on and nobody out.
 - Groundballs, as SOM league rule sheets and card-reading guides describe
@@ -34,11 +35,13 @@ Card readings (rulebook-faithful where the rule is known):
 - X-chart chances resolve with league-average defense: X_SINGLE_RATE
   singles, an era-scaled share of one-base errors, otherwise an out of the
   X's batted-ball type (a groundout is a DP-ball A at an era-aware share,
-  else B/C as printed on real pitcher cards; a flyout B or C).
+  else B/C as printed on real pitcher cards; a flyout B or C; a lineout or
+  popout X an air out that holds the runners).
 - `N-HR` reads as a home run, or as SINGLE** for a batter whose power
   rating is W (see card_power_rating / the `power_of` hook). Transcription
-  shorthand (`gb (ss) A+`, `fly (lf) B?`, `SI**`, `HBP plus injury`) reads
-  like the canonical text; anything unrecognizable is a plain out.
+  shorthand (`gb (ss) A+`, `fly (lf) B?`, `SI**`, `lo (2b) max`, `HBP
+  plus injury`) reads like the canonical text, and a printed hit location
+  (`SINGLE** (lf)`) is ignored; anything unrecognizable is a plain out.
 
 League context (LeagueContext, built per (year, league) and cached by
 league_context): what cards don't carry is added at the league-season's
@@ -76,15 +79,12 @@ decisions and platoon reading are not simulated.
 
 from __future__ import annotations
 
-import csv
-import gzip
 import math
 import random
 import re
 from collections import Counter
 from dataclasses import dataclass, field
 from functools import lru_cache
-from pathlib import Path
 from typing import NamedTuple
 
 from .model import (
@@ -224,13 +224,15 @@ _LETTER_RE = re.compile(r"\)\s*([ABC])(?![a-z])", re.I)
 _TRAIL_LETTER_RE = re.compile(r"\s([ABC])\+*\s*[?●]*\s*$")
 _POS_RE = re.compile(r"\(\s*([A-Za-z0-9]+)\s*\)")
 _MAX_RE = re.compile(r"as many outs|\bmax\b", re.I)
+_STARS_RE = re.compile(r"\s*[A-Za-z-]+\s*(\**)")   # the stars of the hit word
+_AIR_X_RE = re.compile(r"(LINEOUT|LO|POPOUT|PO)\b")    # lineout/popout X chances
 _MIDDLE_INFIELD = {"2b", "ss"}
 
 
 def canonical_text(text: str) -> str:
     """Card text the engine can classify. Canonical texts pass through;
-    transcription shorthand (`gb (ss) A`, `SI**`, `lo (2b) max`, `HBP plus
-    injury`) is normalized via card_json; `N-HR` is kept as is (power-
+    transcription shorthand (`gb (ss) A`, `SI** (lf)`, `lo (2b) max`, `HBP
+    plus injury`) is normalized via card_json; `N-HR` is kept as is (power-
     dependent, see apply_outcome). Unknown text reads as a plain out."""
     if _NHR_RE.match(text):
         return "N-HR"
@@ -241,9 +243,6 @@ def canonical_text(text: str) -> str:
         pass
     if text.strip().upper().startswith("HBP"):
         return "HBP"
-    if _MAX_RE.search(text) and text.strip().lower().startswith("lo"):
-        pos = _POS_RE.search(text)
-        return f"lineout ({pos.group(1) if pos else 'ss'}) into as many outs as possible"
     try:
         from .card_json import parse_result
         canon, _injury = parse_result(text)
@@ -293,7 +292,10 @@ def _reading(raw: str) -> _Reading:
     if category == OUT or category == SO:
         kind = next((k for k in ("strikeout", "groundball", "flyball", "lineout")
                      if lower.startswith(k)), "other")
-    return _Reading(text, category, min(2, text.count("*")), kind,
+    stars = 0
+    if category in (SINGLE, DOUBLE, TRIPLE, HR):
+        stars = min(2, len(_STARS_RE.match(text).group(1)))
+    return _Reading(text, category, stars, kind,
                     batted_ball_letter(text), _fielder(text),
                     kind == "lineout" and bool(_MAX_RE.search(text)))
 
@@ -389,94 +391,68 @@ def steal_success_probability(context: LeagueContext, letter: str | None) -> flo
     return 1.0 / (1.0 + math.exp(-z))
 
 
-_LAHMAN_DIR = Path(__file__).resolve().parent.parent / "data" / "lahman"
-_TEAM_FIELDS = ("G", "R", "IPouts", "SB", "CS", "HBP", "E", "DP", "SF")
-_PITCH_FIELDS = ("IPouts", "WP", "BK", "HBP", "IBB", "SH", "GIDP")
+def _db():
+    from .lahman import default_db
+    return default_db()
 
 
-def _rows(table: str):
-    with gzip.open(_LAHMAN_DIR / f"{table}.csv.gz", "rt",
-                   encoding="utf-8-sig", newline="") as fh:
-        reader = csv.reader(fh)
-        header = next(reader)
-        yield {h: i for i, h in enumerate(header)}
-        yield from reader
-
-
-@lru_cache(maxsize=1)
-def _league_aggregates() -> dict:
-    """One pass over Teams, Pitching and catchers' Fielding rows:
-    {(year, lg): {source_stat: [sum, rows with a value, rows]}}."""
-    acc: dict = {}
-
-    def add(key, name, value):
-        slot = acc.setdefault(key, {}).setdefault(name, [0, 0, 0])
-        slot[2] += 1
-        value = value.strip()
-        if value:
-            slot[0] += int(float(value))
-            slot[1] += 1
-
-    for table, prefix, fields, keep in (
-            ("Teams", "T_", _TEAM_FIELDS, None),
-            ("Pitching", "P_", _PITCH_FIELDS, None),
-            ("Fielding", "F_", ("PB",), "C")):
-        rows = _rows(table)
-        idx = next(rows)
-        y, lg = idx["yearID"], idx["lgID"]
-        cols = [(prefix + f, idx[f]) for f in fields]
-        pos = idx.get("POS")
-        for row in rows:
-            if keep is not None and row[pos] != keep:
-                continue
-            key = (int(row[y]), row[lg])
-            for name, i in cols:
-                add(key, name, row[i])
-    return acc
-
-
-def _complete(slot) -> bool:
-    return bool(slot) and slot[1] == slot[2] and slot[2] > 0
+def _near_complete(total) -> bool:
+    """Pitching / fielding rows: accept near-complete tracking (a few blank
+    cameos). `total` is a lahman.StatTotal or None."""
+    return total is not None and total.total > 0 and total.coverage >= 0.95
 
 
 def league_game_rates(year: int, league: str) -> dict:
-    """Real league rates per 27 outs (nine innings) from the Lahman Teams,
-    Pitching and Fielding tables: R, SB, CS, HBP, E, DP (turned), GIDP, SF,
-    WP, BK, PB, SH, IBB. A stat is None when that league-season didn't track
-    it for every team/player row. Per-27-outs (not per game) because games
-    average ~8.9 innings; the simulator plays whole nine-inning games."""
-    agg = _league_aggregates().get((year, league))
-    if not agg or not _complete(agg.get("T_IPouts")):
+    """Real league rates per 27 outs (nine innings) from the Lahman league
+    totals (LahmanDB.league_team_totals / league_pitching_totals /
+    league_fielding_totals of catchers): R, SB, CS, HBP, E, DP (turned),
+    GIDP, SF, WP, BK, PB, SH, IBB. A stat is None when that league-season
+    didn't track it for every team (pitching and catching stats: for
+    nearly every player row). Per-27-outs (not per game) because games
+    average ~8.9 innings; the simulator plays whole nine-inning games.
+    Raises KeyError without complete team innings."""
+    db = _db()
+    team = db.league_team_totals(year, league)
+    if not team["IPouts"].complete:
         raise KeyError(f"no team data for {league} {year}")
-    per = 27.0 / agg["T_IPouts"][0]
-    out = {}
-    for stat in ("R", "SB", "CS", "E", "DP", "SF"):
-        slot = agg.get("T_" + stat)
-        out[stat] = slot[0] * per if _complete(slot) else None
-    pitch_per = 27.0 / agg["P_IPouts"][0] if agg.get("P_IPouts", [0])[0] else per
+    per = 27.0 / team["IPouts"].total
+    out = {stat: team[stat].total * per if team[stat].complete else None
+           for stat in ("R", "SB", "CS", "E", "DP", "SF")}
+    try:
+        pitching = db.league_pitching_totals(year, league)
+    except KeyError:
+        pitching = {}
+    pitch_outs = pitching["IPouts"].total if pitching else 0
+    pitch_per = 27.0 / pitch_outs if pitch_outs else per
     for stat in ("WP", "BK", "HBP", "IBB", "SH", "GIDP"):
-        slot = agg.get("P_" + stat)
-        # pitching rows: accept near-complete tracking (a few blank cameos)
-        ok = slot and slot[0] > 0 and slot[1] >= 0.95 * slot[2]
-        out[stat] = slot[0] * pitch_per if ok else None
-    slot = agg.get("F_PB")
-    out["PB"] = slot[0] * per if slot and slot[0] > 0 and slot[1] >= 0.95 * slot[2] else None
-    if out["HBP"] is None and _complete(agg.get("T_HBP")):
-        out["HBP"] = agg["T_HBP"][0] * per
-    out["innings_per_game"] = agg["T_IPouts"][0] / 3.0 / agg["T_G"][0]
+        total = pitching.get(stat)
+        out[stat] = total.total * pitch_per if _near_complete(total) else None
+    try:
+        pb = db.league_fielding_totals(year, league, "C")["PB"]
+    except KeyError:
+        pb = None
+    out["PB"] = pb.total * per if _near_complete(pb) else None
+    if out["HBP"] is None and team["HBP"].complete:
+        out["HBP"] = team["HBP"].total * per
+    out["innings_per_game"] = team["IPouts"].total / 3.0 / team["G"].total
     return out
 
 
 @lru_cache(maxsize=None)
 def _steal_success_by_year() -> dict[int, tuple[float, float]]:
     """{year: (SB, CS)} pooled over league-seasons with complete CS data."""
+    db = _db()
     out: dict[int, list] = {}
-    for (year, _lg), agg in _league_aggregates().items():
-        if _complete(agg.get("T_CS")) and _complete(agg.get("T_SB")) \
-                and agg["T_CS"][0] > 0:
+    for year, lg in db.league_seasons():
+        try:
+            team = db.league_team_totals(year, lg)
+        except KeyError:
+            continue
+        sb, cs = team["SB"], team["CS"]
+        if cs.complete and sb.complete and cs.total > 0:
             slot = out.setdefault(year, [0, 0])
-            slot[0] += agg["T_SB"][0]
-            slot[1] += agg["T_CS"][0]
+            slot[0] += sb.total
+            slot[1] += cs.total
     return {y: tuple(v) for y, v in out.items()}
 
 
@@ -567,8 +543,7 @@ def _context_from_rates(year, league, *, pa_per_27, h, bb, so, hr, singles,
 def league_context(year: int, league: str | None = None) -> LeagueContext:
     """The cached LeagueContext for a league-season. `league=None` pools
     every league of that year (used when only a card's year is known)."""
-    from .lahman import default_db
-    db = default_db()
+    db = _db()
     leagues = [league] if league else db.leagues_for_year(year)
     tot: Counter = Counter()
     game: Counter = Counter()
@@ -583,7 +558,7 @@ def league_context(year: int, league: str | None = None) -> LeagueContext:
             rates = league_game_rates(year, lg)
         except KeyError:
             continue
-        outs = _league_aggregates()[(year, lg)]["T_IPouts"][0]
+        outs = db.league_team_totals(year, lg)["IPouts"].total
         tot["outs"] += outs
         tot["pa_with_outs"] += lgd["PA_eff"]
         for stat, value in rates.items():
@@ -724,10 +699,15 @@ def _lineout(state: HalfInning, reading: _Reading):
 def _x_out(reading: _Reading, rng: random.Random, ctx: LeagueContext) -> _Reading:
     """The batted-ball out an X chance becomes when the fielder converts it:
     a groundout is an A (double-play ball) with the context's share, else
-    B/C in the proportion printed on real pitcher cards; a flyout is B or C."""
-    upper = reading.text.upper()
+    B/C in the proportion printed on real pitcher cards; a flyout is B or C;
+    a lineout or popout X is an air out that holds the runners."""
+    upper = reading.text.upper().lstrip()
     if "CATCH" in upper:
         return _reading("foulout (c)")
+    air = _AIR_X_RE.match(upper)
+    if air:
+        kind = "lineout" if air.group(1).startswith("L") else "popout"
+        return _reading(f"{kind} ({reading.fielder or 'ss'})")
     u = rng.random()
     if upper.startswith("FLY"):
         letter = "B" if u < X_FLY_B_SHARE else "C"
@@ -786,10 +766,8 @@ def apply_outcome(state: HalfInning, text: str, batter_running, rng: random.Rand
     if category == TRIPLE:
         state.advance_all(3)
         state.bases[2] = batter_running
-    elif category == DOUBLE:
+    elif category == DOUBLE:            # * and ** alike: exactly two bases
         state.advance_all(2)
-        if stars >= 2:
-            state.advance_all(1)
         state.bases[1] = batter_running
         if stars == 0:
             _maybe_gamble(state, rng, batter_base=1)
@@ -835,8 +813,9 @@ def _out(state: HalfInning, reading: _Reading, batter):
 def synthetic_average_stats(league: dict, pa: int = 600) -> dict:
     """A league-average player-season, scaled to one batter's workload —
     used to lay out average cards with realistic symbol profiles. Stats the
-    league didn't track are listed under 'missing' (so e.g. an untracked
-    GIDP reads as "unknown", not as a real zero)."""
+    league didn't track (league['tracked']) are listed under 'missing' (so
+    e.g. an untracked SB reads as "unknown", not as a real zero); an
+    untracked GIDP is estimated from the league's double plays turned."""
     raw = league.get("raw") or {}
     pa_eff = league.get("PA_eff") or 1
     scale = pa / pa_eff
@@ -844,20 +823,23 @@ def synthetic_average_stats(league: dict, pa: int = 600) -> dict:
     def s(key):
         return round((raw.get(key, 0) or 0) * scale)
 
-    missing = [w.split()[0] for w in league.get("warnings", [])]
+    tracked = league.get("tracked") or {}
+    missing = [stat for stat, ok in tracked.items() if not ok]
     gidp = s("GIDP")
-    if not raw.get("GIDP"):
+    if not raw.get("GIDP") or not tracked.get("GIDP", True):
         # Untracked: estimate from the league's double plays turned.
         gidp = None
         try:
-            agg = _league_aggregates()[(league["year"], league["league"])]
-            if _complete(agg.get("T_DP")):
-                gidp = round(GIDP_PER_DP * agg["T_DP"][0] * scale)
+            dp = _db().league_team_totals(league["year"], league["league"])["DP"]
+            if dp.complete:
+                gidp = round(GIDP_PER_DP * dp.total * scale)
         except KeyError:
             pass
         if gidp is None:
             missing.append("GIDP")
             gidp = 0
+        elif "GIDP" in missing:
+            missing.remove("GIDP")
     return {"name": "LEAGUE AVERAGE", "year": league.get("year"),
             "AB": s("AB"), "H": s("H"), "2B": s("2B"), "3B": s("3B"),
             "HR": s("HR"), "BB": s("BB"), "SO": s("SO"), "SB": s("SB"),
@@ -869,10 +851,12 @@ def average_cards(league: dict, variant: int = 0) -> tuple[Card, Card]:
     """(average batter card, average pitcher card), fully laid out. The
     batter carries no stealing letter: he is the league-average runner.
 
-    Out *types* are placed cell by cell at random (generate._OutFlavors), so
-    one layout's realized groundball/flyball/letter mix can stray far from
-    the profile; `variant` > 0 gives another, independent layout of the same
-    chances (see average_lineup)."""
+    Out types, letters and fielders are allocated by quota against the
+    real-card mix and the profile's groundball-A share (generate.
+    _OutFlavors), so every layout realizes them as closely as its cells
+    allow; where the hits and outs sit still varies by layout. `variant`
+    > 0 gives another, independent layout of the same chances (see
+    average_lineup)."""
     return (_average_card(league, "batter", variant),
             _average_card(league, "pitcher", variant))
 
