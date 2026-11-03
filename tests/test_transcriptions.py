@@ -7,10 +7,8 @@ exhibit is allowed (xfail), per the project's "real cards aren't perfect"
 philosophy.
 """
 
-import glob
 import json
 import math
-import os
 
 import pytest
 
@@ -67,9 +65,13 @@ def test_sides_joined_by_card_id():
 
 # --- vocabulary (normalizer regression guard) --------------------------------
 
+def _load_json(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _all_tokens():
     for path in JSON_FILES:
-        d = json.loads(open(path).read())
+        d = _load_json(path)
         for grid in d["grids"]:
             for col in grid["columns"]:
                 for cell in col["cells"]:
@@ -308,8 +310,7 @@ def test_official_corpus_is_tight_in_aggregate():
 def test_markers_preserved_in_json():
     """The verbatim JSON must retain the situational/marker glyphs even
     though the Card model drops them — they're future-feature material."""
-    d = json.loads(open(os.path.join(
-        cj.TRANSCRIPTIONS_DIR, "som_batter_judge-aaron_2024_6col.json")).read())
+    d = _load_json(cj.TRANSCRIPTIONS_DIR / "som_batter_judge-aaron_2024_6col.json")
     markers = {m for g in d["grids"] for col in g["columns"]
                for cell in col["cells"] for m in (cell.get("markers") or [])}
-    assert {"omega", "diamond", "downTriangle"} & markers
+    assert {"omega", "diamond", "downTriangle", "upTriangle"} <= markers
