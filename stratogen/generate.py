@@ -255,7 +255,7 @@ def _preferred_cells(columns: tuple[int, ...]) -> dict[str, list[tuple[int, int]
 
 # League-typical fallback when no player profile is available
 _DEFAULT_PROFILE = {"single_2star": 0.30, "single_star": 0.17,
-                    "double_2star": 0.32, "gb_a": 0.45, "plus_plus": 1}
+                    "double_2star": 0.32, "gb_a": 0.70, "plus_plus": 1}
 
 
 def hit_profile(stats: dict, pa: float | None = None) -> dict:
@@ -285,7 +285,7 @@ def hit_profile(stats: dict, pa: float | None = None) -> dict:
         "single_star": clamp(0.32 - 1.1 * iso, 0.05, 0.32),
         "double_2star": clamp(0.15 + 1.2 * iso, 0.15, 0.55),
         "gb_a": _DEFAULT_PROFILE["gb_a"] if gidp_missing
-                else clamp(0.20 + 16.0 * gidp / pa, 0.18, 0.75),
+                else clamp(0.17 + 26.0 * gidp / pa, 0.15, 1.0),
         "plus_plus": 3 if speed >= 15 else (2 if speed >= 13 else 1),
     }
 
@@ -303,7 +303,7 @@ def pitcher_hit_profile(stats: dict, league: dict) -> dict:
     profile["single_star"] = max(0.05, min(0.32, 0.32 - 1.1 * iso))
     profile["double_2star"] = max(0.15, min(0.55, 0.15 + 1.2 * iso))
     if gidp:
-        profile["gb_a"] = max(0.18, min(0.75, 0.20 + 16.0 * gidp / tbf))
+        profile["gb_a"] = max(0.15, min(1.0, 0.17 + 26.0 * gidp / tbf))
     profile["plus_plus"] = 0
     return profile
 
@@ -313,6 +313,15 @@ class _OutFlavors:
 
     _GB_POS = ["ss", "3b", "2b", "1b", "p"]
     _FB_POS = ["lf", "cf", "rf"]
+    # Chance-weighted from the 39 real cards in data/real_cards (non-X outs):
+    # batter cards 55% groundball / 22% flyball / 9% lineout / 12% popout /
+    # 1% foulout, grounders A or B only (no C), flyballs 97% B / 3% A, hit
+    # mostly to ss/3b; pitcher cards 26/48/10/16/0 (their grounders are
+    # mostly X chances), grounders 40% B / 60% C (no A), flyballs 83% B /
+    # 17% C, hit mostly to 2b/1b.
+    _MIX = {"batter": (0.55, 0.77, 0.86, 0.98), "pitcher": (0.26, 0.74, 0.84, 1.0)}
+    _GB_WEIGHTS = {"batter": [38, 29, 15, 8, 10], "pitcher": [14, 11, 40, 22, 14]}
+    _FB_LETTERS = {"batter": [3, 97, 0], "pitcher": [0, 83, 17]}
 
     def __init__(self, rng: random.Random, card_type: str, profile: dict):
         self.rng = rng
@@ -321,20 +330,24 @@ class _OutFlavors:
 
     def next(self) -> str:
         roll = self.rng.random()
-        if roll < 0.45:
-            pos = self.rng.choice(self._GB_POS)
-            gb_a = self.profile["gb_a"]
+        kind = "batter" if self.card_type == "batter" else "pitcher"
+        gb, fb, lo, po = self._MIX[kind]
+        if roll < gb:
+            pos = self.rng.choices(self._GB_POS, weights=self._GB_WEIGHTS[kind])[0]
+            gb_a = self.profile["gb_a"] if kind == "batter" else 0.0
+            c_share = 0.0 if kind == "batter" else 0.60
             rating = self.rng.choices(
                 ["A", "B", "C"],
-                weights=[gb_a, 0.78 * (1 - gb_a), 0.22 * (1 - gb_a)])[0]
+                weights=[gb_a, (1 - c_share) * (1 - gb_a), c_share * (1 - gb_a)])[0]
             return f"groundball ({pos}){rating}"
-        if roll < 0.75:
+        if roll < fb:
             pos = self.rng.choice(self._FB_POS)
-            rating = self.rng.choices(["A", "B", "C"], weights=[15, 65, 20])[0]
+            rating = self.rng.choices(["A", "B", "C"],
+                                      weights=self._FB_LETTERS[kind])[0]
             return f"flyball ({pos}){rating}"
-        if roll < 0.85:
+        if roll < lo:
             return f"lineout ({self.rng.choice(self._GB_POS[:4])})"
-        if roll < 0.95:
+        if roll < po:
             return f"popout ({self.rng.choice(['ss', '2b', '3b', '1b'])})"
         return "foulout (c)"
 
