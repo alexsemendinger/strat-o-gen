@@ -526,17 +526,23 @@ def test_cli_advanced(capsys, monkeypatch):
 #   moved, total hits unchanged, plus Chapman's now-quantified hits warning);
 # - pitcher rates left sacrifice hits out of batters faced
 #   (simulate.pitcher_effective_pa; batter cards verified identical, the
-#   pitchers' BB/SO/HR/hit targets rose by their SH share, ~1%).
+#   pitchers' BB/SO/HR/hit targets rose by their SH share, ~1%);
+# - out texts were allocated by quota, batter grids reserved two 1-chance rows
+#   for the max-effort lineout and injury, and residual splits weighed the
+#   running miss (verified: targets and warnings identical; placed chances
+#   moved by at most 0.05 per category, Cobb BB 6.25->6.30, Judge SO
+#   29.55->29.60, Chapman SO 90.05->90.00; the rest is out texts and which
+#   cells hold the batters' hits).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
-    ("mayswi01", 1965, "batter", "9f2a5e9d8cfbc2db"),
-    ("gwynnto01", 1995, "batter", "97bd25606327eb01"),
-    ("cobbty01", 1911, "batter", "cbc297e924d0548d"),
-    ("judgeaa01", 2024, "batter", "81710993e5f25871"),
-    ("ryanno01", 1974, "pitcher", "2e668f31a7d24c4b"),
-    ("maddugr01", 1995, "pitcher", "81d6932415f72730"),
-    ("chapmar01", 2014, "pitcher", "1e967d72383454cf"),
+    ("mayswi01", 1965, "batter", "8e94e36b0b4f32cd"),
+    ("gwynnto01", 1995, "batter", "6abbaccd7e9bf8b3"),
+    ("cobbty01", 1911, "batter", "68d6d5cddb717220"),
+    ("judgeaa01", 2024, "batter", "287e81667532739c"),
+    ("ryanno01", 1974, "pitcher", "d4f287e1be21fe60"),
+    ("maddugr01", 1995, "pitcher", "3b06621e6392c374"),
+    ("chapmar01", 2014, "pitcher", "40d07c310a7e41ba"),
 ]
 
 

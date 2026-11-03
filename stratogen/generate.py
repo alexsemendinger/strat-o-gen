@@ -595,6 +595,40 @@ _X_CELLS = [(4, 7), (4, 9), (5, 6), (5, 10), (5, 12), (6, 8), (6, 5), (6, 3)]
 assert sum(DICE_WEIGHTS[d] for _, d in _X_CELLS) == X_CHANCES_PER_PITCHER_CARD
 
 
+def _x_blocks(x_target: int, rng: random.Random,
+              ) -> list[list[tuple[tuple[int, int], str]]]:
+    """Candidate X blocks holding `x_target` chances (one, for now): the
+    fixed _X_CELLS or, for a block reduced to fit an extreme card, the
+    heaviest cells that sum exactly to the target; one cell is the
+    catcher's card, the rest groundball (60%) or flyball X to a random
+    fielder."""
+    if x_target <= 0:
+        return []
+    if x_target == X_CHANCES_PER_PITCHER_CARD:
+        cells = list(_X_CELLS)
+    else:
+        cells, remaining = [], x_target
+        pool = sorted(((col, d) for col in PITCHER_COLUMNS for d in DICE_WEIGHTS),
+                      key=lambda cd: -DICE_WEIGHTS[cd[1]])
+        for cell in pool:
+            if DICE_WEIGHTS[cell[1]] <= remaining:
+                cells.append(cell)
+                remaining -= DICE_WEIGHTS[cell[1]]
+            if remaining == 0:
+                break
+    catcher = rng.choice(cells)
+    block = []
+    for cell in cells:
+        if cell == catcher:
+            block.append((cell, "CATCHER'S CARD X"))
+        elif rng.random() < 0.6:
+            pos = rng.choice(["ss", "3b", "2b", "1b", "p"])
+            block.append((cell, f"GROUNDBALL ({pos}) X"))
+        else:
+            block.append((cell, f"FLYBALL ({rng.choice(['lf', 'cf', 'rf'])}) X"))
+    return [block]
+
+
 def _spread_cells(columns: tuple[int, ...], phase: int) -> list[tuple[int, int]]:
     """Round-robin cells across columns with staggered row order.
 
@@ -680,53 +714,151 @@ def pitcher_hit_profile(stats: dict, league: dict) -> dict:
     return profile
 
 
-class _OutFlavors:
-    """Deterministic out-text generator in the style of real cards."""
+def _quota(weights: list[float], shares: dict[str, float],
+           forced: dict[int, str] | None = None) -> list[str]:
+    """Give each piece (a chance weight) one key of `shares` so that the
+    chance-weighted mix comes as close to the shares as whole pieces allow.
 
-    _GB_POS = ["ss", "3b", "2b", "1b", "p"]
-    _FB_POS = ["lf", "cf", "rf"]
-    # Chance-weighted from the 39 real cards in data/real_cards (non-X outs):
-    # batter cards 55% groundball / 22% flyball / 9% lineout / 12% popout /
-    # 1% foulout, grounders A or B only (no C), flyballs 97% B / 3% A, hit
-    # mostly to ss/3b; pitcher cards 26/48/10/16/0 (their grounders are
-    # mostly X chances), grounders 40% B / 60% C (no A), flyballs 83% B /
-    # 17% C, hit mostly to 2b/1b.
-    _MIX = {"batter": (0.55, 0.77, 0.86, 0.98), "pitcher": (0.26, 0.74, 0.84, 1.0)}
-    _GB_WEIGHTS = {"batter": [38, 29, 15, 8, 10], "pitcher": [14, 11, 40, 22, 14]}
-    _FB_LETTERS = {"batter": [3, 97, 0], "pitcher": [0, 83, 17]}
+    Pieces go largest first (ties in the given order) to the key with the
+    largest remaining deficit against share x total, then single moves and
+    pairwise swaps run while they shrink the total miss. `forced` pins
+    pieces (index -> key); they count toward their key's quota.
+    """
+    forced = forced or {}
+    keys = [k for k, v in shares.items() if v > 0]
+    norm = sum(shares[k] for k in keys)
+    total = sum(weights)
+    target = {k: shares[k] / norm * total for k in keys}
+    placed = {k: 0.0 for k in keys}
+    out: list = [None] * len(weights)
+    for i, key in forced.items():
+        out[i] = key
+        placed.setdefault(key, 0.0)
+        placed[key] += weights[i]
+        target.setdefault(key, 0.0)
+    free = sorted((i for i in range(len(weights)) if i not in forced),
+                  key=lambda i: -weights[i])
+    for i in free:
+        key = max(keys, key=lambda k: target[k] - placed[k])
+        out[i] = key
+        placed[key] += weights[i]
+
+    def gain(moves) -> float:
+        """Drop in total |placed - target| from applying (weight, from, to)."""
+        delta = dict.fromkeys({k for _w, a, b in moves for k in (a, b)}, 0.0)
+        for w, a, b in moves:
+            delta[a] -= w
+            delta[b] += w
+        return sum(abs(placed[k] - target[k]) - abs(placed[k] + d - target[k])
+                   for k, d in delta.items())
+
+    for _round in range(len(weights) + 1):
+        best = (1e-9, None)
+        for x, i in enumerate(free):
+            for k in keys:
+                if k != out[i]:
+                    g = gain([(weights[i], out[i], k)])
+                    if g > best[0]:
+                        best = (g, [(i, k)])
+            for j in free[x + 1:]:
+                if out[j] != out[i]:
+                    g = gain([(weights[i], out[i], out[j]),
+                              (weights[j], out[j], out[i])])
+                    if g > best[0]:
+                        best = (g, [(i, out[j]), (j, out[i])])
+        if best[1] is None:
+            break
+        for i, k in best[1]:
+            placed[out[i]] -= weights[i]
+            placed[k] += weights[i]
+            out[i] = k
+    return out
+
+
+class _OutFlavors:
+    """Out texts in the style of real cards, allocated by quota.
+
+    Every out piece of a card (whole cells and the open d20 tails of
+    split cells) is known before any text is chosen, so the card's out
+    content is allocated, not drawn: the out type of each piece by _quota
+    against the card type's mix, then the A/B/C letter and the fielder
+    within each type the same way. Every card therefore realizes the mix
+    (and the groundball-A share of its profile) as closely as its pieces
+    allow, instead of scattering around it cell by cell.
+
+    Chance-weighted from the real cards in data/real_cards (non-X outs):
+    batter cards 55% groundball / 22% flyball / 10% lineout (the max-effort
+    one included) / 12% popout / 1% foulout (measured on the 23 basic
+    batter grids: .550/.217/.103/.119/.011), grounders A or B only (A
+    share = profile gb_a), flyballs
+    97% B / 3% A; pitcher cards 26/48/10/16/0 (their grounders are mostly X
+    chances), grounders 40% B / 60% C (no A), flyballs 83% B / 17% C.
+    Fielders: grounders as calibrated with the mix (batter cards mostly
+    ss/3b, pitcher cards mostly 2b/1b); flyballs, lineouts and popouts
+    follow the official basic cards' chance-weighted fielders.
+    """
+
+    _TYPES = ("groundball", "flyball", "lineout", "popout", "foulout")
+    _MIX = {"batter": (55, 22, 10, 12, 1), "pitcher": (26, 48, 10, 16, 0)}
+    _LETTERS = {"batter": {"flyball": {"A": 3, "B": 97}},
+                "pitcher": {"groundball": {"B": 40, "C": 60},
+                            "flyball": {"B": 83, "C": 17}}}
+    _FIELDERS = {
+        "batter": {"groundball": {"ss": 38, "3b": 29, "2b": 15, "1b": 8, "p": 10},
+                   "flyball": {"lf": 39, "cf": 37, "rf": 24},
+                   "lineout": {"2b": 40, "3b": 35, "1b": 14, "ss": 11},
+                   "popout": {"ss": 35, "3b": 27, "2b": 26, "1b": 12},
+                   "foulout": {"c": 1}},
+        "pitcher": {"groundball": {"ss": 14, "3b": 11, "2b": 40, "1b": 22, "p": 14},
+                    "flyball": {"cf": 39, "rf": 36, "lf": 25},
+                    "lineout": {"ss": 63, "1b": 17, "3b": 10, "2b": 10},
+                    "popout": {"1b": 56, "ss": 21, "2b": 16, "3b": 7},
+                    "foulout": {"c": 1}},
+    }
+    MAX_LINEOUT = "max lineout"   # forced kind: lineout into as many outs as possible
 
     def __init__(self, rng: random.Random, card_type: str, profile: dict):
         self.rng = rng
-        self.card_type = card_type
+        self.kind = "batter" if card_type == "batter" else "pitcher"
         self.profile = profile
 
-    def next(self) -> str:
-        roll = self.rng.random()
-        kind = "batter" if self.card_type == "batter" else "pitcher"
-        gb, fb, lo, po = self._MIX[kind]
-        if roll < gb:
-            pos = self.rng.choices(self._GB_POS, weights=self._GB_WEIGHTS[kind])[0]
-            gb_a = self.profile["gb_a"] if kind == "batter" else 0.0
-            c_share = 0.0 if kind == "batter" else 0.60
-            rating = self.rng.choices(
-                ["A", "B", "C"],
-                weights=[gb_a, (1 - c_share) * (1 - gb_a), c_share * (1 - gb_a)])[0]
-            return f"groundball ({pos}){rating}"
-        if roll < fb:
-            pos = self.rng.choice(self._FB_POS)
-            rating = self.rng.choices(["A", "B", "C"],
-                                      weights=self._FB_LETTERS[kind])[0]
-            return f"flyball ({pos}){rating}"
-        if roll < lo:
-            return f"lineout ({self.rng.choice(self._GB_POS[:4])})"
-        if roll < po:
-            return f"popout ({self.rng.choice(['ss', '2b', '3b', '1b'])})"
-        return "foulout (c)"
+    def mix(self) -> dict[str, float]:
+        return dict(zip(self._TYPES, self._MIX[self.kind]))
 
-    def x_chance(self) -> str:
-        if self.rng.random() < 0.6:
-            return f"GROUNDBALL ({self.rng.choice(self._GB_POS)}) X"
-        return f"FLYBALL ({self.rng.choice(self._FB_POS)}) X"
+    def letters(self, out_type: str) -> dict[str, float] | None:
+        if out_type == "groundball" and self.kind == "batter":
+            a = self.profile["gb_a"]
+            return {"A": a, "B": 1.0 - a}
+        return self._LETTERS[self.kind].get(out_type)
+
+    def allocate(self, weights: list[float],
+                 forced: dict[int, str] | None = None) -> list[str]:
+        """Out texts for pieces of the given chance weights (in the order
+        given; callers shuffle equal weights for variety). `forced` pins
+        pieces to MAX_LINEOUT."""
+        forced = forced or {}
+        types = _quota(weights, self.mix(),
+                       {i: "lineout" for i in forced})
+        texts = [""] * len(weights)
+        for out_type in self._TYPES:
+            idx = [i for i, t in enumerate(types) if t == out_type]
+            if not idx:
+                continue
+            sub = [weights[i] for i in idx]
+            fielders = _quota(sub, self._FIELDERS[self.kind][out_type])
+            letter_shares = self.letters(out_type)
+            letters = (_quota(sub, letter_shares) if letter_shares
+                       else [""] * len(idx))
+            for i, pos, letter in zip(idx, fielders, letters):
+                if i in forced:
+                    texts[i] = f"lineout ({pos}) into as many outs as possible"
+                elif out_type == "foulout":
+                    texts[i] = f"foulout ({pos})"
+                elif letter:
+                    texts[i] = f"{out_type} ({pos}){letter}"
+                else:
+                    texts[i] = f"{out_type} ({pos})"
+        return texts
 
 
 class _HitVariants:
@@ -789,6 +921,109 @@ def _hbp_cells(n: int, free: dict, rng: random.Random) -> list[tuple[int, int]]:
     return chosen
 
 
+def _place_categories(targets: dict[str, float], prefs: dict, free: dict,
+                      placed: dict, text) -> dict[str, float]:
+    """Place the hit/BB/SO targets on the free cells (mutating `free` and
+    `placed`, whose split cells keep their unused d20 tail open for outs).
+    `text(cat, amount)` gives each placement's text. Returns the chances
+    placed per category."""
+    got = {cat: 0.0 for cat in _PLACE_ORDER}
+
+    def assign_full(cell, label):
+        placed[cell] = [(label, 1, 20)]
+        free.pop(cell)
+
+    def open_tail(cell) -> int:
+        return placed[cell][-1][2] + 1
+
+    drift = 0.0   # placed minus target over the categories done so far
+    for cat in _PLACE_ORDER:
+        t = targets.get(cat, 0.0)
+        # Full cells, largest usable weight first, following preference order.
+        while t > _EPSILON:
+            cell = None
+            best_w = 0
+            for cand in prefs[cat]:
+                if cand in free:
+                    w = DICE_WEIGHTS[cand[1]]
+                    if w <= t + _EPSILON and w > best_w:
+                        cell = cand
+                        best_w = w
+            if cell is None:
+                break
+            assign_full(cell, text(cat, best_w))
+            t -= best_w
+            got[cat] += best_w
+        if t > _EPSILON:
+            # One d20 split. Its miss also lands on the out total, so a
+            # candidate is judged by the worse of its own miss and the
+            # running miss of everything placed so far; among cells that
+            # do equally well, the lightest wastes the least capacity on
+            # its unused tail. Placing nothing is a candidate for a sliver
+            # (one on a 2-chance row can miss by more than the sliver).
+            best = None
+            if t < 0.1 and any(c in free for c in prefs[cat]):
+                worst = max(t, abs(drift - t))
+                best = ((round(worst * 20), 0, worst, t), None, 0)
+            for cand in prefs[cat]:
+                if cand not in free:
+                    continue
+                w = DICE_WEIGHTS[cand[1]]
+                near = round(20.0 * t / w)
+                for r in {max(1, min(20, near + k)) for k in (-1, 0, 1)}:
+                    err = w * r / 20.0 - t
+                    worst = max(abs(err), abs(drift + err))
+                    key = (round(worst * 20), w, worst, abs(err))
+                    if best is None or key < best[0]:
+                        best = (key, cand, r)
+            _key, cell, r = best if best else (None, None, 0)
+            if cell is None and t < 0.1:
+                t = 0.0
+            elif cell is not None:
+                amount = DICE_WEIGHTS[cell[1]] * min(r, 20) / 20.0
+                if r >= 20:
+                    assign_full(cell, text(cat, amount))
+                else:
+                    placed[cell] = [(text(cat, amount), 1, r)]  # tail filled later
+                    free.pop(cell)
+                t -= amount
+                got[cat] += amount
+        if t > _EPSILON:
+            # Safety net for very crowded cards: continue this category in
+            # the unused d20 tails of earlier splits.
+            tails = sorted((c for c in placed if open_tail(c) <= 20),
+                           key=lambda c: DICE_WEIGHTS[c[1]])
+            for cell in tails:
+                if t <= _EPSILON:
+                    break
+                w = DICE_WEIGHTS[cell[1]]
+                start = open_tail(cell)
+                avail_slots = 21 - start
+                want_slots = min(avail_slots, max(1, round(20.0 * t / w)))
+                amount = w * want_slots / 20.0
+                placed[cell].append(
+                    (text(cat, amount), start, start + want_slots - 1))
+                t -= amount
+                got[cat] += amount
+        drift += got[cat] - targets.get(cat, 0.0)
+    return got
+
+
+_PLACE_ORDER = (HR, TRIPLE, DOUBLE, SINGLE, WALK, SO)
+# An X block is kept when the rest of the card then lands within this many
+# chances of every target; otherwise the other real blocks are tried.
+_X_FIT = 0.05
+
+
+def _placement_miss(targets: dict[str, float], fixed: float,
+                    got: dict[str, float]) -> float:
+    """Largest |placed - target| over the placed categories and OUT, given
+    `fixed` chances (X/HBP/reserved) already on the card."""
+    miss = max(abs(got[c] - targets.get(c, 0.0)) for c in got)
+    outs = CHANCES_PER_CARD - fixed - sum(got.values())
+    return max(miss, abs(outs - targets.get(OUT, 0.0)))
+
+
 def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                 year: int | None, team: str | None, stats: dict,
                 header_lines: list[str], profile: dict | None = None,
@@ -799,7 +1034,10 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
     cosmetic out locations is seeded from name+year). `profile` (see
     hit_profile) controls the */**/++/DP-letter mix. `hr_text` is how home
     runs print ("N-HR" on advanced pitcher grids). Whole HBP chances
-    (advanced batter grids) go on edge rows before anything else.
+    (advanced batter grids) go on edge rows before anything else. Batter
+    grids keep two 1-chance rows (dice 2/12) for the max-effort lineout and
+    the injury, as every real card does; out texts are allocated by quota
+    once every out piece is known (_OutFlavors).
     """
     profile = profile or dict(_DEFAULT_PROFILE)
     rng = random.Random(f"{name}|{year}|{card_type}|{seed_extra}")
@@ -818,105 +1056,74 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
         placed[cell] = [(text, 1, 20)]
         free.pop(cell)
 
-    def assign_split(cell, text, upto):
-        placed[cell] = [(text, 1, upto)]  # tail filled later
-        free.pop(cell)
-
     def open_tail(cell) -> int:
         """First unused d20 slot of a partially used cell (21 = none)."""
         return placed[cell][-1][2] + 1
 
-    # X block first (pitcher only): full cells summing exactly to the target.
+    # X block first (pitcher only, see _x_blocks); with several candidate
+    # blocks the first that leaves the rest of the card on target is used.
     if card_type == "pitcher":
         x_target = int(round(targets.get(XCHANCE, 0)))
-        if x_target == X_CHANCES_PER_PITCHER_CARD:
-            x_cells = list(_X_CELLS)
-        else:  # extreme card with a reduced block: greedy exact-sum pick
-            x_cells = []
-            remaining = x_target
-            pool = sorted(free, key=lambda cd: -DICE_WEIGHTS[cd[1]])
-            for cell in pool:
-                w = DICE_WEIGHTS[cell[1]]
-                if w <= remaining:
-                    x_cells.append(cell)
-                    remaining -= w
-                if remaining == 0:
-                    break
-        if x_cells:
-            catcher_cell = rng.choice(x_cells)
-            for cell in x_cells:
-                text = ("CATCHER'S CARD X" if cell == catcher_cell
-                        else flavors.x_chance())
-                assign_full(cell, text)
+        best = None
+        for block in _x_blocks(x_target, rng):
+            trial = dict(free)
+            for cell, _text in block:
+                trial.pop(cell)
+            got = _place_categories(targets, prefs, trial, {}, lambda c, a: c)
+            miss = _placement_miss(targets, x_target, got)
+            if best is None or miss < best[0] - 1e-9:
+                best = (miss, block)
+            if miss <= _X_FIT:
+                break
+        for cell, text in (best[1] if best else []):
+            assign_full(cell, text)
 
     hbp = int(round(targets.get(HBP, 0)))
     if hbp > 0:
         for cell in _hbp_cells(hbp, free, rng):
             assign_full(cell, variants.text(HBP))
 
-    order = [HR, TRIPLE, DOUBLE, SINGLE, WALK, SO]
-    for cat in order:
-        t = targets.get(cat, 0.0)
-        # Full cells, largest usable weight first, following preference order.
-        while t > _EPSILON:
-            cell = None
-            best_w = 0
-            for cand in prefs[cat]:
-                if cand in free:
-                    w = DICE_WEIGHTS[cand[1]]
-                    if w <= t + _EPSILON and w > best_w:
-                        cell = cand
-                        best_w = w
-            if cell is None:
-                break
-            assign_full(cell, variants.text(cat, best_w))
-            t -= best_w
-        if t > _EPSILON:
-            # One d20 split; among cells that approximate the remainder
-            # equally well, prefer the lightest so the unused tail wastes
-            # as little capacity as possible.
-            best = None
-            for cand in prefs[cat]:
-                if cand not in free:
-                    continue
-                w = DICE_WEIGHTS[cand[1]]
-                r = max(1, min(20, round(20.0 * t / w)))
-                err = abs(w * r / 20.0 - t)
-                key = (round(err * 20), w, err)
-                if best is None or key < best[0]:
-                    best = (key, cand, r)
-            if best is not None:
-                _key, cell, r = best
-                amount = DICE_WEIGHTS[cell[1]] * min(r, 20) / 20.0
-                if r >= 20:
-                    assign_full(cell, variants.text(cat, amount))
-                else:
-                    assign_split(cell, variants.text(cat, amount), r)
-                t -= amount
-        if t > _EPSILON:
-            # Safety net for very crowded cards: continue this category in
-            # the unused d20 tails of earlier splits.
-            tails = sorted((c for c in placed if open_tail(c) <= 20),
-                           key=lambda c: DICE_WEIGHTS[c[1]])
-            for cell in tails:
-                if t <= _EPSILON:
-                    break
-                w = DICE_WEIGHTS[cell[1]]
-                start = open_tail(cell)
-                avail_slots = 21 - start
-                want_slots = min(avail_slots, max(1, round(20.0 * t / w)))
-                amount = w * want_slots / 20.0
-                placed[cell].append(
-                    (variants.text(cat, amount), start, start + want_slots - 1))
-                t -= amount
+    # Batter grids: hold 1-chance rows for the max-effort lineout and the
+    # injury (as many as the out total allows) so residual hit/BB/K splits,
+    # which favor light rows, can't take them all.
+    reserved: list[tuple[int, int]] = []
+    if card_type == "batter":
+        room = targets.get(OUT, 0.0)
+        ones = sorted(c for c in free if DICE_WEIGHTS[c[1]] == 1)
+        rng.shuffle(ones)
+        while ones and len(reserved) < 2 and room >= 1.0 - _EPSILON:
+            fresh = [c for c in ones if c[0] not in {r[0] for r in reserved}]
+            cell = (fresh or ones)[0]
+            ones.remove(cell)
+            reserved.append(cell)
+            free.pop(cell)
+            room -= 1.0
 
-    # Outs fill every remaining cell and every open tail.
-    for cell in list(free):
-        assign_full(cell, flavors.next())
-    for cell, entries in placed.items():
-        text, lo, hi = entries[-1]
-        if hi < 20:
-            entries.append((flavors.next(), hi + 1, 20))
+    _place_categories(targets, prefs, free, placed, variants.text)
+
+    # Outs fill every remaining cell (the reserved rows included) and every
+    # open tail, allocated by quota over all of them at once. Equal-weight
+    # pieces are shuffled so layouts of the same chances differ.
+    for cell in reserved:
+        free[cell] = None
+    pieces = [(cell, 1) for cell in free]
+    pieces += [(cell, open_tail(cell)) for cell in placed if open_tail(cell) <= 20]
+    rng.shuffle(pieces)
+    pieces.sort(key=lambda p: -DICE_WEIGHTS[p[0][1]] * (21 - p[1]) / 20.0)
+    weights = [DICE_WEIGHTS[cell[1]] * (21 - lo) / 20.0 for cell, lo in pieces]
+    forced = {}
+    if card_type == "batter":
+        # the max-effort lineout: a reserved 1-chance row, else the largest
+        # out piece (a card with under one chance of outs)
+        if reserved:
+            forced[pieces.index((reserved[0], 1))] = _OutFlavors.MAX_LINEOUT
+        elif pieces:
+            forced[0] = _OutFlavors.MAX_LINEOUT
+    for (cell, lo), text in zip(pieces, flavors.allocate(weights, forced)):
+        if lo == 1:
+            assign_full(cell, text)
+        else:
+            placed[cell].append((text, lo, 20))
 
     # Build columns dict
     card_columns: dict[int, dict[int, list[Split]]] = {c: {} for c in columns}
@@ -926,35 +1133,45 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
 
     card = Card(name=name, card_type=card_type, team=team, year=year,
                 header_lines=header_lines, stats=stats, columns=card_columns)
-    _decorate(card, rng, profile)
+    _decorate(card, rng, profile, reserved[1] if len(reserved) > 1 else None)
     return card
 
 
-def _decorate(card: Card, rng: random.Random, profile: dict) -> None:
+def _decorate(card: Card, rng: random.Random, profile: dict,
+              injury_cell: tuple[int, int] | None) -> None:
     """Batter-card flourishes seen on every real card: exactly one
-    'plus injury' result, one max-effort lineout, and a speed-dependent
-    number of ++ groundouts (which favor the offense when the infield is
-    in or a runner is being held)."""
+    'plus injury' result and a speed-dependent number of ++ groundouts
+    (which favor the offense when the infield is in or a runner is being
+    held). The injury goes on its reserved 1-chance row (where real cards
+    put it: 17 of 22 on rows 2/12); without one, on the largest out split,
+    else a strikeout. ++ goes on groundball-A splits only, shortstop and
+    second base first (real cards: 51 of 54 on A grounders, all to ss/2b).
+    """
     if card.card_type != "batter":
         return
-    out_cells = [(col, d) for col, d, s in card.iter_splits()
-                 if s.category == OUT and s.lo == 1 and s.hi == 20]
-    if out_cells:
-        rare = min(out_cells, key=lambda cd: (DICE_WEIGHTS[cd[1]], cd[0]))
-        for split in card.columns[rare[0]][rare[1]]:
+    if injury_cell is None:
+        def size(item):
+            _col, d, s = item
+            return DICE_WEIGHTS[d] * s.fraction
+        splits = list(card.iter_splits())
+        outs = [x for x in splits if x[2].category == OUT and not _MAX_RE.search(x[2].text)]
+        strikeouts = [x for x in splits if x[2].category == SO]
+        pick = max(outs or strikeouts or [], key=size, default=None)
+        if pick is not None:
+            pick[2].injury = True
+    else:
+        for split in card.columns[injury_cell[0]][injury_cell[1]]:
             split.injury = True
-        remaining = [c for c in out_cells if c != rare]
-        if remaining:
-            col, d = rng.choice(remaining)
-            pos = rng.choice(["2b", "3b", "ss", "1b"])
-            card.columns[col][d] = [
-                Split(lo=1, hi=20,
-                      text=f"lineout ({pos}) into as many outs as possible")]
-    gb_splits = [s for _, _, s in card.iter_splits()
-                 if s.text.startswith("groundball") and not s.text.endswith("++")]
-    rng.shuffle(gb_splits)
-    for split in gb_splits[: profile.get("plus_plus", 0)]:
+    gb_a = [s for _, _, s in card.iter_splits()
+            if s.text.startswith("groundball") and s.text.endswith("A")]
+    rng.shuffle(gb_a)
+    gb_a.sort(key=lambda s: not s.text.startswith(("groundball (ss)",
+                                                   "groundball (2b)")))
+    for split in gb_a[: profile.get("plus_plus", 0)]:
         split.text += "++"
+
+
+_MAX_RE = re.compile(r"as many outs")
 
 
 # --- top-level API -----------------------------------------------------------

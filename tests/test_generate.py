@@ -287,3 +287,61 @@ def test_ryan_1972_strikeouts_match_the_real_card():
     league = db.league_batting(1972, stats["league"])
     targets, _ = pitcher_chance_targets(stats, league)
     assert targets[SO] == pytest.approx(46.1, abs=0.05)
+
+
+# --- out content and decorations -------------------------------------------------
+
+@pytest.mark.parametrize("pid,year,kind", [
+    ("mayswi01", 1965, "batter"), ("riceji01", 1984, "batter"),
+    ("colemvi01", 1987, "batter"), ("maddugr01", 1995, "pitcher"),
+    ("seaveto01", 1969, "pitcher")])
+def test_out_mix_is_allocated_not_drawn(pid, year, kind):
+    """Out types, letters and fielders are allocated by quota once every
+    out piece is known, so each card realizes its mix (and its profile's
+    groundball-A share) instead of scattering around it cell by cell."""
+    from stratogen.generate import _OutFlavors, hit_profile
+    from stratogen.model import DICE_WEIGHTS, OUT
+    if kind == "batter":
+        stats = db.batting_season(pid, year)
+        card = _card_for(pid, year)
+    else:
+        stats = db.pitching_season(pid, year)
+        card, _ = generate_pitcher_card(stats, db.league_batting(year, stats["league"]))
+    mix = dict(zip(_OutFlavors._TYPES, _OutFlavors._MIX[kind]))
+    got, gb = {}, {}
+    for _c, d, s in card.iter_splits():
+        if s.category == OUT:
+            w = DICE_WEIGHTS[d] * s.fraction
+            out_type = s.text.split()[0]
+            got[out_type] = got.get(out_type, 0.0) + w
+            if out_type == "groundball":
+                letter = s.text.rstrip("+")[-1]
+                gb[letter] = gb.get(letter, 0.0) + w
+    total = sum(got.values())
+    for t, share in mix.items():
+        assert got.get(t, 0.0) / total == pytest.approx(share / 100, abs=0.035), (t, got)
+    if kind == "batter":
+        assert set(gb) <= {"A", "B"}
+        assert gb.get("A", 0) / sum(gb.values()) == pytest.approx(
+            hit_profile(stats)["gb_a"], abs=0.05)
+    else:
+        assert "A" not in gb
+
+
+def test_decorations_sit_where_real_cards_put_them():
+    """Max-effort lineout on a 1-chance row (every real card puts it
+    there) and the injury on a light row, also on cards with no whole out row to spare
+    (Gallo 2019, Sano 2015, Cust 2007 used to lose one or both); ++ only on
+    groundball-A results."""
+    from stratogen.model import DICE_WEIGHTS
+    for pid, year in [("mayswi01", 1965), ("judgeaa01", 2024), ("gallojo01", 2019),
+                      ("sanomi01", 2015), ("custja01", 2007), ("colemvi01", 1987)]:
+        card = _card_for(pid, year)
+        maxlo = [d for _c, d, s in card.iter_splits() if "as many outs" in s.text]
+        injury = {(c, d) for c, d, s in card.iter_splits() if s.injury}
+        assert len(maxlo) == 1 and DICE_WEIGHTS[maxlo[0]] == 1, (pid, maxlo)
+        # real cards: injury on 1-chance rows 17 times of 22, else 2 or 3
+        assert len(injury) == 1 and DICE_WEIGHTS[next(iter(injury))[1]] <= 3, pid
+        for _c, _d, s in card.iter_splits():
+            if s.text.endswith("++"):
+                assert s.text[:-2].endswith("A"), s.text
