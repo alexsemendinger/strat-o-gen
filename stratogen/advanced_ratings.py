@@ -923,8 +923,9 @@ def advanced_batter_ratings(db: LahmanDB, player_id: str, year: int) -> dict:
             entry["passed_ball"] = catcher_passed_balls(db, player_id, year)
         positions.append(entry)
 
-    cs_missing = "CS" in (stats.get("missing") or [])
+    missing = stats.get("missing") or []
     has_batting = bool(stats.get("AB") or _pa(stats))
+    catcher = bool(positions) and positions[0]["pos"] == "C"
     return {
         "player_id": player_id,
         "year": year,
@@ -932,8 +933,9 @@ def advanced_batter_ratings(db: LahmanDB, player_id: str, year: int) -> dict:
         "positions": positions,
         "stealing": _ratings.stealing_rating(stats.get("SB", 0) or 0,
                                              stats.get("CS", 0) or 0,
-                                             cs_missing=cs_missing),
-        "running": _ratings.running_rating(stats),
+                                             cs_missing="CS" in missing,
+                                             sb_missing="SB" in missing),
+        "running": _ratings.running_rating(stats, catcher=catcher),
         "bunting": bunting_rating(db, stats) if has_batting else "C",
         "hit_and_run": hit_and_run_rating(db, stats) if has_batting else "C",
     }
