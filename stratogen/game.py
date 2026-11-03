@@ -317,13 +317,13 @@ STEAL_SUCCESS_SHIFT = {"AAA": 1.2, "AA": 0.95, "A": 0.5, "B": 0.2,
 # league-seasons — see tests/test_game.py and the README. "on base" is the
 # league's times on base per PA (hits less HR, BB, HBP, reached on error).
 STEAL_ATTEMPTS_PER_ARRIVAL = 1.28   # fresh arrivals at 1st per time on first
-RUNNERS_ON_BASE = (0.153, 0.986)    # P(runners on at a PA) = a + b * on base
-BUNT_SITUATION = (0.038, 0.154)     # P(0 out, on 1st/2nd, 3rd open) = a + b * on base
-IBB_SITUATION = (-0.041, 0.579)     # P(1st open, on 2nd/3rd) = a + b * on base
-ROE_SHARE = 0.70                    # share of league errors that put the batter on
+RUNNERS_ON_BASE = (0.146, 1.015)    # P(runners on at a PA) = a + b * on base
+BUNT_SITUATION = (0.035, 0.161)     # P(0 out, on 1st/2nd, 3rd open) = a + b * on base
+IBB_SITUATION = (-0.047, 0.618)     # P(1st open, on 2nd/3rd) = a + b * on base
+ROE_SHARE = 0.56    # share of league errors that put the batter on (fit to training runs)
 # Error odds of an X chance relative to an ordinary out reading, anchored
 # so 1993-2024 seasons average X_ERROR_RATE.
-X_ERROR_PROPENSITY = 2.1
+X_ERROR_PROPENSITY = 2.65
 # Lahman SH include sacrifice flies in these seasons; bunts are estimated as
 # SH minus SF_PER_RUN * R (the 1954-2024 league SF/R ratio).
 SF_IN_SH_YEARS = frozenset(range(1908, 1931)) | {1939}
@@ -334,7 +334,7 @@ SF_PER_RUN = 0.062
 # chart: the A share of X groundouts is X_DP_SHARE times the league-average
 # batter card's A share (so it follows the era's GIDP rate), with X_DP_SHARE
 # calibrated on training-season GIDP; B and C keep the printed 40/60 split.
-X_DP_SHARE = 0.50
+X_DP_SHARE = 0.38
 X_GROUND_B_SHARE = 0.40
 X_FLY_B_SHARE = 0.83
 # League GIDP / double plays turned, 1933-2024 (0.79-0.86 by era): estimates

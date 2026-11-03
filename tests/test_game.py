@@ -10,6 +10,7 @@ the sampled seasons below are held out. The full 1901-2024 sweep (248
 league-seasons, 30k half-innings each) is reported in the README.
 """
 
+import math
 import random
 
 import pytest
@@ -483,8 +484,8 @@ def season_rates():
 def test_run_scoring_matches_the_league_season(season_rates, year, lg):
     """Average lineups score within 9% of the real league's runs per nine
     innings, in every era. (The full 1901-2024 sweep at 30k half-innings
-    has all 248 league-seasons within 8%; the extra point here is the
-    sampling noise of this smaller run.)"""
+    has 247 of the 248 league-seasons within 8%, 1919 AL at +9%; the
+    extra point here is the sampling noise of this smaller run.)"""
     sim, real = season_rates[(year, lg)]
     assert sim["R"] / real["R"] == pytest.approx(1.0, abs=0.09), (year, lg)
 
@@ -503,11 +504,19 @@ def test_run_scoring_orders_eras_correctly(season_rates):
     assert rg[(1968, "AL")] < rg[(2001, "NL")] < rg[(1930, "AL")]
 
 
-# per-season tolerance (sampling noise of ~1300 games included) and the
+# per-season tolerance (sampling noise of ~1300 games included; never
+# tighter than three standard errors of the season's event count, which
+# matters for rare events such as modern sacrifice bunts) and the
 # tolerance for the totals over all sampled seasons
 EVENT_TOLERANCE = {"SB": (0.20, 0.05), "CS": (0.25, 0.06), "HBP": (0.25, 0.06),
-                   "E": (0.12, 0.04), "DP": (0.25, 0.08), "GIDP": (0.25, 0.10),
+                   "E": (0.12, 0.04), "DP": (0.25, 0.06), "GIDP": (0.25, 0.06),
                    "WP": (0.20, 0.05), "PB": (0.30, 0.08), "SH": (0.20, 0.06)}
+# Expected sim/real ratio where the engine is short by design. Double
+# plays turned: the engine turns DP grounders (calibrated on GIDP) and
+# max-effort lineouts, not the rest of real DPs (strike-'em-out-throw-'em-
+# out, liners and flies doubling a runner off, outfield assists), so it
+# runs ~11% below real (0.89-0.90 in the full sweep, train and held-out).
+EVENT_EXPECTED = {"DP": 0.89}
 
 
 @pytest.mark.parametrize("stat", sorted(EVENT_TOLERANCE))
@@ -516,16 +525,19 @@ def test_running_game_matches_the_league(season_rates, stat):
     pitches, passed balls and sacrifice hits per nine innings land near
     each league-season's real rate (where the league tracked the stat)."""
     per_season, pooled = EVENT_TOLERANCE[stat]
+    expected = EVENT_EXPECTED.get(stat, 1.0)
     sim_total = real_total = 0.0
     for (year, lg), (sim, real) in season_rates.items():
         if not real.get(stat):
             continue
-        assert sim.get(stat, 0) / real[stat] == pytest.approx(1, abs=per_season), \
+        noise = 3.0 / math.sqrt(real[stat] * HALF_INNINGS / 9.0)
+        assert sim.get(stat, 0) / real[stat] == pytest.approx(
+            expected, abs=max(per_season, noise)), \
             (stat, year, lg, sim.get(stat, 0), real[stat])
         sim_total += sim.get(stat, 0)
         real_total += real[stat]
     assert real_total > 0
-    assert sim_total / real_total == pytest.approx(1, abs=pooled), stat
+    assert sim_total / real_total == pytest.approx(expected, abs=pooled), stat
 
 
 # --- emergent: symbols and ratings actually matter in play ----------------------------
