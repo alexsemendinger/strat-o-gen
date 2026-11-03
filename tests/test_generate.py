@@ -209,3 +209,37 @@ def test_monte_carlo_agrees_with_exact_rates():
     counts = simulate_season(card, avg, num_pa=n, seed=42)
     for cat in (HR, WALK, SO):
         assert counts[cat] / n == pytest.approx(exact[cat], abs=0.004), cat
+
+
+# --- pitcher hit targets ---------------------------------------------------------
+
+@pytest.mark.parametrize("year,lg", [(1908, "NL"), (1930, "NL"), (1968, "AL"),
+                                     (2001, "NL"), (2024, "AL")])
+def test_league_average_pitcher_line_is_the_average_card(year, lg):
+    """A pitcher with exactly the league's line gets exactly the average
+    pitcher card: the X block's singles come out of the singles share
+    alone, so doubles and triples allowed keep the league mix (they used
+    to be scaled down ~25% along with the singles)."""
+    from stratogen.generate import pitcher_targets_from_rates
+    league = db.league_batting(year, lg)
+    targets = pitcher_targets_from_rates(
+        league["BB_per_PA"], league["K_per_PA"], league["HR_per_PA"],
+        league["H_per_PA"], league, [])
+    for cat, value in average_pitcher_chances(league).items():
+        assert targets[cat] == pytest.approx(value, abs=1e-6), cat
+
+
+def test_dominant_reliever_x_block_never_adds_hits():
+    """Brandon Workman 2019 allowed 29 hits in 71.2 IP, fewer than the 30
+    X chances' own singles: the block shrinks so it can't add hits he
+    never allowed (39 in play before), and one quantified warning says
+    how far above his line the card's floor still is."""
+    stats = db.pitching_season("workmbr01", 2019)
+    league = db.league_batting(2019, stats["league"])
+    card, warnings = generate_pitcher_card(stats, league)
+    assert card.chances()["X"] < 30
+    hit_warnings = [w for w in warnings if "hits allowed" in w]
+    assert len(hit_warnings) == 1 and "% of PA high" in hit_warnings[0]
+    err = score_pitcher_card(card, stats, league)
+    floor = league["H_per_PA"] / 2 - stats["H"] / (stats["TBF"] - stats["IBB"])
+    assert err["H_per_PA"] == pytest.approx(floor, abs=0.002)

@@ -44,6 +44,8 @@ from . import platoon, ratings
 
 # Smallest chance worth placing: a 1-in-20 split of a weight-1 row is 0.05.
 _EPSILON = 0.026
+# Smallest miss worth a warning, per PA: anything less prints as "~0.0%".
+_WARN_PER_PA = 0.001
 
 
 def _deviation(player_rate: float, league_rate: float) -> tuple[float, float]:
@@ -154,13 +156,14 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
 
 def pitcher_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     warnings = []
-    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, warnings)
+    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, league, warnings)
     targets = pitcher_targets_from_rates(rate_bb, rate_k, rate_hr, rate_h,
                                          league, warnings)
     return targets, warnings
 
 
-def _pitching_rates(stats: dict, warnings: list[str]) -> tuple[float, ...]:
+def _pitching_rates(stats: dict, league: dict,
+                    warnings: list[str]) -> tuple[float, ...]:
     """(BB, SO, HR, H) per effective batter faced; warns about estimated
     or small samples."""
     tbf = stats.get("TBF", 0)
@@ -208,37 +211,51 @@ def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
 
     # Total hits the card must yield, X-chart singles included.
     total_hits, d_h = _deviation(rate_h, league["H_per_PA"])
-    if d_h > _EPSILON:
+    if d_h / 216 >= _WARN_PER_PA:
         warnings.append(
-            "hits allowed will run high: pitcher allows far fewer hits than "
-            "league average and the card can't go negative")
+            f"hits allowed will run ~{d_h / 216:.1%} of PA high: pitcher allows "
+            f"far fewer hits than league average and the card can't go negative")
 
-    # The X block is normally 30 chances, but an extreme card (e.g. a modern
-    # strikeout reliever) may not have room; shrink it before resorting to
-    # scaling. Each X chance costs (1 - X_SINGLE_RATE) of capacity beyond the
-    # hit total it absorbs.
+    # The X block is normally 30 chances, but an extreme card may not have
+    # room for it: a modern strikeout reliever's line can overflow the card
+    # (each X chance costs 1 - X_SINGLE_RATE of capacity beyond the hits it
+    # absorbs), and a pitcher who allowed fewer hits than the block's own
+    # X_SINGLE_RATE singles can't carry all 30 without allowing hits he
+    # never did. Shrink it before resorting to scaling.
     committed = targets[WALK] + targets[SO] + total_hits
-    x_room = (CHANCES_PER_CARD - committed) / (1.0 - X_SINGLE_RATE)
-    x_block = max(0, min(X_CHANCES_PER_PITCHER_CARD, int(x_room)))
+    x_room = int((CHANCES_PER_CARD - committed) / (1.0 - X_SINGLE_RATE))
+    x_hit_room = int(total_hits / X_SINGLE_RATE + 1e-9)
+    x_block = max(0, min(X_CHANCES_PER_PITCHER_CARD, x_room, x_hit_room))
     if x_block < X_CHANCES_PER_PITCHER_CARD:
+        why = ("to fit the card" if x_room <= x_hit_room else
+               "so its singles don't exceed the hits he allowed")
         warnings.append(
             f"extreme stat line: X-chart block reduced to {x_block} chances "
-            f"(normally {X_CHANCES_PER_PITCHER_CARD}) to fit the card")
+            f"(normally {X_CHANCES_PER_PITCHER_CARD}) {why}")
     x_hits = x_block * X_SINGLE_RATE
-    regular_hits = total_hits - x_hits
-    if regular_hits < 0:
-        warnings.append("dominant pitcher: X-chart hits alone exceed the hit "
-                        "target; hits allowed will run slightly high")
-        regular_hits = 0.0
+    regular_hits = total_hits - x_hits          # >= 0 by the cap above
     if targets[HR] > regular_hits:
+        trimmed = targets[HR] - regular_hits
         targets[HR] = regular_hits
-        warnings.append("HR chances trimmed to fit hit total")
-    # 2B/3B allowed aren't tracked historically; use the league's non-HR hit mix.
-    non_hr = regular_hits - targets[HR]
+        if trimmed / 216 >= _WARN_PER_PA:
+            warnings.append(
+                f"home runs allowed will run ~{trimmed / 216:.1%} of PA low: "
+                f"the card's hit total can't hold them all")
+    # 2B/3B allowed aren't tracked historically, so every non-HR hit the
+    # card yields (X-chart singles included) follows the league's 1B/2B/3B
+    # mix; the X block only ever yields singles, so its hits come out of
+    # the singles share alone (a league-average line reproduces
+    # average_pitcher_chances exactly).
+    non_hr = total_hits - targets[HR]
     lg_non_hr = league["1B_per_PA"] + league["2B_per_PA"] + league["3B_per_PA"]
-    targets[SINGLE] = non_hr * (league["1B_per_PA"] / lg_non_hr)
+    targets[SINGLE] = non_hr * (league["1B_per_PA"] / lg_non_hr) - x_hits
     targets[DOUBLE] = non_hr * (league["2B_per_PA"] / lg_non_hr)
     targets[TRIPLE] = non_hr * (league["3B_per_PA"] / lg_non_hr)
+    for cat in (DOUBLE, TRIPLE):   # too few singles for the X block's hits
+        take = min(targets[cat], max(0.0, -targets[SINGLE]))
+        targets[cat] -= take
+        targets[SINGLE] += take
+    targets[SINGLE] = max(0.0, targets[SINGLE])
     if weak_share > 0:
         _amplify_n_hr(targets, rate_hr, league, weak_share, warnings)
 
@@ -520,7 +537,7 @@ def generate_advanced_pitcher_card(
     the matchup's real mix of N and W batters. Returns (card, warnings).
     """
     warnings = []
-    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, warnings)
+    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, league, warnings)
     ctx = context or platoon.league_context(league)
     hand = platoon.throwing_hand(throws or _lahman_hand(stats, "throws"))
     if hand == "?":
