@@ -5,21 +5,78 @@ Usage:
     python generate_card.py "Willie Mays" 1965
     python generate_card.py "Nolan Ryan" 1972 --pitcher
     python generate_card.py "Tom Seaver" 1969 --pitcher --html seaver.html
+    python generate_card.py "Aaron Judge" 2024 --advanced
+    python generate_card.py "Aaron Judge" 2024 --advanced --json judge.json
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 
-from stratogen.card_text import render_card
+from stratogen import platoon
+from stratogen.benchmark import (
+    advanced_batter_rates, advanced_pitcher_rates, advanced_sides,
+)
+from stratogen.card_json import advanced_card_to_json
+from stratogen.card_text import render_advanced_card, render_card
 from stratogen.fielding import position_ratings, rate_position
 from stratogen.generate import (
     average_batter_chances, average_pitcher_chances,
+    generate_advanced_batter_card, generate_advanced_pitcher_card,
     generate_batter_card, generate_pitcher_card,
 )
 from stratogen.lahman import default_db
+from stratogen.model import HBP, HR, SO, WALK
 from stratogen.render import CARD_CSS, accuracy_rows, card_to_html
+from stratogen.simulate import (
+    actual_batting_rates, actual_pitching_rates, derived_stats,
+)
+
+
+def _advanced(args, db, hit) -> int:
+    """Print the advanced (platoon) side and its accuracy."""
+    if args.pitcher:
+        stats = db.pitching_season(hit.player_id, args.year)
+        league = db.league_batting(args.year, stats["league"])
+        card, warnings = generate_advanced_pitcher_card(
+            stats, league,
+            fielding_rating=rate_position(db, hit.player_id, args.year, "P") or 3)
+        ctx = platoon.league_context(league)
+        implied = derived_stats(advanced_pitcher_rates(
+            advanced_sides(card), card.hand, ctx))
+        actual = actual_pitching_rates(stats)
+        rows = [("Hits per batter faced", "H_per_PA"), ("HR per batter faced", HR),
+                ("BB per batter faced", WALK), ("SO per batter faced", SO)]
+    else:
+        stats = db.batting_season(hit.player_id, args.year)
+        league = db.league_batting(args.year, stats["league"])
+        card, warnings = generate_advanced_batter_card(
+            stats, league,
+            position_ratings=position_ratings(db, hit.player_id, args.year))
+        ctx = platoon.league_context(league)
+        implied = derived_stats(advanced_batter_rates(
+            advanced_sides(card), card.hand, ctx))
+        actual = derived_stats(actual_batting_rates(stats))
+        rows = [("Batting average", "BA"), ("HR per PA", HR),
+                ("BB per PA", WALK), ("SO per PA", SO), ("HBP per PA", HBP)]
+
+    print(render_advanced_card(card))
+    if warnings:
+        print("Warnings:")
+        for w in warnings:
+            print(f"  - {w}")
+        print()
+    print("Card accuracy (actual season vs what the two grids produce, "
+          "weighted by their shares):")
+    for label, key in rows:
+        print(f"  {label:<26} {actual[key]:>8.3f}  ->  {implied[key]:>8.3f}")
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as fh:
+            json.dump(advanced_card_to_json(card), fh, indent=1)
+        print(f"\nJSON card written to {args.json}")
+    return 0
 
 
 def main() -> int:
@@ -28,8 +85,13 @@ def main() -> int:
     parser.add_argument("year", type=int, help="season year, e.g. 1927")
     parser.add_argument("--pitcher", action="store_true",
                         help="generate a pitcher card (default: batter)")
+    parser.add_argument("--advanced", action="store_true",
+                        help="generate the advanced side (L/R platoon grids)")
     parser.add_argument("--html", metavar="FILE",
-                        help="also write an HTML rendering to FILE")
+                        help="also write an HTML rendering to FILE (basic side)")
+    parser.add_argument("--json", metavar="FILE",
+                        help="with --advanced: also write the card as JSON "
+                             "(transcription schema) to FILE")
     args = parser.parse_args()
 
     db = default_db()
@@ -47,6 +109,8 @@ def main() -> int:
         print("Be more specific (full name).", file=sys.stderr)
         return 1
     hit = hits[0]
+    if args.advanced:
+        return _advanced(args, db, hit)
 
     if args.pitcher:
         stats = db.pitching_season(hit.player_id, args.year)

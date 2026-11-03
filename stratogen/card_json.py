@@ -9,17 +9,18 @@ percentage). The schema also captures situational marker glyphs and a
 larger token vocabulary. See data/real_cards/transcriptions/SYMBOLS.md.
 
 This module is the import layer: it normalizes that foreign vocabulary
-(`SI*` -> `SINGLE*`, `gb (ss) A` -> `groundball (ss)A`, `N-HR` -> `HOMERUN`,
-strips marker glyphs / `?` / `plus injury`) into our canonical `Card`
-model so the same statistical tester and benchmark apply. The JSON files
-remain the verbatim source of truth; the `Card` objects are a derived view.
+(`SI*` -> `SINGLE*`, `gb (ss) A` -> `groundball (ss)A`, `HR` -> `HOMERUN`,
+`N-HR` kept as `N-HR`, strips marker glyphs / `?` / `plus injury`) into our
+canonical `Card` model so the same statistical tester and benchmark apply.
+The JSON files remain the verbatim source of truth; the `Card` objects are
+a derived view.
 
-Platoon generation is NOT implemented (cards are basic-game style). For an
-advanced side we still get a benchmarkable quantity for free: the
-percentage-weighted average of the two platoon grids' chances equals the
-player's overall expected per-PA rates, and the tester accepts a chances
-dict. So advanced-only cards (the unofficial pitchers, McDaniel) can still
-be scored without building platoon support.
+For an advanced side, the percentage-weighted average of the two platoon
+grids' chances equals the player's overall expected card content
+(combined_chances); stratogen.benchmark also scores each grid against its
+own matchup (transcription_sides). It is also the export layer for
+generated advanced cards: advanced_card_to_json writes the same 6col
+schema, so a generated card loads back through this module.
 """
 
 from __future__ import annotations
@@ -29,7 +30,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .model import Card, Split, CATEGORIES, categorize
+from .model import AdvancedCard, Card, Split, CATEGORIES, categorize
 
 TRANSCRIPTIONS_DIR = (
     Path(__file__).resolve().parent.parent / "data" / "real_cards" / "transcriptions")
@@ -78,7 +79,9 @@ def parse_result(token: str) -> tuple[str, bool]:
         stars = ms.group(1)
         up = t[: ms.start()].upper().strip()
 
-    if up.startswith("HOMERUN") or "HR" in up:        # HR, N-HR, HOMERUN
+    if up.startswith("N-HR"):                         # pitcher-card N-HR
+        return "N-HR", injury
+    if up.startswith("HOMERUN") or "HR" in up:        # HR, HOMERUN
         return "HOMERUN", injury
     if up.startswith(("TR", "TRIPLE")):
         return "TRIPLE", injury
@@ -262,6 +265,67 @@ def combined_chances(card: Transcription) -> dict[str, float] | None:
         for cat, value in c.chances().items():
             combined[cat] += weight * value
     return combined
+
+
+# --- export (generated advanced cards) ----------------------------------------
+
+def _range_text(lo: int, hi: int) -> str:
+    return f"{lo}" if lo == hi else f"{lo}-{hi}"
+
+
+def _cell_json(dice_sum: int, splits: list[Split]) -> dict:
+    outcomes = []
+    for s in splits:
+        result = s.text + (" plus injury" if s.injury else "")
+        rng = None if (s.lo, s.hi) == (1, 20) else [s.lo, s.hi]
+        outcomes.append({"range": rng, "result": result})
+    if len(outcomes) == 1 and outcomes[0]["range"] is None:
+        raw = outcomes[0]["result"]
+    else:
+        raw = " / ".join(f"{o['result']} {_range_text(*o['range'])}"
+                         for o in outcomes)
+    return {"roll": dice_sum, "raw": raw, "outcomes": outcomes}
+
+
+def advanced_card_to_json(card: AdvancedCard) -> dict:
+    """Serialize a generated AdvancedCard to the transcription schema of a
+    `*_6col.json` side, so load_transcriptions() reads it back like any
+    real advanced card. Marked "official": false and "generated": true."""
+    batter = card.card_type == "batter"
+    words = card.name.lower().split()
+    slug = "-".join(reversed(words)) if words else "unknown"
+    player = {"name": card.name, "bats": card.hand if batter else None,
+              "throws": None if batter else card.hand, "team": card.team,
+              "year": card.year, "cardNumber": None,
+              "specialDesignation": None}
+    ratings: dict = {"headerLines": list(card.header_lines)}
+    if batter:
+        ratings["power"] = {f"vs{s.vs[0]}": s.power for s in card.sides}
+    grids = []
+    for side in card.sides:
+        grid = {"vs": side.vs, "percent": side.percent}
+        if batter:
+            grid["power"] = side.power
+        grid["columns"] = [
+            {"col": col, "cells": [_cell_json(d, side.card.columns[col][d])
+                                   for d in sorted(side.card.columns[col])]}
+            for col in sorted(side.card.columns)]
+        grids.append(grid)
+    return {
+        "cardId": f"{card.card_type}_{slug}_{card.year or 'undated'}",
+        "sourceImage": None,
+        "cardType": card.card_type,
+        "side": "6col",
+        "official": False,
+        "generated": True,
+        "player": player,
+        "ratings": ratings,
+        "grids": grids,
+        "statRecord": None,
+        "transcription": {"confidence": "generated", "uncertainCells": [],
+                          "notes": "Generated by stratogen from the season "
+                                   "line and league platoon norms."},
+    }
 
 
 # --- stat records ------------------------------------------------------------
