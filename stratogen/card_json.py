@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from .model import AdvancedCard, Card, Split, CATEGORIES, categorize
@@ -40,78 +40,101 @@ TRANSCRIPTIONS_DIR = (
 _MARKER_PREFIX = re.compile(r"^[◆▼△Ω●\s]+")  # ◆▼△Ω● + ws
 _TRAIL_GLYPH = re.compile(r"[●?]")                               # ● ?
 _INJURY = re.compile(r"\bplus\s+injury\b", re.I)
-_PAREN = re.compile(r"\(([^)]*)\)")
-_TRAIL_STARS = re.compile(r"(\*+)\s*$")
-_CLASS = re.compile(r"\)\s*([ABC]\+*)", re.I)
+
+# Each token family is matched by one anchored pattern that must consume the
+# whole token (after the glyphs and "plus injury" are stripped); a token no
+# pattern accepts is rejected rather than guessed at.
+_LOC = r"(?:\s*\(\s*(?P<pos>[^()]*?)\s*\))?"          # optional (fielder)
+_CATCHER_RE = re.compile(r"^CATCH(?:ER'?S?)?(?:\s+CARD)?[\s-]*X$", re.I)
+_NHR_RE = re.compile(r"^N-?HR$", re.I)
+_HIT_RE = re.compile(
+    r"^(?P<kind>SINGLE|SI|DOUBLE|DO|TRIPLE|TR|HOMERUN|HOME\s+RUN|HR)"
+    r"(?P<stars>\**)" + _LOC + r"\s*(?P<stars2>\**)$", re.I)
+_WALK_RE = re.compile(r"^WALK(?P<stars>\**)$", re.I)
+_HBP_RE = re.compile(r"^(?:HBP|HIT\s+BY\s+PITCH)$", re.I)
+_STRIKEOUT_RE = re.compile(r"^STRIKE\s*OUT$", re.I)
+_OUT_RE = re.compile(
+    r"^(?P<kind>GROUND[-\s]?BALL|GB|FLY[-\s]?BALL|FLY|LINE[-\s]?OUT|LO"
+    r"|POP[-\s]?OUT|FOUL[-\s]?OUT)" + _LOC +
+    r"\s*(?P<cls>[ABC]\+*)?"
+    r"\s*(?P<max>max|into\s+as\s+many\s+outs\s+as\s+possible)?"
+    r"\s*(?P<x>X)?$", re.I)
+
+_HIT_KINDS = {"SI": "SINGLE", "SINGLE": "SINGLE", "DO": "DOUBLE",
+              "DOUBLE": "DOUBLE", "TR": "TRIPLE", "TRIPLE": "TRIPLE",
+              "HR": "HOMERUN", "HOMERUN": "HOMERUN", "HOME RUN": "HOMERUN"}
+_STARRED_HITS = ("SINGLE", "DOUBLE")       # stars move runners; kept on these
+_OUT_KINDS = {"GB": "groundball", "GROUNDBALL": "groundball",
+              "FLY": "flyball", "FLYBALL": "flyball",
+              "LO": "lineout", "LINEOUT": "lineout",
+              "POPOUT": "popout", "FOULOUT": "foulout"}
+_MAX_TAIL = " into as many outs as possible"
+
+
+def _normalize(token: str) -> str | None:
+    """Canonical text for a stripped token, or None if unrecognized."""
+    if _CATCHER_RE.match(token):
+        return "CATCHER'S CARD X"
+    if _NHR_RE.match(token):
+        return "N-HR"
+    m = _HIT_RE.match(token)
+    if m:
+        kind = _HIT_KINDS[re.sub(r"\s+", " ", m["kind"].upper())]
+        stars = (m["stars"] + m["stars2"]) if kind in _STARRED_HITS else ""
+        return f"{kind}{stars}" + (f" ({m['pos']})" if m["pos"] else "")
+    m = _WALK_RE.match(token)
+    if m:
+        return f"WALK{m['stars']}"
+    if _HBP_RE.match(token):
+        return "HBP"
+    if _STRIKEOUT_RE.match(token):
+        return "strikeout"
+    m = _OUT_RE.match(token)
+    if m:
+        kind = _OUT_KINDS[re.sub(r"[-\s]", "", m["kind"].upper())]
+        pos = f" ({m['pos']})" if m["pos"] else ""
+        if m["x"]:                                 # fielding-chart chance
+            if m["cls"] or m["max"]:
+                return None
+            return f"{kind.upper()}{pos} X"
+        if m["cls"] and kind not in ("groundball", "flyball"):
+            return None
+        if m["max"] and kind != "lineout":
+            return None
+        return (f"{kind}{pos}{(m['cls'] or '').upper()}"
+                + (_MAX_TAIL if m["max"] else ""))
+    return None
 
 
 def parse_result(token: str) -> tuple[str, bool]:
     """Normalize one transcribed outcome token to canonical card text.
 
-    Returns (canonical_text, injury_flag). The canonical text always
-    classifies under stratogen.model.categorize.
+    Returns (canonical_text, injury_flag); raises ValueError for a token
+    outside the known vocabulary. The canonical text always classifies
+    under stratogen.model.categorize. Mappings:
+
+    - hits: `SI*` -> `SINGLE*`, `DO**` -> `DOUBLE**`, `TR` -> `TRIPLE`,
+      `HR` -> `HOMERUN`; a printed hit location is kept after the stars
+      (`SINGLE** (lf)`, `DOUBLE (cf)`); stars are kept on singles, doubles
+      and walks only. `N-HR` stays `N-HR`.
+    - outs: `gb (ss) a+` -> `groundball (ss)A+`, `fly (lf) B` ->
+      `flyball (lf)B`, `lo (2b)` -> `lineout (2b)`, and the max-effort
+      `lo (2b) max` -> `lineout (2b) into as many outs as possible`.
+    - X chances: `GB (ss) X` -> `GROUNDBALL (ss) X`, `FLY (lf) X` ->
+      `FLYBALL (lf) X`; `CATCH-X` -> `CATCHER'S CARD X`.
+    - dropped (still verbatim in the JSON): leading marker glyphs
+      (◆▼△Ω●), the `?` and `●` marks, and `plus injury` (returned as the
+      flag).
     """
     t = _MARKER_PREFIX.sub("", token)
-    t = _TRAIL_GLYPH.sub("", t).strip()
+    t = _TRAIL_GLYPH.sub("", t)
     injury = bool(_INJURY.search(t))
-    t = _INJURY.sub("", t).strip()
-    up = t.upper()
-
-    # X-chart / catcher results (defense-resolved). Match X only as its own
-    # token (preceded by ')', whitespace, or '-') so words like "max" don't
-    # register as fielding-chart chances.
-    if "CATCHER'S CARD" in up:
-        return "CATCHER'S CARD X", injury
-    if re.search(r"[)\s-]X$", up):
-        pos = _PAREN.search(t)
-        if up.startswith(("GB", "GROUND")):
-            kind = "GROUNDBALL"
-        elif up.startswith("FLY"):
-            kind = "FLYBALL"
-        else:
-            kind = "CATCH"
-        return (f"{kind} ({pos.group(1)}) X" if pos else f"{kind} X"), injury
-
-    # trailing advancement stars belong to hits/walks
-    stars = ""
-    ms = _TRAIL_STARS.search(t)
-    if ms:
-        stars = ms.group(1)
-        up = t[: ms.start()].upper().strip()
-
-    if up.startswith("N-HR"):                         # pitcher-card N-HR
-        return "N-HR", injury
-    if up.startswith("HOMERUN") or "HR" in up:        # HR, HOMERUN
-        return "HOMERUN", injury
-    if up.startswith(("TR", "TRIPLE")):
-        return "TRIPLE", injury
-    if up.startswith(("DO", "DOUBLE")):
-        return f"DOUBLE{stars}", injury
-    if up.startswith(("SI", "SINGLE")):
-        return f"SINGLE{stars}", injury
-    if up.startswith("WALK"):
-        return f"WALK{stars}", injury
-    if up.startswith("HBP"):
-        return "HBP", injury
-    if up.startswith("STRIKEOUT"):
-        return "strikeout", injury
-
-    pos = _PAREN.search(t)
-    pos_str = f" ({pos.group(1)})" if pos else ""
-    if up.startswith(("GB", "GROUNDBALL", "GROUND-BALL", "GROUND BALL")):
-        cls = _CLASS.search(t)
-        return f"groundball{pos_str}{cls.group(1) if cls else ''}", injury
-    if up.startswith(("FLY", "FLYBALL")):
-        cls = _CLASS.search(t)
-        return f"flyball{pos_str}{cls.group(1) if cls else ''}", injury
-    if up.startswith(("LO", "LINEOUT")):
-        tail = " into as many outs as possible" if "as many outs" in t.lower() else ""
-        return f"lineout{pos_str}{tail}", injury
-    if up.startswith("POPOUT"):
-        return f"popout{pos_str}", injury
-    if up.startswith("FOULOUT"):
-        return f"foulout{pos_str}", injury
-    raise ValueError(f"unrecognized transcribed token: {token!r}")
+    t = re.sub(r"\s+", " ", _INJURY.sub("", t)).strip()
+    text = _normalize(t)
+    if text is None:
+        raise ValueError(f"unrecognized transcribed token: {token!r}")
+    categorize(text)              # the guarantee above; raises if broken
+    return text, injury
 
 
 # --- data model --------------------------------------------------------------
@@ -353,8 +376,7 @@ def stat_record(side: Side | None) -> dict:
         if key is None:
             continue
         if isinstance(value, str):
-            v = value.strip().lstrip("0") or "0" if value.strip().startswith(".") \
-                else value.strip()
+            v = value.strip()
             try:
                 value = float(v) if "." in v else int(v)
             except ValueError:

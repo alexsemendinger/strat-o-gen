@@ -87,17 +87,60 @@ def test_every_token_normalizes_and_categorizes():
 
 
 def test_token_categories_are_sane():
-    # a few hand-checked mappings across the abbreviated vocabulary
+    # hand-checked mappings across the abbreviated vocabulary: the exact
+    # canonical text (so dropped detail can't hide behind the right
+    # category) and its category
     cases = {
-        "SI*": "1B", "SI**": "1B", "DO": "2B", "DO**": "2B", "TR": "3B",
-        "HR": "HR", "N-HR": "HR", "WALK": "BB", "HBP plus injury": "HBP",
-        "strikeout ●": "SO", "gb (ss) A": "OUT", "fly (rf) B?": "OUT",
-        "lo (2b) max": "OUT", "GB (ss) X": "X", "GROUND-BALL(p)X": "X",
-        "CATCH-X": "X", "CATCHER'S CARD X": "X", "▼SINGLE (lf)": "1B",
+        "SI*": ("SINGLE*", "1B"), "SI**": ("SINGLE**", "1B"),
+        "DO": ("DOUBLE", "2B"), "DO**": ("DOUBLE**", "2B"),
+        "TR": ("TRIPLE", "3B"), "HR": ("HOMERUN", "HR"),
+        "N-HR": ("N-HR", "HR"), "WALK": ("WALK", "BB"),
+        "HBP plus injury": ("HBP", "HBP"), "strikeout ●": ("strikeout", "SO"),
+        "gb (ss) A": ("groundball (ss)A", "OUT"),
+        "fly (rf) B?": ("flyball (rf)B", "OUT"),
+        "lo (2b) max": ("lineout (2b) into as many outs as possible", "OUT"),
+        "GB (ss) X": ("GROUNDBALL (ss) X", "X"),
+        "GROUND-BALL(p)X": ("GROUNDBALL (p) X", "X"),
+        "CATCH-X": ("CATCHER'S CARD X", "X"),
+        "CATCHER'S CARD X": ("CATCHER'S CARD X", "X"),
+        "▼SINGLE (lf)": ("SINGLE (lf)", "1B"),
+        # fragile spellings: stars before a location, lowercase class,
+        # lineout X chances
+        "SINGLE** (lf)": ("SINGLE** (lf)", "1B"),
+        "SI*(cf)": ("SINGLE* (cf)", "1B"),
+        "DOUBLE(cf)": ("DOUBLE (cf)", "2B"),
+        "gb (ss) a+": ("groundball (ss)A+", "OUT"),
+        "lo (ss) X": ("LINEOUT (ss) X", "X"),
     }
-    for token, expected in cases.items():
+    for token, (canonical, category) in cases.items():
         text, _ = cj.parse_result(token)
-        assert categorize(text) == expected, (token, text)
+        assert text == canonical, token
+        assert categorize(text) == category, (token, text)
+
+
+def test_unknown_tokens_are_rejected_not_guessed():
+    # 'HR' matches only as the whole kind word, so this isn't a homer
+    for token in ("fly (rf) THRU", "SIN", "gb (ss) A max", "K"):
+        with pytest.raises(ValueError):
+            cj.parse_result(token)
+
+
+def test_max_effort_lineouts_keep_their_tail():
+    """`lo (x) max` is the advanced side's spelling of the max-effort
+    lineout: it must import as one, so every batter grid (basic and both
+    platoon grids) carries exactly one, like the 3col long form."""
+    assert cj.parse_result("lo (2b) max") == (
+        "lineout (2b) into as many outs as possible", False)
+    assert cj.parse_result("lo(3b) max plus injury") == (
+        "lineout (3b) into as many outs as possible", True)
+    for cid, card in CARDS.items():
+        if card.card_type != "batter":
+            continue
+        for side in card.sides:
+            for grid in side.grids:
+                gc = cj._grid_card(side, grid, card.name)
+                n = sum("as many outs" in s.text for _c, _d, s in gc.iter_splits())
+                assert n == 1, (cid, side.side, grid.get("vs"))
 
 
 def test_injury_flag_parsed():
