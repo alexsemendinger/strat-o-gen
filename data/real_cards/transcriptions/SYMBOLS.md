@@ -17,7 +17,8 @@ to be transcribed separately).
   **fielding chart** for the fielder in parentheses; outcome depends on that
   fielder's 1-5 rating. **Modeled** as a defense-resolved chance (league-avg
   defense in the tester).
-- `CATCHER'S CARD X` / `CATCH-X` — defer to the catcher's fielding card.
+- `CATCHER'S CARD X` / `CATCH-X` — defer to the catcher's fielding card
+  (`CATCH-X` imports as `CATCHER'S CARD X`).
   Treated as an X-chance.
 
 ## Advancement / hit modifiers (understood)
@@ -40,18 +41,22 @@ to be transcribed separately).
   (see the README's *Advanced (platoon) cards*). Kept as `N-HR` on import.
 
 ## Situational marker glyphs (inferred; recorded, not modeled)
-These print *before the roll number* on the advanced (6col) side, attached to
-a cell that has a normal result **plus** an alternate d20 split. Our reading
-(consistent with the data: the alternate almost always turns contact into a
-single) is that they are **situational/clutch alternate readings** — the
-normal result applies by default, the alternate fires under a specific
-managerial situation (hit-and-run, runners going, infield in, etc.). The
-generator uses the default result and preserves the alternate verbatim in
-the JSON. Exact trigger per glyph is **unconfirmed**:
-- `◆` diamond
-- `▼` downTriangle
-- `△` upTriangle
-- `Ω` omega
+These print *before the roll number* on the advanced (6col) side. What the
+cells actually hold differs by glyph:
+- `△` upTriangle — the only glyph whose cells carry a normal result **plus**
+  an alternate d20 split. Our reading (the alternate almost always turns
+  contact into a single) is a situational/clutch alternate: the normal
+  result applies by default, the alternate under a managerial situation
+  (hit-and-run, runners going, infield in, ...). The importer uses the
+  default; in 9 cells the transcription lists only the alternate under
+  `outcomes`, and the default is recovered from `raw`
+  (`card_json._cell_splits`).
+- `◆` diamond — plain d20 splits or single results (often home-run /
+  flyball splits; possibly ballpark-related). Imported as printed.
+- `▼` downTriangle and `Ω` omega — single results (mostly located
+  singles such as `SINGLE (lf)`). Imported as printed.
+The exact trigger per glyph is **unconfirmed**; the alternate readings stay
+verbatim in the JSON.
 
 ## Other cell marks (recorded, not modeled)
 - `●` bullet — after some `strikeout` / `popout` results. Meaning unconfirmed
