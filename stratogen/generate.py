@@ -18,19 +18,29 @@ The lost deficit is redistributed within hit categories to preserve the
 total hit rate (and therefore BA); deficits in BB/SO can't be compensated
 and are warned about — official SOM cards have the same limitation (a
 never-strikes-out player still eats the pitcher card's strikeouts).
+
+Advanced (platoon) cards apply the same formula per matchup grid, with
+matchup rates and the player's split from stratogen.platoon, plus two
+advanced-game rules: Power-W batters read the pitcher grid's N-HR as
+singles (their own grid carries all their homers, so W never clamps), and
+batter grids carry HBP as whole chances. The same target code serves
+both: batter_targets_from_rates / pitcher_targets_from_rates.
 """
 
 from __future__ import annotations
 
 import random
+import re
 
 from .model import (
-    Card, Split, DICE_WEIGHTS, CHANCES_PER_CARD,
+    AdvancedCard, Card, PlatoonSide, Split, DICE_WEIGHTS, CHANCES_PER_CARD,
     BATTER_COLUMNS, PITCHER_COLUMNS, X_CHANCES_PER_PITCHER_CARD,
-    HR, TRIPLE, DOUBLE, SINGLE, WALK, SO, OUT, XCHANCE,
+    HR, TRIPLE, DOUBLE, SINGLE, WALK, HBP, SO, OUT, XCHANCE,
 )
-from .simulate import X_SINGLE_RATE, effective_pa, hits_from_stats
-from . import ratings
+from .simulate import (
+    X_SINGLE_RATE, actual_batting_rates, effective_pa, hits_from_stats,
+)
+from . import platoon, ratings
 
 # Smallest chance worth placing: a 1-in-20 split of a weight-1 row is 0.05.
 _EPSILON = 0.026
@@ -67,6 +77,31 @@ def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
         TRIPLE: league["3B_per_PA"], DOUBLE: league["2B_per_PA"],
         SINGLE: league["1B_per_PA"],
     }
+    return batter_targets_from_rates(rate, league_rate, warnings), warnings
+
+
+def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str],
+                              *, weak_power: bool = False,
+                              hbp_chances: int = 0,
+                              overflow: list | None = None) -> dict:
+    """Chance targets for one batter grid from per-PA rates.
+
+    Shared by the basic card and each advanced platoon side. `rate` and
+    `league_rate` map WALK/SO/HR/TRIPLE/DOUBLE/SINGLE to per-PA rates
+    (league_rate = what the opposing average pitcher grid supplies).
+    Warnings are appended to `warnings`; if the line overflows the card,
+    the excess chances are appended to `overflow` (when given).
+
+    `weak_power` (advanced Power-W): the opposing pitcher grid's N-HR
+    chances read as SINGLE** for this batter, so his own grid carries all
+    his home runs (2 * rate * 108, no league subtraction — never clamps)
+    and the pitcher's HR chances count against his singles.
+    `hbp_chances` (advanced batter sides): whole HBP chances placed as-is.
+    """
+    if weak_power:
+        league_rate = dict(league_rate)
+        league_rate[SINGLE] = league_rate[SINGLE] + league_rate[HR]
+        league_rate[HR] = 0.0
     targets, deficits = {}, {}
     for cat in (WALK, SO, HR, TRIPLE, DOUBLE, SINGLE):
         targets[cat], deficits[cat] = _deviation(rate[cat], league_rate[cat])
@@ -98,18 +133,36 @@ def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
                 f"{label} will run ~{deficits[cat] / 216:.1%} of PA high: player is "
                 f"below league average and the card can't go negative")
 
+    if hbp_chances:
+        targets[HBP] = float(hbp_chances)  # whole chances
     non_out = sum(targets.values())
     if non_out > CHANCES_PER_CARD:
-        scale = CHANCES_PER_CARD / non_out
-        targets = {cat: t * scale for cat, t in targets.items()}
+        if overflow is not None:
+            overflow.append(non_out - CHANCES_PER_CARD)
+        if HBP in targets:  # scaled too, but kept whole
+            targets[HBP] = float(int(targets[HBP] * CHANCES_PER_CARD / non_out))
+        fixed = targets.get(HBP, 0)
+        rest = non_out - hbp_chances
+        scale = (CHANCES_PER_CARD - fixed) / rest if rest else 0.0
+        targets = {cat: (t * scale if cat != HBP else t)
+                   for cat, t in targets.items()}
         warnings.append("extreme stat line: chances scaled to fit the card")
         non_out = CHANCES_PER_CARD
     targets[OUT] = CHANCES_PER_CARD - non_out
-    return targets, warnings
+    return targets
 
 
 def pitcher_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     warnings = []
+    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, warnings)
+    targets = pitcher_targets_from_rates(rate_bb, rate_k, rate_hr, rate_h,
+                                         league, warnings)
+    return targets, warnings
+
+
+def _pitching_rates(stats: dict, warnings: list[str]) -> tuple[float, ...]:
+    """(BB, SO, HR, H) per effective batter faced; warns about estimated
+    or small samples."""
     tbf = stats.get("TBF", 0)
     if not tbf:
         tbf = stats.get("IP", 0) * 3 + stats.get("H", 0) + stats.get("BB", 0)
@@ -124,7 +177,25 @@ def pitcher_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     rate_k = stats.get("SO", 0) / tbf_eff
     rate_hr = stats.get("HR", 0) / tbf_eff
     rate_h = stats.get("H", 0) / tbf_eff
+    return rate_bb, rate_k, rate_hr, rate_h
 
+
+def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
+                               rate_h: float, league: dict, warnings: list[str],
+                               *, weak_share: float = 0.0,
+                               overflow: list | None = None) -> dict:
+    """Chance targets for one pitcher grid from per-batter rates.
+
+    Shared by the basic card and each advanced platoon side. `league`
+    holds the rates the opposing average batter grid supplies (the keys
+    of LahmanDB.league_batting). Warnings are appended to `warnings`; if
+    the line overflows the card, the excess chances are appended to
+    `overflow` (when given).
+
+    `weak_share` (advanced sides): the share of this matchup's PA taken by
+    Power-W batters, against whom this grid's N-HR chances read as
+    singles. See _amplify_n_hr for the exact accounting.
+    """
     targets = {}
     targets[WALK], d_bb = _deviation(rate_bb, league["BB_per_PA"])
     targets[SO], d_k = _deviation(rate_k, league["K_per_PA"])
@@ -168,17 +239,79 @@ def pitcher_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     targets[SINGLE] = non_hr * (league["1B_per_PA"] / lg_non_hr)
     targets[DOUBLE] = non_hr * (league["2B_per_PA"] / lg_non_hr)
     targets[TRIPLE] = non_hr * (league["3B_per_PA"] / lg_non_hr)
+    if weak_share > 0:
+        _amplify_n_hr(targets, rate_hr, league, weak_share, warnings)
 
     targets[XCHANCE] = float(x_block)
     non_out = sum(targets.values())
     if non_out > CHANCES_PER_CARD:
+        if overflow is not None:
+            overflow.append(non_out - CHANCES_PER_CARD)
         scale = (CHANCES_PER_CARD - targets[XCHANCE]) / (non_out - targets[XCHANCE])
         targets = {cat: (t * scale if cat != XCHANCE else t)
                    for cat, t in targets.items()}
         warnings.append("extreme stat line: chances scaled to fit the card")
         non_out = CHANCES_PER_CARD
     targets[OUT] = CHANCES_PER_CARD - non_out
-    return targets, warnings
+    return targets
+
+
+# Largest Power-W share the N-HR amplification honors (1/(1-w) <= 4). In
+# dead-ball leagues nearly every hitter is Power-W, so exactness would
+# need absurd N-HR counts that only the rare N hitter ever sees; past
+# this point pitcher home runs mostly come off batter cards (warned).
+MAX_WEAK_SHARE = 0.75
+_HR_WARN = 0.0005  # per PA; smaller misses round to "0.0%" and aren't news
+
+
+def _amplify_n_hr(targets: dict, rate_hr: float, league: dict,
+                  weak_share: float, warnings: list[str]) -> None:
+    """Exact HR accounting for a pitcher grid against Power-W batters.
+
+    A pitcher grid's N-HR chances are homers only against Power-N
+    batters (share 1 - w); against Power-W batters they read as singles.
+    Power-W batters' own grids carry all of their home runs, so the
+    average batter grid in this matchup carries 108 * lg_HR * (1 + w) HR
+    chances (N batters (2r - lg) * 108, W batters 2r * 108, PA-weighted),
+    while the average pitcher grid keeps 108 * lg_HR N-HR — the reference
+    batter grids are built against, so the league closes exactly. The
+    pitcher's HR rate against that population is reproduced when
+
+        N-HR = 108 * lg_HR + 216 * (rate_hr - lg_HR) / (1 - w)
+
+    i.e. his deviation from the average pitcher is amplified by 1/(1-w)
+    because only N batters can read it. Total hits stay those of the
+    basic formula: N-HR chances above the basic HR target come out of
+    singles (they are the singles W batters read off them), and N-HR
+    below it go back to singles. The amplification is capped at
+    MAX_WEAK_SHARE.
+    """
+    lg_hr = league["HR_per_PA"]
+    w = min(weak_share, MAX_WEAK_SHARE)
+    want = max(0.0, (lg_hr + 2.0 * (rate_hr - lg_hr) / (1.0 - w)) * 108.0)
+    extra = want - targets[HR]
+    if extra <= 0:
+        targets[HR] += extra
+        targets[SINGLE] -= extra
+    else:  # if singles run out, doubles/triples pay; beyond that it's lost
+        for cat in (SINGLE, DOUBLE, TRIPLE):
+            take = min(targets[cat], extra)
+            targets[cat] -= take
+            targets[HR] += take
+            extra -= take
+    # What this grid actually yields against the matchup's batters:
+    effective = (108.0 * lg_hr * (1.0 + weak_share)
+                 + (1.0 - weak_share) * targets[HR]) / 216.0
+    off = effective - rate_hr
+    if off >= _HR_WARN:
+        warnings.append(
+            f"home runs allowed will run ~{off:.1%} of PA high: Power-W hitters "
+            f"carry their own homers and the card can't go negative")
+    elif -off >= _HR_WARN:
+        warnings.append(
+            f"home runs allowed will run ~{-off:.1%} of PA low: most of this "
+            f"league's hitters are Power-W, so few batters can read the "
+            f"pitcher card's N-HR")
 
 
 def average_batter_chances(league: dict) -> dict:
@@ -209,6 +342,228 @@ def average_pitcher_chances(league: dict) -> dict:
     }
     targets[OUT] = CHANCES_PER_CARD - sum(targets.values())
     return targets
+
+
+def average_advanced_batter_chances(cell_league: dict,
+                                    weak_share: float = 0.0) -> dict:
+    """Average advanced batter grid in one matchup (cell_league from
+    PlatoonContext.cell_league), as the PA-weighted mean of the grids the
+    advanced generator builds: Power-N grids carry (2r - lg) * 108 HR,
+    Power-W grids 2r * 108 HR with the pitcher's N-HR taken out of their
+    singles, so the mean carries 108 * lg_HR * (1 + w) HR and
+    108 * (lg_1B - w * lg_HR) singles. Pitcher grids carry no HBP, so the
+    batter grids supply all of it (2 * lg_HBP * 108)."""
+    lg = cell_league
+    targets = {
+        WALK: lg["BB_per_PA"] * 108,
+        SO: lg["K_per_PA"] * 108,
+        HR: lg["HR_per_PA"] * 108 * (1.0 + weak_share),
+        TRIPLE: lg["3B_per_PA"] * 108,
+        DOUBLE: lg["2B_per_PA"] * 108,
+        SINGLE: (lg["1B_per_PA"] - weak_share * lg["HR_per_PA"]) * 108,
+        HBP: 2.0 * lg.get("HBP_per_PA", 0.0) * 108,
+    }
+    targets[OUT] = CHANCES_PER_CARD - sum(targets.values())
+    return targets
+
+
+def average_advanced_pitcher_chances(cell_league: dict) -> dict:
+    """Average advanced pitcher grid in one matchup: the basic average
+    pitcher card at the matchup's rates (its HR chances print as N-HR)."""
+    return average_pitcher_chances(cell_league)
+
+
+# --- advanced (platoon) cards --------------------------------------------------
+
+def _lahman_hand(stats: dict, key: str) -> str | None:
+    pid = stats.get("player_id")
+    if not pid:
+        return None
+    from .lahman import default_db
+    return default_db().player_info(pid).get(key)
+
+
+_NUMBER = re.compile(r"\d+(?:\.\d+)?")
+
+
+def merge_side_warnings(by_side: dict[str, list[str]]) -> list[str]:
+    """Label per-side warnings with their side and merge the ones both
+    sides share: "vs LHP/RHP: walks will run ~1.2%/0.8% of PA high ..."."""
+    groups: dict[str, dict[str, str]] = {}
+    for side, msgs in by_side.items():
+        for msg in msgs:
+            groups.setdefault(_NUMBER.sub("#", msg), {}).setdefault(side, msg)
+    out = []
+    for per_side in groups.values():
+        sides = "/".join(per_side)
+        msgs = list(per_side.values())
+        slots = iter(zip(*(_NUMBER.findall(m) for m in msgs)))
+        merged = _NUMBER.sub(
+            lambda _m: "/".join(dict.fromkeys(next(slots))), msgs[0])
+        out.append(f"vs {sides}: {merged}")
+    return out
+
+
+# Split strengths tried, strongest first, when an extreme stat line won't
+# fit one grid (the same-handed grid of a 52%-strikeout reliever needs more
+# than 108 chances). Narrowing the split (factors ** strength) moves the
+# excess to the other grid while the share-weighted line stays exact.
+_SPLIT_STRENGTHS = (1.0, 0.75, 0.5, 0.25, 0.0)
+
+
+def _fit_split(build):
+    """Pick the strongest split that loses the fewest chances to card
+    overflow. build(strength) -> (targets by side, warnings by side,
+    share-weighted overflow in chances)."""
+    best = None
+    for strength in _SPLIT_STRENGTHS:
+        result = build(strength)
+        if best is None or result[2] < best[1][2] - 1e-9:
+            best = (strength, result)
+        if result[2] <= 0:
+            break
+    strength, (targets, side_warnings, _overflow) = best
+    notes = []
+    if strength < 1.0:
+        notes.append(f"platoon split narrowed to {strength:.0%} of the league "
+                     f"norm so the grids fit 108 chances")
+    return targets, side_warnings, notes
+
+
+def generate_advanced_batter_card(
+        stats: dict, league: dict,
+        position_ratings: list[tuple[str, int, int]] | None = None,
+        *, bats: str | None = None, context=None,
+        ) -> tuple[AdvancedCard, list[str]]:
+    """Generate the advanced (platoon) side of a batter card.
+
+    Each grid reproduces the batter's estimated rate in its matchup
+    exactly against the matchup's average pitcher grid (see
+    stratogen.platoon): `bats` defaults to the Lahman People record,
+    `context` to platoon.league_context(league). Power-W grids carry all
+    of the batter's homers; both grids carry his HBP as whole chances.
+    Returns (card, warnings).
+    """
+    warnings = []
+    pa = effective_pa(stats)
+    if pa <= 0:
+        raise ValueError("player has no effective plate appearances")
+    if pa < 100:
+        warnings.append(f"small sample: only {pa:.0f} effective PA")
+    ctx = context or platoon.league_context(league)
+    hand = platoon.batting_hand(bats or _lahman_hand(stats, "bats"))
+    if hand == "?":
+        warnings.append("batting hand unknown: treated as right-handed")
+        hand = "R"
+
+    rates = actual_batting_rates(stats)
+    s_lhp = platoon.printed_share(platoon.batter_lhp_share(hand, pa, ctx))
+    shares = {"L": s_lhp, "R": 1.0 - s_lhp}
+    # Pitcher grids carry no HBP, so the batter's grids carry all of his:
+    # 2 * rate * 108, whole chances, the same on both grids.
+    hbp = int(round(2.0 * rates[HBP] * 108))
+    cells = {p: ctx.cell_league(p, platoon.effective_hand(hand, p))
+             for p in platoon.HANDS}
+    power: dict[str, str] = {}
+
+    def build(strength):
+        split = platoon.split_rates(
+            {c: rates[c] for c in platoon.PLATOON_CATEGORIES},
+            platoon.soften(ctx.batter_factors(hand), strength), shares)
+        targets, side_warnings, lost = {}, {}, 0.0
+        for p in platoon.HANDS:
+            cell, r = cells[p], split[p]
+            power[p] = platoon.power_rating(r[HR], cell["HR_per_PA"])
+            league_rate = {WALK: cell["BB_per_PA"], SO: cell["K_per_PA"],
+                           HR: cell["HR_per_PA"], TRIPLE: cell["3B_per_PA"],
+                           DOUBLE: cell["2B_per_PA"], SINGLE: cell["1B_per_PA"]}
+            side_warnings[f"{p}HP"], overflow = [], []
+            targets[p] = batter_targets_from_rates(
+                r, league_rate, side_warnings[f"{p}HP"],
+                weak_power=(power[p] == "W"), hbp_chances=hbp,
+                overflow=overflow)
+            lost += shares[p] * sum(overflow)
+        return targets, side_warnings, lost
+
+    targets, side_warnings, notes = _fit_split(build)
+    name = stats.get("name", "UNKNOWN").upper()
+    display = _batting_display_stats(stats)
+    header = ratings.batter_header_lines(stats, position_ratings or [])
+    profile = hit_profile(stats)
+    sides = []
+    for p in platoon.HANDS:
+        card = layout_card(
+            targets[p], card_type="batter", name=name, year=stats.get("year"),
+            team=stats.get("team"), stats=display, header_lines=header,
+            profile=profile, seed_extra=f"advanced vs {p}HP")
+        sides.append(PlatoonSide(vs=f"{p}HP", share=shares[p], card=card,
+                                 power=power[p]))
+    warnings = (list(league.get("warnings", [])) + _missing_data_warnings(stats)
+                + list(ctx.warnings) + warnings + notes
+                + merge_side_warnings(side_warnings))
+    return AdvancedCard(name=name, card_type="batter", hand=hand,
+                        team=stats.get("team"), year=stats.get("year"),
+                        header_lines=header, stats=display,
+                        sides=sides), warnings
+
+
+def generate_advanced_pitcher_card(
+        stats: dict, league: dict, fielding_rating: int = 3,
+        *, throws: str | None = None, context=None,
+        ) -> tuple[AdvancedCard, list[str]]:
+    """Generate the advanced (platoon) side of a pitcher card.
+
+    One grid per batter hand (switch hitters bat opposite the pitcher),
+    each with the usual 30-chance X block and home runs printed N-HR.
+    N-HR chances are amplified for the Power-W hitters who can't read
+    them (see _amplify_n_hr), so the pitcher's line is reproduced against
+    the matchup's real mix of N and W batters. Returns (card, warnings).
+    """
+    warnings = []
+    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, warnings)
+    ctx = context or platoon.league_context(league)
+    hand = platoon.throwing_hand(throws or _lahman_hand(stats, "throws"))
+    if hand == "?":
+        warnings.append("throwing hand unknown: treated as right-handed")
+        hand = "R"
+
+    s_lhb = platoon.printed_share(platoon.pitcher_lhb_share(hand, ctx))
+    shares = {"L": s_lhb, "R": 1.0 - s_lhb}
+
+    def build(strength):
+        split = platoon.split_rates(
+            {WALK: rate_bb, SO: rate_k, HR: rate_hr, "H": rate_h},
+            platoon.soften(ctx.pitcher_factors(hand), strength), shares)
+        targets, side_warnings, lost = {}, {}, 0.0
+        for h in platoon.HANDS:
+            r = split[h]
+            side_warnings[f"{h}HB"], overflow = [], []
+            targets[h] = pitcher_targets_from_rates(
+                r[WALK], r[SO], r[HR], r["H"], ctx.cell_league(hand, h),
+                side_warnings[f"{h}HB"], weak_share=ctx.weak_share[(hand, h)],
+                overflow=overflow)
+            lost += shares[h] * sum(overflow)
+        return targets, side_warnings, lost
+
+    targets, side_warnings, notes = _fit_split(build)
+    name = stats.get("name", "UNKNOWN").upper()
+    display = _pitching_display_stats(stats)
+    header = ratings.pitcher_header_lines(stats, fielding_rating)
+    profile = pitcher_hit_profile(stats, league)
+    sides = []
+    for h in platoon.HANDS:
+        card = layout_card(
+            targets[h], card_type="pitcher", name=name, year=stats.get("year"),
+            team=stats.get("team"), stats=display, header_lines=header,
+            profile=profile, seed_extra=f"advanced vs {h}HB", hr_text="N-HR")
+        sides.append(PlatoonSide(vs=f"{h}HB", share=shares[h], card=card))
+    warnings = (list(league.get("warnings", [])) + _missing_data_warnings(stats)
+                + list(ctx.warnings) + warnings + notes
+                + merge_side_warnings(side_warnings))
+    return AdvancedCard(name=name, card_type="pitcher", hand=hand,
+                        team=stats.get("team"), year=stats.get("year"),
+                        header_lines=header, stats=display,
+                        sides=sides), warnings
 
 
 # --- layout -----------------------------------------------------------------
@@ -352,8 +707,10 @@ class _HitVariants:
     when a player has only a couple of single chances to spread around.
     """
 
-    def __init__(self, rng: random.Random, profile: dict):
+    def __init__(self, rng: random.Random, profile: dict,
+                 hr_text: str = "HOMERUN"):
         p = profile
+        self._hr_text = hr_text
         self._shares = {
             SINGLE: {"SINGLE**": p["single_2star"], "SINGLE*": p["single_star"],
                      "SINGLE": 1.0 - p["single_2star"] - p["single_star"]},
@@ -372,23 +729,52 @@ class _HitVariants:
             choice = max(deficit, key=deficit.get)
             placed[choice] += amount
             return choice
-        return {HR: "HOMERUN", TRIPLE: "TRIPLE", WALK: "WALK", SO: "strikeout"}[cat]
+        return {HR: self._hr_text, TRIPLE: "TRIPLE", WALK: "WALK",
+                SO: "strikeout", HBP: "HBP"}[cat]
+
+
+def _hbp_cells(n: int, free: dict, rng: random.Random) -> list[tuple[int, int]]:
+    """Whole cells worth exactly `n` chances for HBP, on the edge rows the
+    real advanced cards use (2/12, then 3/11 or 4/10): one weight-1 cell
+    first, then the largest edge weight that fits (Judge 2024's 3 = 1 + 2,
+    Posada 2003's 4 = 1 + 3), spread over different columns."""
+    chosen: list[tuple[int, int]] = []
+    used_cols: set[int] = set()
+    remaining = n
+    while remaining > 0:
+        want = 1 if not chosen else min(3, remaining)
+        pool = [c for c in free if c not in chosen]
+        cands = [c for c in pool if DICE_WEIGHTS[c[1]] == want]
+        if not cands:
+            fits = [c for c in pool if DICE_WEIGHTS[c[1]] <= remaining]
+            if not fits:
+                break
+            top = max(DICE_WEIGHTS[c[1]] for c in fits)
+            cands = [c for c in fits if DICE_WEIGHTS[c[1]] == top]
+        fresh = [c for c in cands if c[0] not in used_cols] or cands
+        cell = rng.choice(sorted(fresh))
+        chosen.append(cell)
+        used_cols.add(cell[0])
+        remaining -= DICE_WEIGHTS[cell[1]]
+    return chosen
 
 
 def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                 year: int | None, team: str | None, stats: dict,
                 header_lines: list[str], profile: dict | None = None,
-                seed_extra: str = "") -> Card:
+                seed_extra: str = "", hr_text: str = "HOMERUN") -> Card:
     """Place chance targets on a 3x11 grid deterministically.
 
     The same player/year always produces the same card (the RNG that picks
     cosmetic out locations is seeded from name+year). `profile` (see
-    hit_profile) controls the */**/++/DP-letter mix.
+    hit_profile) controls the */**/++/DP-letter mix. `hr_text` is how home
+    runs print ("N-HR" on advanced pitcher grids). Whole HBP chances
+    (advanced batter grids) go on edge rows before anything else.
     """
     profile = profile or dict(_DEFAULT_PROFILE)
     rng = random.Random(f"{name}|{year}|{card_type}|{seed_extra}")
     flavors = _OutFlavors(rng, card_type, profile)
-    variants = _HitVariants(rng, profile)
+    variants = _HitVariants(rng, profile, hr_text)
     columns = PITCHER_COLUMNS if card_type == "pitcher" else BATTER_COLUMNS
     prefs = _preferred_cells(columns)
 
@@ -432,6 +818,11 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                 text = ("CATCHER'S CARD X" if cell == catcher_cell
                         else flavors.x_chance())
                 assign_full(cell, text)
+
+    hbp = int(round(targets.get(HBP, 0)))
+    if hbp > 0:
+        for cell in _hbp_cells(hbp, free, rng):
+            assign_full(cell, variants.text(HBP))
 
     order = [HR, TRIPLE, DOUBLE, SINGLE, WALK, SO]
     for cat in order:

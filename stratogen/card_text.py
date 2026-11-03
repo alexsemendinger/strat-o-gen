@@ -34,7 +34,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from .model import Card, Split, DICE_WEIGHTS
+from .model import AdvancedCard, Card, Split, DICE_WEIGHTS
 
 _RANGE_RE = re.compile(r"^(\d{1,2})(?:-(\d{1,2}))?$")
 _ENTRY_RE = re.compile(r"^(\d{1,2})-(.*)$")
@@ -283,4 +283,45 @@ def render_card(card: Card) -> str:
         else:
             text = f"{value}"
         out.append(f"{label:<17} {text}")
+    return "\n".join(out) + "\n"
+
+
+def _cell_lines(splits: list[Split]) -> list[str]:
+    lines = []
+    for s in splits:
+        text = s.text + (" plus injury" if s.injury else "")
+        if (s.lo, s.hi) != (1, 20):
+            text += f" {s.lo}" if s.lo == s.hi else f" {s.lo}-{s.hi}"
+        lines.append(text)
+    return lines
+
+
+def render_advanced_card(card: AdvancedCard) -> str:
+    """Plain-text rendering of an advanced (platoon) card for the command
+    line: the header, then each grid as a 3-column table labeled with its
+    matchup, share of PA and (for batters) Power rating."""
+    batter = card.card_type == "batter"
+    title = f"{card.name}   {'bats' if batter else 'throws'} {card.hand}"
+    sub = " ".join(str(x) for x in (card.year, card.team) if x)
+    out = [f"{title}   {sub}" if sub else title, *card.header_lines]
+    for side in card.sides:
+        label = (f"vs {side.vs}   {side.percent}% of "
+                 f"{'plate appearances' if batter else 'batters faced'}")
+        if side.power:
+            label += f"   Power-{side.power}"
+        out += ["", label]
+        cols = sorted(side.card.columns)
+        cells = {c: {d: _cell_lines(side.card.columns[c][d])
+                     for d in side.card.columns[c]} for c in cols}
+        width = max(len(line) for c in cols for lines in cells[c].values()
+                    for line in lines) + 2
+        out.append(("    " + "".join(f"Column {c}".ljust(width)
+                                     for c in cols)).rstrip())
+        for d in sorted(DICE_WEIGHTS):
+            stacks = [cells[c].get(d, []) for c in cols]
+            for i in range(max(len(s) for s in stacks)):
+                lead = f"{d:>2}  " if i == 0 else "    "
+                row = "".join((s[i] if i < len(s) else "").ljust(width)
+                              for s in stacks)
+                out.append((lead + row).rstrip())
     return "\n".join(out) + "\n"

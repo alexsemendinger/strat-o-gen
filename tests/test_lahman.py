@@ -108,3 +108,38 @@ def test_positions():
     # pre-1891 only the combined OF exists
     pos_1875 = db.positions("orourji01", 1875)
     assert any(p == "OF" for p, _ in pos_1875)
+
+
+# --- handedness (platoon matchup frequencies) ---------------------------------
+
+def test_league_handedness_shares():
+    """Built in the same load pass as the batting/pitching indexes."""
+    h = db.league_handedness(2003, "AL")
+    assert h["pitchers"]["L"] == pytest.approx(0.292, abs=0.005)
+    assert sum(h["pitchers"].values()) == pytest.approx(1.0)
+    assert sum(h["batters"].values()) == pytest.approx(1.0)
+    assert 0.15 < h["batters"]["S"] < 0.22   # the switch-hitting 2000s
+    assert h["pitcher_coverage"] == 1.0 and h["batter_coverage"] == 1.0
+
+
+def test_league_handedness_unknown_hands_and_eras():
+    # 19th-century hands are partly unknown: excluded, coverage reported
+    early = db.league_handedness(1884, "UA")
+    assert 0.5 < early["batter_coverage"] < 0.9
+    assert sum(early["batters"].values()) == pytest.approx(1.0)
+    # the 1876 NL had no left-handed pitching at all
+    assert db.league_handedness(1876, "NL")["pitchers"]["L"] == 0.0
+    # Negro leagues are covered too
+    assert db.league_handedness(1943, "NN2")["pitchers"]
+    with pytest.raises(KeyError):
+        db.league_handedness(1927, "XX")
+
+
+def test_league_batter_lines_and_schedule():
+    lines = db.league_batter_lines(2001, "NL")
+    bonds = [ln for ln in lines if ln[3] == 73]
+    assert len(bonds) == 1 and bonds[0][0] == "L"
+    assert bonds[0][2] == 476 + 177 - 35 + 9 + 2   # AB + BB - IBB + HBP + SF
+    assert all(ln[1] > 0 for ln in lines)
+    assert db.league_games_per_team(2001, "NL") == pytest.approx(162, abs=1)
+    assert db.league_games_per_team(1906, "AL") == pytest.approx(152, abs=4)

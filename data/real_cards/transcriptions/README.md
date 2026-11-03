@@ -23,8 +23,12 @@ source of truth. Notation is catalogued in `SYMBOLS.md`.
 - **Basic sides** and **percentage-weighted advanced sides**: scored by the
   statistical tester against the player's real Lahman season. (The weighted
   average of the two platoon grids equals the player's overall expected
-  rates, so advanced-only cards are still benchmarkable without platoon
-  generation.)
+  rates, so advanced-only cards are benchmarkable against a basic average
+  card.)
+- **Advanced sides, grid by grid** (tests/test_platoon.py): each grid
+  against its own matchup's average opposing grid, with the printed
+  percentages and Power labels. This is the bar generated advanced cards
+  must clear, and the source of the share-model and Power-rule fits.
 - **Unofficial cards** (see below) are included but **tolerant**: a failure
   that only they exhibit is allowed.
 
@@ -49,6 +53,13 @@ along some dimension. They are advanced-side only.
   structurally validated but excluded from the statistical benchmark (no
   single-season league context).
 - The advanced sides carry situational marker glyphs (`◆ ▼ △ Ω`), `?`/`●`
-  marks, error/arm/hold/wp/bk ratings, and platoon percentages that the
-  generator does not yet model; all are preserved here for future work
-  (notably L/R platoon splits and the advanced fielding/strategy charts).
+  marks, and error/arm/hold/wp/bk ratings that the generator does not yet
+  model; all are preserved here for future work (notably the advanced
+  fielding/strategy charts). The L/R platoon grids, their percentages,
+  Power-N/W, `N-HR` and advanced-side HBP are now generated
+  (stratogen/platoon.py), and generated advanced cards are benchmarked
+  against these (tests/test_platoon.py). The official advanced cards
+  print each player's actual split, which is very noisy (Carey 1953: 2
+  walk chances vs LHP, 19 vs RHP). The four unofficial cards, made
+  without split data, print identical grids; the generator uses
+  league-norm splits.

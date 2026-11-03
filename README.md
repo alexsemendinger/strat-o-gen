@@ -29,6 +29,7 @@ Homebrew/Debian Pythons), use uv above, or
 python3 generate_card.py "Willie Mays" 1965
 python3 generate_card.py "Nolan Ryan" 1972 --pitcher
 python3 generate_card.py "Tom Seaver" 1969 --pitcher --html seaver.html
+python3 generate_card.py "Aaron Judge" 2024 --advanced   # L/R platoon side
 ```
 
 The only dependency is Flask (pure Python — no compilers, no native
@@ -42,6 +43,9 @@ averages come from the bundled [Lahman database](https://sabr.org/lahman-databas
   baserunning symbols (`SINGLE*`, `DOUBLE**`), groundball A/B/C ratings,
   X-chart chances on pitcher cards, stealing/running ratings, one injury
   result and one max-effort lineout per batter card — like the real thing.
+- The advanced (platoon) side too: two full grids vs left- and
+  right-handed opponents, each with its printed share of PA and, for
+  batters, a Power-N/W rating (command line `--advanced`; see below).
 - An honesty table: what the card produces over the season's plate
   appearances vs. what actually happened (hits, HR, BB, SO, ...).
 - Warnings whenever the card can't fully capture the season (see
@@ -102,6 +106,65 @@ python3 -m pip install pytest
 python3 -m pytest
 ```
 
+## Advanced (platoon) cards
+
+`generate_advanced_batter_card` / `generate_advanced_pitcher_card`
+(command line: `--advanced`, plus `--json FILE`) build the advanced side:
+two full 108-chance grids — batters vs LHP/RHP, pitchers vs LHB/RHB — each
+reproducing the player's line *in its matchup* against that matchup's
+average opposing grid:
+
+```
+grid_chances = (2 × player_rate_in_matchup − league_rate_in_matchup) × 108
+```
+
+- **Splits** (`stratogen/platoon.py`). Lahman has no platoon data, and one
+  season of an individual's split is mostly noise anyway, so every player
+  gets the league-average platoon effect for his hand: one documented
+  table of same-/opposite-hand ratios (a lefty hitter vs lefties strikes
+  out 1.22× and homers 0.76× as often). Switch hitters always bat
+  opposite-handed and have no individual split. Matchup league rates come
+  from each league-year's handedness (share of batters faced by LHP; L/R/
+  switch share of PA), renormalized so their mix is exactly the league
+  line; the player's split is renormalized so his share-weighted mix is
+  exactly his line.
+- **Printed percentages.** Batters face lefties at the league's LHP share,
+  part-time righties more (platoon players start against lefties);
+  pitchers face left-side hitters (switch hitters included vs a righty) at
+  0.91× the league share. Mean error vs the real cards: 3.3 points (12
+  batters), 3.6 (7 official pitchers).
+- **Power N/W**, per batter grid: W below 1.35% HR per PA (capped at 1.35×
+  the league rate in low-HR eras), and always when the N formula would
+  clamp. Matches 20 of the 24 labels on the real cards. A pitcher grid's
+  N-HR is a `SINGLE**` for a W batter, so a W grid carries all of the
+  batter's homers (2 × rate × 108): it never clamps, so a 0-HR season is
+  exact.
+- **Pitcher N-HR.** Only Power-N hitters (share 1 − w of a matchup's PA,
+  found by applying the Power rule to the whole league-year) can homer on
+  a pitcher's N-HR, so his deviation from the average pitcher's N-HR count
+  is amplified by 1/(1 − w), with the extra taken from his singles
+  (w capped at 0.75 for dead-ball leagues, warned). That reproduces his line
+  against the matchup's real N/W mix, and the league closes exactly.
+- **HBP:** batter grids carry 2 × HBP rate × 108 as whole chances on the
+  edge rows real cards use; pitcher grids carry none.
+- Lines too extreme for one grid get a narrower split (warned).
+  `card_json.advanced_card_to_json` writes the transcriptions' JSON schema;
+  `card_text.render_advanced_card` renders plain text. The advanced header
+  ratings are the basic ones for now (`AdvancedCard.header_lines`).
+
+`tests/test_platoon.py` holds generated advanced cards to at least the
+basic card's accuracy on the archetypes, and to at least the real advanced
+cards' accuracy on the corpus. Hitters' home runs are exact on every
+generated advanced card; the price is paid by HR-stingy pitchers. Since W
+hitters bring their own homers, no pitcher can allow fewer than
+lg_HR × (1 + w) / 2 per PA (basic floor: lg_HR / 2). In play, Maddux 1995
+gives up 1.6% HR/PA against his real 1.0% (basic card: 1.3%), with a
+warning. PA-weighted over every player in the league, HR error still
+falls: 2024 AL 0.0006 → 0.0003 per PA; 1995 NL 0.0009 → 0.0005; 1930 AL
+0.0010 → 0.0007. The exception is dead-ball 1913 AL, 0.0004 → 0.0005. The
+real SOM pitcher cards don't seem to compensate for W hitters at all,
+which leaves their pitchers' HR inexact in play.
+
 ## Known limitations (shared with official cards)
 
 A card can't hold negative chances, so when a player is *below* league
@@ -110,7 +173,9 @@ outcome than the player actually produced:
 
 - A never-strikes-out batter (Gwynn) will strike out at about half the
   league rate in play — more than he really did.
-- A 0-HR season still yields about half the league HR rate.
+- A 0-HR season still yields about half the league HR rate on the basic
+  card. (Fixed on the advanced side: such a hitter is Power-W and exact.
+  The cost moves to HR-stingy pitchers, see above.)
 - An elite control pitcher (Maddux) walks more in play than his real rate.
 
 The generator redistributes what it can (clamped hit deficits are absorbed
@@ -119,7 +184,9 @@ explicitly** about what it can't. The real-card benchmark shows official
 cards have exactly the same behavior.
 
 Other simplifications:
-- No lefty/righty platoon splits (basic-game style cards).
+- Advanced-side platoon splits are league norms for the player's hand,
+  not his actual split (Lahman has none; official advanced cards print
+  actual, very noisy splits).
 - Fielding ratings (1-5 per position, printed on the card header) are
   computed from range factor, fielding percentage, and catcher
   caught-stealing rates vs same-position/same-season peers, blended over
@@ -136,7 +203,8 @@ Other simplifications:
   tracked (mostly pre-1951): success rate is unknowable, so volume alone
   decides and the card carries a warning. AA requires a measured elite
   rate.
-- HBP isn't placed on cards (matching all 14 fixture cards).
+- HBP isn't placed on basic cards (matching all 14 fixture cards);
+  advanced batter grids carry it, as the real advanced cards do.
 - Errors/X-chart resolution assumes league-average defense.
 
 ## Game dynamics are tested too
@@ -201,11 +269,13 @@ generate_card.py        Command-line interface
 stratogen/
   model.py              Card data model, chance accounting, validation
   card_text.py          Parser/serializer for the plain-text card format
-  card_json.py          Loader for the JSON transcriptions (both sides)
-  lahman.py             Offline stats + league averages (1871-2025)
+  card_json.py          JSON transcriptions: loader (both sides) + export
+  lahman.py             Offline stats, league averages, handedness (1871-2025)
   simulate.py           Statistical tester (exact expected rates + Monte Carlo)
+  platoon.py            Platoon model: matchup rates, splits, shares, Power
   generate.py           Chance targets, clamping/redistribution, card layout
-  benchmark.py          Scoring vs the real-card fixtures
+                        (basic cards and advanced platoon grids)
+  benchmark.py          Scoring vs the real-card fixtures (both sides)
   game.py               Simplified game engine (innings, baserunners)
   ratings.py            Stealing/running ratings (fitted to real cards)
   fielding.py           Fielding ratings 1-5 (calibrated to real cards)
@@ -216,7 +286,7 @@ data/
   real_cards/           Transcribed real cards = ground truth fixtures
     *.txt               14 cards in the plain-text format
     transcriptions/     25 more in JSON (basic + advanced sides, symbols)
-tests/                  pytest suite (parser, data, benchmark, app smoke)
+tests/                  pytest suite (parser, data, benchmark, platoon, app)
 ```
 
 `STRAT_CARD_MAKER_SPEC_v2.md` is the original project spec, kept for

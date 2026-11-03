@@ -17,14 +17,19 @@ from dataclasses import dataclass
 from .card_text import load_real_cards
 from .card_json import (
     Transcription, basic_card, combined_chances, load_transcriptions,
+    platoon_cards,
 )
-from .generate import average_batter_chances, average_pitcher_chances
+from .generate import (
+    average_advanced_batter_chances, average_advanced_pitcher_chances,
+    average_batter_chances, average_pitcher_chances,
+)
 from .lahman import LahmanDB, default_db
-from .model import Card
+from .model import AdvancedCard, Card, HBP
 from .simulate import (
-    actual_batting_rates, actual_pitching_rates, batting_errors,
-    combined_rates, derived_stats, pitching_errors,
+    RATE_CATEGORIES, actual_batting_rates, actual_pitching_rates,
+    batting_errors, combined_rates, derived_stats, pitching_errors,
 )
+from . import platoon
 
 # Fixture cards with no real season behind them use the stat line printed on
 # the card and an assumed league context.
@@ -151,6 +156,73 @@ def score_pitcher_card(card_or_chances, actual_stats: dict,
                        league: dict) -> dict[str, float]:
     implied = derived_stats(
         combined_rates(average_batter_chances(league), card_or_chances))
+    return pitching_errors(implied, actual_pitching_rates(actual_stats))
+
+
+# --- advanced (platoon) cards ---------------------------------------------------
+#
+# An advanced card is scored side by side: each grid against the average
+# opposing grid of its own matchup, weighted by the grid's share of PA.
+# Sides are (vs, share, card_or_chances, power) tuples so real
+# transcriptions and generated AdvancedCards score identically.
+
+def advanced_sides(card: AdvancedCard) -> list[tuple]:
+    return [(s.vs, s.share, s.card, s.power) for s in card.sides]
+
+
+def transcription_sides(card: Transcription) -> list[tuple]:
+    """Sides of a transcribed advanced card (weights normalized to 1)."""
+    grids = card.advanced.grids if card.advanced else []
+    return [(g["vs"], weight, grid_card, g.get("power") or "N")
+            for (weight, grid_card), g in zip(platoon_cards(card), grids)]
+
+
+def advanced_batter_rates(sides, bats: str, ctx) -> dict[str, float]:
+    """Share-weighted per-PA rates of a batter's grids, each against the
+    average pitcher grid of its matchup (Power-W grids read that grid's
+    N-HR as singles)."""
+    total = {cat: 0.0 for cat in RATE_CATEGORIES}
+    for vs, share, grid, power in sides:
+        p = vs[0]
+        opp = average_advanced_pitcher_chances(
+            ctx.cell_league(p, platoon.effective_hand(bats, p)))
+        for cat, v in combined_rates(grid, opp, batter_power=power).items():
+            total[cat] += share * v
+    return total
+
+
+def advanced_pitcher_rates(sides, throws: str, ctx) -> dict[str, float]:
+    """Share-weighted per-PA rates of a pitcher's grids, each against its
+    matchup's average batter grid — a mix of Power-N batters (share
+    1 - w, who homer on the N-HR) and Power-W batters (share w, for whom
+    the N-HR are singles)."""
+    p = platoon.throwing_hand(throws)
+    p = "R" if p == "?" else p
+    total = {cat: 0.0 for cat in RATE_CATEGORIES}
+    for vs, share, grid, _power in sides:
+        h = vs[0]
+        w = ctx.weak_share[(p, h)]
+        opp = average_advanced_batter_chances(ctx.cell_league(p, h), w)
+        n = combined_rates(opp, grid, batter_power="N")
+        wk = combined_rates(opp, grid, batter_power="W")
+        for cat in RATE_CATEGORIES:
+            total[cat] += share * ((1.0 - w) * n[cat] + w * wk[cat])
+    return total
+
+
+def score_advanced_batter(sides, bats: str, actual_stats: dict, ctx,
+                          ) -> dict[str, float]:
+    """Rate errors of an advanced batter card (HBP included)."""
+    implied = derived_stats(advanced_batter_rates(sides, bats, ctx))
+    actual = actual_batting_rates(actual_stats)
+    errors = batting_errors(implied, actual)
+    errors[HBP] = abs(implied[HBP] - actual[HBP])
+    return errors
+
+
+def score_advanced_pitcher(sides, throws: str, actual_stats: dict, ctx,
+                           ) -> dict[str, float]:
+    implied = derived_stats(advanced_pitcher_rates(sides, throws, ctx))
     return pitching_errors(implied, actual_pitching_rates(actual_stats))
 
 
