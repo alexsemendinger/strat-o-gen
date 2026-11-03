@@ -1,5 +1,9 @@
 """Tests for the offline Lahman data layer."""
 
+import csv
+import gzip
+from pathlib import Path
+
 import pytest
 
 from stratogen.lahman import default_db
@@ -362,12 +366,38 @@ def test_search_year_and_kind_filters_apply_before_the_limit():
 
 # --- league totals API (game engine, advanced ratings) -----------------------------
 
+def _direct_league_sums():
+    """{(year, lg): {prefix_field: (sum, rows with a value, rows)}} straight
+    from the Teams / Pitching / catchers' Fielding CSVs."""
+    lahman = Path(__file__).resolve().parent.parent / "data" / "lahman"
+    acc = {}
+    for table, prefix, fields, keep in (
+            ("Teams", "T_", ("G", "R", "IPouts", "SB", "CS", "HBP", "E", "DP", "SF"), None),
+            ("Pitching", "P_", ("IPouts", "WP", "BK", "HBP", "IBB", "SH", "GIDP"), None),
+            ("Fielding", "F_", ("PB",), "C")):
+        with gzip.open(lahman / f"{table}.csv.gz", "rt", encoding="utf-8-sig",
+                       newline="") as fh:
+            reader = csv.reader(fh)
+            idx = {h: i for i, h in enumerate(next(reader))}
+            for row in reader:
+                if keep is not None and row[idx["POS"]] != keep:
+                    continue
+                key = (int(row[idx["yearID"]]), row[idx["lgID"]])
+                for f in fields:
+                    slot = acc.setdefault(key, {}).setdefault(prefix + f, [0, 0, 0])
+                    slot[2] += 1
+                    value = row[idx[f]].strip()
+                    if value:
+                        slot[0] += int(float(value))
+                        slot[1] += 1
+    return acc
+
+
 def test_league_totals_match_a_direct_read_of_the_csvs():
-    """Teams / Pitching / catchers' Fielding totals equal the per-row sums
-    the game engine computes by reading the CSVs itself."""
-    from stratogen import game
+    """Teams / Pitching / catchers' Fielding totals equal per-row sums read
+    straight from the CSVs."""
     checked = 0
-    for (year, lg), slots in game._league_aggregates().items():
+    for (year, lg), slots in _direct_league_sums().items():
         for name, slot in slots.items():
             prefix, field = name.split("_", 1)
             if prefix == "T":
