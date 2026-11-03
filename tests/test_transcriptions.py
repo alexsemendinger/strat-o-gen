@@ -21,8 +21,7 @@ from stratogen.benchmark import (
 from stratogen.model import CHANCES_PER_CARD, XCHANCE, categorize
 
 CARDS = cj.load_transcriptions()
-JSON_FILES = sorted(glob.glob(
-    os.path.join(os.path.dirname(cj.TRANSCRIPTIONS_DIR), "transcriptions", "*.json")))
+JSON_FILES = sorted(cj.TRANSCRIPTIONS_DIR.glob("*.json"))
 
 # Documented tolerances (failure allowed, with reason). See the dir README.
 TOLERANT_CARDS = {
@@ -45,6 +44,7 @@ def _tolerant(card_id, official):
 # --- loading -----------------------------------------------------------------
 
 def test_loads_all_cards():
+    assert len(JSON_FILES) == 45
     assert len(CARDS) == 25
     assert sum(c.card_type == "batter" for c in CARDS.values()) == 13
     assert sum(c.card_type == "pitcher" for c in CARDS.values()) == 12

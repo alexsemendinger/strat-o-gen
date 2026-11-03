@@ -32,6 +32,25 @@ def test_all_fixtures_load():
     assert len(pitchers) == 4
 
 
+def test_fixtures_resolve_from_any_working_directory(tmp_path, monkeypatch):
+    """The data directories hang off the package, not the CWD: run from
+    elsewhere, the corpora load in full (an empty corpus would turn every
+    parametrized fixture test into a silent skip)."""
+    assert card_text.REAL_CARDS_DIR.is_absolute()
+    assert card_json.TRANSCRIPTIONS_DIR.is_absolute()
+    monkeypatch.chdir(tmp_path)
+    assert len(card_text.load_real_cards()) == 14
+    assert len(card_json.load_transcriptions()) == 25
+
+
+def test_missing_fixtures_fail_loudly(tmp_path):
+    for loader in (card_text.load_real_cards, card_json.load_transcriptions):
+        with pytest.raises(FileNotFoundError):
+            loader(tmp_path / "missing")
+        with pytest.raises(FileNotFoundError):
+            loader(tmp_path)                  # exists, but empty
+
+
 @pytest.mark.parametrize("stem", sorted(REAL_CARDS))
 def test_structurally_valid(stem):
     card = REAL_CARDS[stem]

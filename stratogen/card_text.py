@@ -43,6 +43,9 @@ from .model import (
     PlatoonSide, Split,
 )
 
+# The real-card fixtures, resolved from the package (not the working directory).
+REAL_CARDS_DIR = Path(__file__).resolve().parent.parent / "data" / "real_cards"
+
 _RANGE_RE = re.compile(r"^(\d{1,2})(?:-(\d{1,2}))?$")
 _ENTRY_RE = re.compile(r"^(\d{1,2})-(.*)$")
 _COLUMN_RE = re.compile(r"^Column\s+(\d)\s*$", re.IGNORECASE)
@@ -265,11 +268,18 @@ def load_card(path: str | Path) -> Card:
     return parse_card(Path(path).read_text(encoding="utf-8"))
 
 
-def load_real_cards(directory: str | Path = "data/real_cards") -> dict[str, Card]:
-    """Load every .txt fixture in `directory`, keyed by file stem."""
-    cards = {}
-    for path in sorted(Path(directory).glob("*.txt")):
-        cards[path.stem] = load_card(path)
+def load_real_cards(directory: str | Path = REAL_CARDS_DIR) -> dict[str, Card]:
+    """Load every .txt fixture in `directory`, keyed by file stem.
+
+    Raises FileNotFoundError when the directory is missing or holds no
+    .txt card, so a misplaced data directory fails loudly instead of
+    yielding an empty corpus (and silently skipped tests)."""
+    directory = Path(directory)
+    if not directory.is_dir():
+        raise FileNotFoundError(f"real-card directory not found: {directory}")
+    cards = {path.stem: load_card(path) for path in sorted(directory.glob("*.txt"))}
+    if not cards:
+        raise FileNotFoundError(f"no .txt cards in {directory}")
     return cards
 
 

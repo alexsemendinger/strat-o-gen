@@ -199,9 +199,16 @@ def _load_side(path: Path) -> Side:
 
 def load_transcriptions(directory: str | Path = TRANSCRIPTIONS_DIR,
                         ) -> dict[str, Transcription]:
-    """All transcriptions keyed by cardId, basic/advanced sides joined."""
+    """All transcriptions keyed by cardId, basic/advanced sides joined.
+
+    Raises FileNotFoundError when the directory is missing or holds no
+    .json side, so a misplaced data directory fails loudly."""
+    directory = Path(directory)
+    paths = sorted(directory.glob("*.json")) if directory.is_dir() else []
+    if not paths:
+        raise FileNotFoundError(f"no JSON card transcriptions in {directory}")
     cards: dict[str, Transcription] = {}
-    for path in sorted(Path(directory).glob("*.json")):
+    for path in paths:
         side = _load_side(path)
         card = cards.get(side.card_id)
         if card is None:
