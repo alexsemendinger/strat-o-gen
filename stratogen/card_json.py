@@ -10,8 +10,11 @@ larger token vocabulary. See data/real_cards/transcriptions/SYMBOLS.md.
 
 This module is the import layer: it normalizes that foreign vocabulary
 (`SI*` -> `SINGLE*`, `gb (ss) A` -> `groundball (ss)A`, `HR` -> `HOMERUN`,
-`N-HR` kept as `N-HR`, strips marker glyphs / `?` / `plus injury`) into our
-canonical `Card` model so the same statistical tester and benchmark apply.
+`lo (2b) max` -> `lineout (2b) into as many outs as possible`, `N-HR` and
+hit locations such as `SINGLE (lf)` kept; marker glyphs, `?`, `●` and
+`plus injury` stripped — see parse_result) into our canonical `Card` model
+so the same statistical tester and benchmark apply. A situational △ cell
+contributes its default result, not its clutch alternate (_cell_splits).
 The JSON files remain the verbatim source of truth; the `Card` objects are
 a derived view.
 
@@ -220,21 +223,58 @@ def load_transcriptions(directory: str | Path = TRANSCRIPTIONS_DIR,
 
 # --- grids -> Card / chances -------------------------------------------------
 
+def _is_situational(cell: dict) -> bool:
+    """A △ (upTriangle) cell: a default result plus a clutch alternate."""
+    return ("upTriangle" in (cell.get("markers") or [])
+            or (cell.get("raw") or "").lstrip().startswith("△"))
+
+
+def _situational_default(cell: dict, ranged: list[dict]) -> str:
+    """The default token of a △ cell whose `outcomes` list only the ranged
+    clutch alternate (the default was transcribed into `raw` alone, e.g.
+    "△2-strikeout / SI* 1-11 / lo (2b) 12-20" or "△ gb (ss) A SI* 1-2 /
+    lo (ss) 3-20"): the raw text before the alternate's first ranged
+    outcome, less the glyph, the "N-" roll prefix and a "/" separator."""
+    raw = cell.get("raw") or ""
+    lo, hi = ranged[0]["range"]
+    rng = f"{lo}" if lo == hi else f"{lo}-{hi}"
+    m = re.search(re.escape(ranged[0]["result"]) + r"\s*" + re.escape(rng)
+                  + r"(?![\d-])", raw)
+    head = _MARKER_PREFIX.sub("", raw[:m.start()] if m else "")
+    head = re.sub(rf"^{cell['roll']}\s*-\s*", "", head).strip().rstrip("/").strip()
+    if not head:
+        raise ValueError(f"situational cell without a default result: {raw!r}")
+    return head
+
+
 def _cell_splits(cell: dict) -> list[Split]:
     """The d20 partition for one cell.
 
-    A situational cell (marked △/▼/◆/Ω on the advanced side) records a
-    default result with `range: null` plus a clutch alternate that carries
-    its own ranges; the two overlap. The default is the everyday reading,
-    so for the card's baseline rates we use it and treat the alternate as
-    situational metadata (preserved verbatim in the JSON, not in the Card).
-    Otherwise the outcomes are either one full-cell result or a clean d20
-    split partitioning 1-20.
+    A cell is one full-cell result (`range: null`) or a clean d20 split
+    whose ranged outcomes partition 1-20 (diamond-marked cells are plain
+    splits like this; down-triangle and omega cells are single results).
+    Only a situational △ (upTriangle) cell carries both: its default
+    result plus a clutch alternate with its own overlapping ranges (in
+    the data always a `SI*` / lineout split). The default is the everyday
+    reading, so the card's baseline uses it and the alternate stays
+    situational metadata (verbatim in the JSON, not in the Card). Some △
+    cells list only the alternate in `outcomes` and give the default in
+    `raw` alone; it is recovered from there (_situational_default).
     """
     baseline = [o for o in cell["outcomes"] if o.get("range") is None]
     ranged = [o for o in cell["outcomes"] if o.get("range") is not None]
-    if baseline:
-        text, injury = parse_result(baseline[0]["result"])
+    situational = _is_situational(cell)
+    if len(baseline) > 1 or (baseline and ranged and not situational):
+        raise ValueError(f"ambiguous cell (several defaults or a default "
+                         f"plus a split): {cell.get('raw')!r}")
+    if situational and not baseline:
+        default = _situational_default(cell, ranged)
+    elif baseline:
+        default = baseline[0]["result"]
+    else:
+        default = None
+    if default is not None:
+        text, injury = parse_result(default)
         return [Split(lo=1, hi=20, text=text, injury=injury)]
     splits = []
     for o in ranged:

@@ -172,6 +172,72 @@ def test_every_grid_is_a_valid_108_chance_card(cid, side_label, gi):
     assert ok, f"{cid} {side_label} grid {gi}: {problems or total}"
 
 
+# Situational (△) cells whose JSON lists only the clutch alternate in
+# `outcomes`; the default result is in `raw` alone (e.g. Mendoza LHB c4 r2,
+# raw '△2-strikeout / SI* 1-11 / lo (2b) 12-20'). The importer must take
+# the default, not the alternate. (side vs, column, roll) -> default.
+SITUATIONAL_DEFAULT_IN_RAW = {
+    ("batter_sewell-joe_HOF", "LHP", 3, 2): "SINGLE (cf)",
+    ("batter_sewell-joe_HOF", "RHP", 3, 2): "SINGLE (rf)",
+    ("pitcher_mendoza-ramiro_2001", "LHB", 4, 2): "strikeout",
+    ("pitcher_mendoza-ramiro_2001", "RHB", 4, 12): "flyball (lf)C",
+    ("pitcher_monroe-zach_1958", "LHB", 5, 2): "SINGLE (cf)",
+    ("pitcher_monroe-zach_1958", "RHB", 4, 2): "SINGLE (rf)",
+    ("pitcher_perez-melido_1994", "RHB", 6, 2): "groundball (ss)A",
+    ("pitcher_pettitte-andy_2012", "LHB", 5, 2): "SINGLE (rf)",
+    ("pitcher_pettitte-andy_2012", "RHB", 6, 5): "groundball (ss)A",
+}
+
+
+def _situational_cells():
+    for cid, card in sorted(CARDS.items()):
+        for side in card.sides:
+            for grid in side.grids:
+                for col in grid["columns"]:
+                    for cell in col["cells"]:
+                        if "upTriangle" in (cell.get("markers") or []):
+                            yield (cid, grid.get("vs"), col["col"], cell["roll"]), cell
+
+
+def test_situational_cells_import_their_default():
+    """Every △ cell imports as its everyday default over the whole d20,
+    never as its clutch SI*/lineout alternate, however the transcription
+    encoded the default (a range:null outcome, or only in `raw`)."""
+    seen = 0
+    default_only_in_raw = set()
+    for key, cell in _situational_cells():
+        seen += 1
+        nulls = [o for o in cell["outcomes"] if o["range"] is None]
+        ranged = [o for o in cell["outcomes"] if o["range"] is not None]
+        assert len(nulls) <= 1, key
+        if ranged:          # the alternate is a clean d20 split
+            covered = sorted(n for o in ranged
+                             for n in range(o["range"][0], o["range"][1] + 1))
+            assert covered == list(range(1, 21)), key
+        if nulls:
+            expected = cj.parse_result(nulls[0]["result"])[0]
+        else:
+            default_only_in_raw.add(key)
+            expected = SITUATIONAL_DEFAULT_IN_RAW[key]
+        splits = cj._cell_splits(cell)
+        assert [(s.lo, s.hi, s.text) for s in splits] == [(1, 20, expected)], key
+    assert seen == 30
+    assert default_only_in_raw == set(SITUATIONAL_DEFAULT_IN_RAW)
+
+
+def test_ambiguous_cells_are_rejected():
+    split = [{"range": [1, 11], "result": "SI*"},
+             {"range": [12, 20], "result": "lo (2b)"}]
+    default = {"range": None, "result": "strikeout"}
+    with pytest.raises(ValueError):       # a default plus a split, no △
+        cj._cell_splits({"roll": 2, "raw": "", "outcomes": [default, *split]})
+    with pytest.raises(ValueError):       # two defaults
+        cj._cell_splits({"roll": 2, "raw": "", "outcomes": [default, default]})
+    with pytest.raises(ValueError):       # △ with no default anywhere
+        cj._cell_splits({"roll": 2, "markers": ["upTriangle"],
+                         "raw": "△2-SI* 1-11 / lo (2b) 12-20", "outcomes": split})
+
+
 def test_basic_pitcher_cards_carry_30_x_chances():
     """Every *basic*-side pitcher card carries the standard 30-chance X-chart
     block. (Advanced platoon sides distribute X differently — e.g. Capuano
