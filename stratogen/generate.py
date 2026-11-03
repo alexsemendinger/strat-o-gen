@@ -39,11 +39,77 @@ from .model import (
 )
 from .simulate import (
     X_SINGLE_RATE, actual_batting_rates, effective_pa, hits_from_stats,
+    pitcher_effective_pa,
 )
 from . import platoon, ratings
 
 # Smallest chance worth placing: a 1-in-20 split of a weight-1 row is 0.05.
 _EPSILON = 0.026
+# Smallest miss worth a warning: 0.1% of PA (anything less prints as
+# "~0.0%") and, when the season's PA are known, about two events.
+_WARN_PER_PA = 0.001
+_WARN_EVENTS = 1.5
+# Below this many PA a season's rates are blended toward the league's (as
+# if it had _SHRINK_PA), so a 1-for-1 cup of coffee doesn't print a card
+# of 108 singles. Real cards from 65 PA up match the unblended formula.
+_SHRINK_PA = 50
+
+
+def _miss(per_pa: float, pa: float | None, label: str, direction: str,
+          reason: str) -> str | None:
+    """'walks will run ~1.2% of PA high (about 7 over his 600 PA): reason',
+    or None when the miss is too small to be news."""
+    if per_pa < _WARN_PER_PA or (pa and per_pa * pa < _WARN_EVENTS):
+        return None
+    events = f" (about {per_pa * pa:.0f} over the season)" if pa else ""
+    return f"{label} will run ~{per_pa:.1%} of PA {direction}{events}: {reason}"
+
+
+def _warn(warnings: list[str], message: str | None) -> None:
+    if message:
+        warnings.append(message)
+
+
+def _shrink(rates: dict, league_rates: dict, pa: float) -> dict:
+    """Blend per-PA rates toward the league's below _SHRINK_PA."""
+    k = max(0.0, _SHRINK_PA - pa)
+    if not k:
+        return dict(rates)
+    return {c: (pa * r + k * league_rates.get(c, r)) / (pa + k)
+            for c, r in rates.items()}
+
+
+def _batting_league_rates(league: dict) -> dict:
+    return {WALK: league["BB_per_PA"], SO: league["K_per_PA"],
+            HR: league["HR_per_PA"], TRIPLE: league["3B_per_PA"],
+            DOUBLE: league["2B_per_PA"], SINGLE: league["1B_per_PA"],
+            HBP: league.get("HBP_per_PA", 0.0)}
+
+
+def _small_sample_note(pa: float, unit: str) -> str | None:
+    if pa < _SHRINK_PA:
+        return (f"small sample: only {pa:.0f} {unit}; the card is blended toward "
+                f"league average (as if {_SHRINK_PA}) so a few games can't fill it "
+                f"with one result")
+    if pa < 100:
+        return f"small sample: only {pa:.0f} {unit}"
+    return None
+
+
+def _hbp_note(stats: dict, league: dict, pa: float) -> str | None:
+    """Basic cards print no HBP (official ones drop them too), so a
+    hit-by-pitch magnet's on-base % runs low in play: say by how much."""
+    hbp = stats.get("HBP") or 0
+    if hbp / pa - league.get("HBP_per_PA", 0.0) < 0.004:
+        return None
+    h = hits_from_stats(stats)
+    den = (stats.get("AB", 0) + stats.get("BB", 0) + hbp + (stats.get("SF") or 0))
+    obp = (h + stats.get("BB", 0) + hbp) / den
+    drop = hbp / den
+    return (f"{hbp} hit-by-pitches aren't on basic cards (official cards drop "
+            f"them too): on-base % will run about {drop:.3f} low in play "
+            f"({obp:.3f} -> {obp - drop:.3f}); the advanced side carries them"
+            ).replace(" 0.", " .").replace("(0.", "(.")
 
 
 def _deviation(player_rate: float, league_rate: float) -> tuple[float, float]:
@@ -59,8 +125,8 @@ def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     pa = effective_pa(stats)
     if pa <= 0:
         raise ValueError("player has no effective plate appearances")
-    if pa < 100:
-        warnings.append(f"small sample: only {pa:.0f} effective PA")
+    _warn(warnings, _small_sample_note(pa, "effective PA"))
+    _warn(warnings, _hbp_note(stats, league, pa))
 
     h = hits_from_stats(stats)
     singles = h - stats.get("2B", 0) - stats.get("3B", 0) - stats.get("HR", 0)
@@ -72,18 +138,18 @@ def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
         DOUBLE: stats.get("2B", 0) / pa,
         SINGLE: singles / pa,
     }
-    league_rate = {
-        WALK: league["BB_per_PA"], SO: league["K_per_PA"], HR: league["HR_per_PA"],
-        TRIPLE: league["3B_per_PA"], DOUBLE: league["2B_per_PA"],
-        SINGLE: league["1B_per_PA"],
-    }
-    return batter_targets_from_rates(rate, league_rate, warnings), warnings
+    league_rate = _batting_league_rates(league)
+    league_rate.pop(HBP)
+    rate = _shrink(rate, league_rate, pa)
+    return (batter_targets_from_rates(rate, league_rate, warnings,
+                                      pa=max(pa, _SHRINK_PA)), warnings)
 
 
 def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str],
                               *, weak_power: bool = False,
                               hbp_chances: int = 0,
-                              overflow: list | None = None) -> dict:
+                              overflow: list | None = None,
+                              pa: float | None = None) -> dict:
     """Chance targets for one batter grid from per-PA rates.
 
     Shared by the basic card and each advanced platoon side. `rate` and
@@ -97,6 +163,7 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
     his home runs (2 * rate * 108, no league subtraction — never clamps)
     and the pitcher's HR chances count against his singles.
     `hbp_chances` (advanced batter sides): whole HBP chances placed as-is.
+    `pa`: the plate appearances this grid stands for, to size warnings.
     """
     if weak_power:
         league_rate = dict(league_rate)
@@ -110,28 +177,33 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
     # an excess of league HR/3B/2B coming from the pitcher card is paid for
     # by removing singles from this card (and vice versa).
     xbh_deficit = deficits[HR] + deficits[TRIPLE] + deficits[DOUBLE]
+    unpaid = 0.0
     if xbh_deficit > 0:
         take = min(targets[SINGLE], xbh_deficit)
         targets[SINGLE] -= take
-        if take < xbh_deficit - _EPSILON:
-            warnings.append(
-                "hit total runs high: below-average XBH deficit couldn't be fully "
-                "absorbed by singles")
+        unpaid += xbh_deficit - take
+        for cat, label in ((HR, "home runs"), (TRIPLE, "triples"),
+                           (DOUBLE, "doubles")):
+            _warn(warnings, _miss(
+                deficits[cat] / 216, pa, label, "high",
+                "below league average and the card can't go negative "
+                "(singles were cut to keep total hits)"))
     if deficits[SINGLE] > 0:
         remaining = deficits[SINGLE]
         for cat in (DOUBLE, TRIPLE, HR):
             take = min(targets[cat], remaining)
             targets[cat] -= take
             remaining -= take
-        if remaining > _EPSILON:
-            warnings.append(
-                "hit total runs high: player far below league average; "
-                "the average pitcher card supplies more hits than the player earned")
+        unpaid += remaining
+    if unpaid / 216 >= _WARN_PER_PA and (not pa or unpaid / 216 * pa >= _WARN_EVENTS):
+        warnings.append(
+            f"hit total runs high (~{unpaid / 216:.1%} of PA): the player is far "
+            f"below league average and the average pitcher card supplies more "
+            f"hits than he earned")
     for cat, label in ((WALK, "walks"), (SO, "strikeouts")):
-        if deficits[cat] > _EPSILON:
-            warnings.append(
-                f"{label} will run ~{deficits[cat] / 216:.1%} of PA high: player is "
-                f"below league average and the card can't go negative")
+        _warn(warnings, _miss(deficits[cat] / 216, pa, label, "high",
+                              "player is below league average and the card "
+                              "can't go negative"))
 
     if hbp_chances:
         targets[HBP] = float(hbp_chances)  # whole chances
@@ -144,9 +216,9 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
         fixed = targets.get(HBP, 0)
         rest = non_out - hbp_chances
         scale = (CHANCES_PER_CARD - fixed) / rest if rest else 0.0
+        _scaled_warnings(targets, scale, pa, warnings)
         targets = {cat: (t * scale if cat != HBP else t)
                    for cat, t in targets.items()}
-        warnings.append("extreme stat line: chances scaled to fit the card")
         non_out = CHANCES_PER_CARD
     targets[OUT] = CHANCES_PER_CARD - non_out
     return targets
@@ -154,36 +226,44 @@ def batter_targets_from_rates(rate: dict, league_rate: dict, warnings: list[str]
 
 def pitcher_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     warnings = []
-    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, warnings)
-    targets = pitcher_targets_from_rates(rate_bb, rate_k, rate_hr, rate_h,
-                                         league, warnings)
+    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, league, warnings)
+    targets = pitcher_targets_from_rates(
+        rate_bb, rate_k, rate_hr, rate_h, league, warnings,
+        pa=max(pitcher_effective_pa(stats, league), _SHRINK_PA))
     return targets, warnings
 
 
-def _pitching_rates(stats: dict, warnings: list[str]) -> tuple[float, ...]:
-    """(BB, SO, HR, H) per effective batter faced; warns about estimated
-    or small samples."""
-    tbf = stats.get("TBF", 0)
-    if not tbf:
-        tbf = stats.get("IP", 0) * 3 + stats.get("H", 0) + stats.get("BB", 0)
-        warnings.append("batters faced estimated from IP/H/BB")
-    tbf_eff = tbf - stats.get("IBB", 0)
+def _pitching_rates(stats: dict, league: dict,
+                    warnings: list[str]) -> tuple[float, ...]:
+    """(BB, SO, HR, H) per effective batter faced
+    (simulate.pitcher_effective_pa); warns about estimated or small samples."""
+    tbf_eff = pitcher_effective_pa(stats, league)
     if tbf_eff <= 0:
         raise ValueError("pitcher has no batters faced")
-    if tbf_eff < 100:
-        warnings.append(f"small sample: only {tbf_eff:.0f} batters faced")
+    if not stats.get("TBF"):
+        warnings.append("batters faced not recorded this season: estimated "
+                        "from innings, hits, walks and hit batsmen")
+    _warn(warnings, _small_sample_note(tbf_eff, "batters faced"))
 
-    rate_bb = (stats.get("BB", 0) - stats.get("IBB", 0)) / tbf_eff
-    rate_k = stats.get("SO", 0) / tbf_eff
-    rate_hr = stats.get("HR", 0) / tbf_eff
-    rate_h = stats.get("H", 0) / tbf_eff
-    return rate_bb, rate_k, rate_hr, rate_h
+    rates = {WALK: (stats.get("BB", 0) - stats.get("IBB", 0)) / tbf_eff,
+             SO: stats.get("SO", 0) / tbf_eff,
+             HR: stats.get("HR", 0) / tbf_eff,
+             "H": stats.get("H", 0) / tbf_eff}
+    lg = {WALK: league["BB_per_PA"], SO: league["K_per_PA"],
+          HR: league["HR_per_PA"], "H": league["H_per_PA"]}
+    if "HR" in (stats.get("missing") or ()):
+        rates[HR] = lg[HR]
+        warnings.append("home runs allowed not recorded this season: the card "
+                        "assumes the league rate")
+    rates = _shrink(rates, lg, tbf_eff)
+    return rates[WALK], rates[SO], rates[HR], rates["H"]
 
 
 def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
                                rate_h: float, league: dict, warnings: list[str],
                                *, weak_share: float = 0.0,
-                               overflow: list | None = None) -> dict:
+                               overflow: list | None = None,
+                               pa: float | None = None) -> dict:
     """Chance targets for one pitcher grid from per-batter rates.
 
     Shared by the basic card and each advanced platoon side. `league`
@@ -194,51 +274,66 @@ def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
 
     `weak_share` (advanced sides): the share of this matchup's PA taken by
     Power-W batters, against whom this grid's N-HR chances read as
-    singles. See _amplify_n_hr for the exact accounting.
+    singles. See _amplify_n_hr for the exact accounting. `pa`: the batters
+    faced this grid stands for, to size warnings.
     """
     targets = {}
     targets[WALK], d_bb = _deviation(rate_bb, league["BB_per_PA"])
     targets[SO], d_k = _deviation(rate_k, league["K_per_PA"])
     targets[HR], d_hr = _deviation(rate_hr, league["HR_per_PA"])
     for deficit, label in ((d_bb, "walks"), (d_k, "strikeouts")):
-        if deficit > _EPSILON:
-            warnings.append(
-                f"{label} will run ~{deficit / 216:.1%} of PA high: pitcher is "
-                f"better than league average and the card can't go negative")
+        _warn(warnings, _miss(deficit / 216, pa, label, "high",
+                              "pitcher is better than league average and the "
+                              "card can't go negative"))
+    if not weak_share:   # advanced sides: _amplify_n_hr accounts for HR
+        _warn(warnings, _miss(d_hr / 216, pa, "home runs allowed", "high",
+                              "pitcher allowed fewer than league average and "
+                              "the card can't go negative"))
 
     # Total hits the card must yield, X-chart singles included.
     total_hits, d_h = _deviation(rate_h, league["H_per_PA"])
-    if d_h > _EPSILON:
-        warnings.append(
-            "hits allowed will run high: pitcher allows far fewer hits than "
-            "league average and the card can't go negative")
+    _warn(warnings, _miss(d_h / 216, pa, "hits allowed", "high",
+                          "pitcher allows far fewer hits than league average "
+                          "and the card can't go negative"))
 
-    # The X block is normally 30 chances, but an extreme card (e.g. a modern
-    # strikeout reliever) may not have room; shrink it before resorting to
-    # scaling. Each X chance costs (1 - X_SINGLE_RATE) of capacity beyond the
-    # hit total it absorbs.
+    # The X block is normally 30 chances, but an extreme card may not have
+    # room for it: a modern strikeout reliever's line can overflow the card
+    # (each X chance costs 1 - X_SINGLE_RATE of capacity beyond the hits it
+    # absorbs), and a pitcher who allowed fewer hits than the block's own
+    # X_SINGLE_RATE singles can't carry all 30 without allowing hits he
+    # never did. Shrink it before resorting to scaling.
     committed = targets[WALK] + targets[SO] + total_hits
-    x_room = (CHANCES_PER_CARD - committed) / (1.0 - X_SINGLE_RATE)
-    x_block = max(0, min(X_CHANCES_PER_PITCHER_CARD, int(x_room)))
+    x_room = int((CHANCES_PER_CARD - committed) / (1.0 - X_SINGLE_RATE))
+    x_hit_room = int(total_hits / X_SINGLE_RATE + 1e-9)
+    x_block = max(0, min(X_CHANCES_PER_PITCHER_CARD, x_room, x_hit_room))
     if x_block < X_CHANCES_PER_PITCHER_CARD:
+        why = ("to fit the card" if x_room <= x_hit_room else
+               "so its singles don't exceed the hits he allowed")
         warnings.append(
             f"extreme stat line: X-chart block reduced to {x_block} chances "
-            f"(normally {X_CHANCES_PER_PITCHER_CARD}) to fit the card")
+            f"(normally {X_CHANCES_PER_PITCHER_CARD}) {why}")
     x_hits = x_block * X_SINGLE_RATE
-    regular_hits = total_hits - x_hits
-    if regular_hits < 0:
-        warnings.append("dominant pitcher: X-chart hits alone exceed the hit "
-                        "target; hits allowed will run slightly high")
-        regular_hits = 0.0
+    regular_hits = total_hits - x_hits          # >= 0 by the cap above
     if targets[HR] > regular_hits:
+        trimmed = targets[HR] - regular_hits
         targets[HR] = regular_hits
-        warnings.append("HR chances trimmed to fit hit total")
-    # 2B/3B allowed aren't tracked historically; use the league's non-HR hit mix.
-    non_hr = regular_hits - targets[HR]
+        _warn(warnings, _miss(trimmed / 216, pa, "home runs allowed", "low",
+                              "the card's hit total can't hold them all"))
+    # 2B/3B allowed aren't tracked historically, so every non-HR hit the
+    # card yields (X-chart singles included) follows the league's 1B/2B/3B
+    # mix; the X block only ever yields singles, so its hits come out of
+    # the singles share alone (a league-average line reproduces
+    # average_pitcher_chances exactly).
+    non_hr = total_hits - targets[HR]
     lg_non_hr = league["1B_per_PA"] + league["2B_per_PA"] + league["3B_per_PA"]
-    targets[SINGLE] = non_hr * (league["1B_per_PA"] / lg_non_hr)
+    targets[SINGLE] = non_hr * (league["1B_per_PA"] / lg_non_hr) - x_hits
     targets[DOUBLE] = non_hr * (league["2B_per_PA"] / lg_non_hr)
     targets[TRIPLE] = non_hr * (league["3B_per_PA"] / lg_non_hr)
+    for cat in (DOUBLE, TRIPLE):   # too few singles for the X block's hits
+        take = min(targets[cat], max(0.0, -targets[SINGLE]))
+        targets[cat] -= take
+        targets[SINGLE] += take
+    targets[SINGLE] = max(0.0, targets[SINGLE])
     if weak_share > 0:
         _amplify_n_hr(targets, rate_hr, league, weak_share, warnings)
 
@@ -248,12 +343,26 @@ def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
         if overflow is not None:
             overflow.append(non_out - CHANCES_PER_CARD)
         scale = (CHANCES_PER_CARD - targets[XCHANCE]) / (non_out - targets[XCHANCE])
+        _scaled_warnings(targets, scale, pa, warnings, pitcher=True)
         targets = {cat: (t * scale if cat != XCHANCE else t)
                    for cat, t in targets.items()}
-        warnings.append("extreme stat line: chances scaled to fit the card")
         non_out = CHANCES_PER_CARD
     targets[OUT] = CHANCES_PER_CARD - non_out
     return targets
+
+
+def _scaled_warnings(targets: dict, scale: float, pa: float | None,
+                     warnings: list[str], pitcher: bool = False) -> None:
+    """A line too big for 108 chances is scaled down: say which results
+    run low, and by how much."""
+    lost = {label: sum(targets.get(c, 0.0) for c in cats) * (1.0 - scale) / 216
+            for label, cats in (("walks", (WALK,)), ("strikeouts", (SO,)),
+                                ("hits allowed" if pitcher else "hits",
+                                 (HR, TRIPLE, DOUBLE, SINGLE)))}
+    named = [_miss(v, pa, label, "low", "extreme stat line, chances scaled "
+                   "to fit the card") for label, v in lost.items()]
+    named = [m for m in named if m]
+    warnings.extend(named or ["extreme stat line: chances scaled to fit the card"])
 
 
 # Largest Power-W share the N-HR amplification honors (1/(1-w) <= 4). In
@@ -448,15 +557,14 @@ def generate_advanced_batter_card(
     pa = effective_pa(stats)
     if pa <= 0:
         raise ValueError("player has no effective plate appearances")
-    if pa < 100:
-        warnings.append(f"small sample: only {pa:.0f} effective PA")
+    _warn(warnings, _small_sample_note(pa, "effective PA"))
     ctx = context or platoon.league_context(league)
     hand = platoon.batting_hand(bats or _lahman_hand(stats, "bats"))
     if hand == "?":
         warnings.append("batting hand unknown: treated as right-handed")
         hand = "R"
 
-    rates = actual_batting_rates(stats)
+    rates = _shrink(actual_batting_rates(stats), _batting_league_rates(league), pa)
     s_lhp = platoon.printed_share(platoon.batter_lhp_share(hand, pa, ctx))
     shares = {"L": s_lhp, "R": 1.0 - s_lhp}
     # Pitcher grids carry no HBP, so the batter's grids carry all of his:
@@ -481,7 +589,7 @@ def generate_advanced_batter_card(
             targets[p] = batter_targets_from_rates(
                 r, league_rate, side_warnings[f"{p}HP"],
                 weak_power=(power[p] == "W"), hbp_chances=hbp,
-                overflow=overflow)
+                overflow=overflow, pa=shares[p] * max(pa, _SHRINK_PA))
             lost += shares[p] * sum(overflow)
         return targets, side_warnings, lost
 
@@ -498,7 +606,7 @@ def generate_advanced_batter_card(
             profile=profile, seed_extra=f"advanced vs {p}HP")
         sides.append(PlatoonSide(vs=f"{p}HP", share=shares[p], card=card,
                                  power=power[p]))
-    warnings = (list(league.get("warnings", [])) + _missing_data_warnings(stats)
+    warnings = (_missing_data_warnings(stats, "batter", league)
                 + list(ctx.warnings) + warnings + notes
                 + merge_side_warnings(side_warnings))
     return AdvancedCard(name=name, card_type="batter", hand=hand,
@@ -520,7 +628,8 @@ def generate_advanced_pitcher_card(
     the matchup's real mix of N and W batters. Returns (card, warnings).
     """
     warnings = []
-    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, warnings)
+    rate_bb, rate_k, rate_hr, rate_h = _pitching_rates(stats, league, warnings)
+    tbf = max(pitcher_effective_pa(stats, league), _SHRINK_PA)
     ctx = context or platoon.league_context(league)
     hand = platoon.throwing_hand(throws or _lahman_hand(stats, "throws"))
     if hand == "?":
@@ -541,7 +650,7 @@ def generate_advanced_pitcher_card(
             targets[h] = pitcher_targets_from_rates(
                 r[WALK], r[SO], r[HR], r["H"], ctx.cell_league(hand, h),
                 side_warnings[f"{h}HB"], weak_share=ctx.weak_share[(hand, h)],
-                overflow=overflow)
+                overflow=overflow, pa=shares[h] * tbf)
             lost += shares[h] * sum(overflow)
         return targets, side_warnings, lost
 
@@ -557,7 +666,7 @@ def generate_advanced_pitcher_card(
             team=stats.get("team"), stats=display, header_lines=header,
             profile=profile, seed_extra=f"advanced vs {h}HB", hr_text="N-HR")
         sides.append(PlatoonSide(vs=f"{h}HB", share=shares[h], card=card))
-    warnings = (list(league.get("warnings", [])) + _missing_data_warnings(stats)
+    warnings = (_missing_data_warnings(stats, "pitcher", league)
                 + list(ctx.warnings) + warnings + notes
                 + merge_side_warnings(side_warnings))
     return AdvancedCard(name=name, card_type="pitcher", hand=hand,
@@ -576,6 +685,40 @@ _EDGE_IN = tuple(reversed(_CENTER_OUT))
 # spread over all three columns like real cards.
 _X_CELLS = [(4, 7), (4, 9), (5, 6), (5, 10), (5, 12), (6, 8), (6, 5), (6, 3)]
 assert sum(DICE_WEIGHTS[d] for _, d in _X_CELLS) == X_CHANCES_PER_PITCHER_CARD
+
+
+def _x_blocks(x_target: int, rng: random.Random,
+              ) -> list[list[tuple[tuple[int, int], str]]]:
+    """Candidate X blocks holding `x_target` chances (one, for now): the
+    fixed _X_CELLS or, for a block reduced to fit an extreme card, the
+    heaviest cells that sum exactly to the target; one cell is the
+    catcher's card, the rest groundball (60%) or flyball X to a random
+    fielder."""
+    if x_target <= 0:
+        return []
+    if x_target == X_CHANCES_PER_PITCHER_CARD:
+        cells = list(_X_CELLS)
+    else:
+        cells, remaining = [], x_target
+        pool = sorted(((col, d) for col in PITCHER_COLUMNS for d in DICE_WEIGHTS),
+                      key=lambda cd: -DICE_WEIGHTS[cd[1]])
+        for cell in pool:
+            if DICE_WEIGHTS[cell[1]] <= remaining:
+                cells.append(cell)
+                remaining -= DICE_WEIGHTS[cell[1]]
+            if remaining == 0:
+                break
+    catcher = rng.choice(cells)
+    block = []
+    for cell in cells:
+        if cell == catcher:
+            block.append((cell, "CATCHER'S CARD X"))
+        elif rng.random() < 0.6:
+            pos = rng.choice(["ss", "3b", "2b", "1b", "p"])
+            block.append((cell, f"GROUNDBALL ({pos}) X"))
+        else:
+            block.append((cell, f"FLYBALL ({rng.choice(['lf', 'cf', 'rf'])}) X"))
+    return [block]
 
 
 def _spread_cells(columns: tuple[int, ...], phase: int) -> list[tuple[int, int]]:
@@ -613,19 +756,28 @@ _DEFAULT_PROFILE = {"single_2star": 0.30, "single_star": 0.17,
                     "double_2star": 0.32, "gb_a": 0.70, "plus_plus": 1}
 
 
+# Shares of the */** hit variants: the means of the official basic batter
+# cards in data/real_cards (SINGLE** .325, SINGLE* .186, DOUBLE** .386 of
+# single/double chances). Isolated power used to set them, but on the real
+# cards it predicts worse than these constants and with the wrong sign
+# (corr(ISO, share) -0.20 / -0.12 / -0.41; Judge 2024, ISO .379, prints
+# SINGLE** on .11 of his singles), and running speed doesn't predict them
+# either, so every batter gets the real-card mean.
+SINGLE_2STAR_SHARE = 0.33
+SINGLE_STAR_SHARE = 0.19
+DOUBLE_2STAR_SHARE = 0.39
+
+
 def hit_profile(stats: dict, pa: float | None = None) -> dict:
     """How this player's hits and outs should read, beyond raw frequencies.
 
     In play, ** means runners automatically advance two bases, * pins them
-    to one, and no asterisk allows a running gamble — so the mix matters.
-    Hard contact (isolated power) drives the ** share; soft contact drives
-    the * share; GIDP tendency drives the groundball-A (double play) share;
-    speed drives the count of ++ groundouts (which favor the offense when
-    the infield is in or a runner is held).
+    to one, and no asterisk allows a running gamble. The */** mix is the
+    real cards' mean (see SINGLE_2STAR_SHARE); GIDP tendency drives the
+    groundball-A (double play) share; speed drives the count of ++
+    groundouts (which favor the offense when the infield is in or a
+    runner is held).
     """
-    ab = stats.get("AB", 0) or 1
-    iso = (stats.get("2B", 0) + 2 * stats.get("3B", 0)
-           + 3 * stats.get("HR", 0)) / ab
     pa = pa or effective_pa(stats) or 1
 
     def clamp(v, lo, hi):
@@ -636,9 +788,9 @@ def hit_profile(stats: dict, pa: float | None = None) -> dict:
         gidp == 0 and "GIDP" not in stats)
     speed = ratings.running_rating(stats)  # 8 (slow) .. 17 (fast)
     return {
-        "single_2star": clamp(0.10 + 1.6 * iso, 0.10, 0.55),
-        "single_star": clamp(0.32 - 1.1 * iso, 0.05, 0.32),
-        "double_2star": clamp(0.15 + 1.2 * iso, 0.15, 0.55),
+        "single_2star": SINGLE_2STAR_SHARE,
+        "single_star": SINGLE_STAR_SHARE,
+        "double_2star": DOUBLE_2STAR_SHARE,
         "gb_a": _DEFAULT_PROFILE["gb_a"] if gidp_missing
                 else clamp(0.17 + 26.0 * gidp / pa, 0.15, 1.0),
         "plus_plus": 3 if speed >= 15 else (2 if speed >= 13 else 1),
@@ -663,61 +815,163 @@ def pitcher_hit_profile(stats: dict, league: dict) -> dict:
     return profile
 
 
-class _OutFlavors:
-    """Deterministic out-text generator in the style of real cards."""
+def _quota(weights: list[float], shares: dict[str, float],
+           forced: dict[int, str] | None = None) -> list[str]:
+    """Give each piece (a chance weight) one key of `shares` so that the
+    chance-weighted mix comes as close to the shares as whole pieces allow.
 
-    _GB_POS = ["ss", "3b", "2b", "1b", "p"]
-    _FB_POS = ["lf", "cf", "rf"]
-    # Chance-weighted from the 39 real cards in data/real_cards (non-X outs):
-    # batter cards 55% groundball / 22% flyball / 9% lineout / 12% popout /
-    # 1% foulout, grounders A or B only (no C), flyballs 97% B / 3% A, hit
-    # mostly to ss/3b; pitcher cards 26/48/10/16/0 (their grounders are
-    # mostly X chances), grounders 40% B / 60% C (no A), flyballs 83% B /
-    # 17% C, hit mostly to 2b/1b.
-    _MIX = {"batter": (0.55, 0.77, 0.86, 0.98), "pitcher": (0.26, 0.74, 0.84, 1.0)}
-    _GB_WEIGHTS = {"batter": [38, 29, 15, 8, 10], "pitcher": [14, 11, 40, 22, 14]}
-    _FB_LETTERS = {"batter": [3, 97, 0], "pitcher": [0, 83, 17]}
+    Pieces go largest first (ties in the given order) to the key with the
+    largest remaining deficit against share x total, then single moves and
+    pairwise swaps run while they shrink the total miss. `forced` pins
+    pieces (index -> key); they count toward their key's quota.
+    """
+    forced = forced or {}
+    keys = [k for k, v in shares.items() if v > 0]
+    norm = sum(shares[k] for k in keys)
+    total = sum(weights)
+    target = {k: shares[k] / norm * total for k in keys}
+    placed = {k: 0.0 for k in keys}
+    out: list = [None] * len(weights)
+    for i, key in forced.items():
+        out[i] = key
+        placed.setdefault(key, 0.0)
+        placed[key] += weights[i]
+        target.setdefault(key, 0.0)
+    free = sorted((i for i in range(len(weights)) if i not in forced),
+                  key=lambda i: -weights[i])
+    for i in free:
+        key = max(keys, key=lambda k: target[k] - placed[k])
+        out[i] = key
+        placed[key] += weights[i]
+
+    def gain(moves) -> float:
+        """Drop in total |placed - target| from applying (weight, from, to)."""
+        delta = dict.fromkeys({k for _w, a, b in moves for k in (a, b)}, 0.0)
+        for w, a, b in moves:
+            delta[a] -= w
+            delta[b] += w
+        return sum(abs(placed[k] - target[k]) - abs(placed[k] + d - target[k])
+                   for k, d in delta.items())
+
+    for _round in range(len(weights) + 1):
+        best = (1e-9, None)
+        for x, i in enumerate(free):
+            for k in keys:
+                if k != out[i]:
+                    g = gain([(weights[i], out[i], k)])
+                    if g > best[0]:
+                        best = (g, [(i, k)])
+            for j in free[x + 1:]:
+                if out[j] != out[i]:
+                    g = gain([(weights[i], out[i], out[j]),
+                              (weights[j], out[j], out[i])])
+                    if g > best[0]:
+                        best = (g, [(i, out[j]), (j, out[i])])
+        if best[1] is None:
+            break
+        for i, k in best[1]:
+            placed[out[i]] -= weights[i]
+            placed[k] += weights[i]
+            out[i] = k
+    return out
+
+
+class _OutFlavors:
+    """Out texts in the style of real cards, allocated by quota.
+
+    Every out piece of a card (whole cells and the open d20 tails of
+    split cells) is known before any text is chosen, so the card's out
+    content is allocated, not drawn: the out type of each piece by _quota
+    against the card type's mix, then the A/B/C letter and the fielder
+    within each type the same way. Every card therefore realizes the mix
+    (and the groundball-A share of its profile) as closely as its pieces
+    allow, instead of scattering around it cell by cell.
+
+    Chance-weighted from the real cards in data/real_cards (non-X outs):
+    batter cards 55% groundball / 22% flyball / 10% lineout (the max-effort
+    one included) / 12% popout / 1% foulout (measured on the 23 basic
+    batter grids: .550/.217/.103/.119/.011), grounders A or B only (A
+    share = profile gb_a), flyballs
+    97% B / 3% A; pitcher cards 26/48/10/16/0 (their grounders are mostly X
+    chances), grounders 40% B / 60% C (no A), flyballs 83% B / 17% C.
+    Fielders: grounders as calibrated with the mix (batter cards mostly
+    ss/3b, pitcher cards mostly 2b/1b); flyballs, lineouts and popouts
+    follow the official basic cards' chance-weighted fielders.
+    """
+
+    _TYPES = ("groundball", "flyball", "lineout", "popout", "foulout")
+    _MIX = {"batter": (55, 22, 10, 12, 1), "pitcher": (26, 48, 10, 16, 0)}
+    _LETTERS = {"batter": {"flyball": {"A": 3, "B": 97}},
+                "pitcher": {"groundball": {"B": 40, "C": 60},
+                            "flyball": {"B": 83, "C": 17}}}
+    _FIELDERS = {
+        "batter": {"groundball": {"ss": 38, "3b": 29, "2b": 15, "1b": 8, "p": 10},
+                   "flyball": {"lf": 39, "cf": 37, "rf": 24},
+                   "lineout": {"2b": 40, "3b": 35, "1b": 14, "ss": 11},
+                   "popout": {"ss": 35, "3b": 27, "2b": 26, "1b": 12},
+                   "foulout": {"c": 1}},
+        "pitcher": {"groundball": {"ss": 14, "3b": 11, "2b": 40, "1b": 22, "p": 14},
+                    "flyball": {"cf": 39, "rf": 36, "lf": 25},
+                    "lineout": {"ss": 63, "1b": 17, "3b": 10, "2b": 10},
+                    "popout": {"1b": 56, "ss": 21, "2b": 16, "3b": 7},
+                    "foulout": {"c": 1}},
+    }
+    MAX_LINEOUT = "max lineout"   # forced kind: lineout into as many outs as possible
 
     def __init__(self, rng: random.Random, card_type: str, profile: dict):
         self.rng = rng
-        self.card_type = card_type
+        self.kind = "batter" if card_type == "batter" else "pitcher"
         self.profile = profile
 
-    def next(self) -> str:
-        roll = self.rng.random()
-        kind = "batter" if self.card_type == "batter" else "pitcher"
-        gb, fb, lo, po = self._MIX[kind]
-        if roll < gb:
-            pos = self.rng.choices(self._GB_POS, weights=self._GB_WEIGHTS[kind])[0]
-            gb_a = self.profile["gb_a"] if kind == "batter" else 0.0
-            c_share = 0.0 if kind == "batter" else 0.60
-            rating = self.rng.choices(
-                ["A", "B", "C"],
-                weights=[gb_a, (1 - c_share) * (1 - gb_a), c_share * (1 - gb_a)])[0]
-            return f"groundball ({pos}){rating}"
-        if roll < fb:
-            pos = self.rng.choice(self._FB_POS)
-            rating = self.rng.choices(["A", "B", "C"],
-                                      weights=self._FB_LETTERS[kind])[0]
-            return f"flyball ({pos}){rating}"
-        if roll < lo:
-            return f"lineout ({self.rng.choice(self._GB_POS[:4])})"
-        if roll < po:
-            return f"popout ({self.rng.choice(['ss', '2b', '3b', '1b'])})"
-        return "foulout (c)"
+    def mix(self) -> dict[str, float]:
+        return dict(zip(self._TYPES, self._MIX[self.kind]))
 
-    def x_chance(self) -> str:
-        if self.rng.random() < 0.6:
-            return f"GROUNDBALL ({self.rng.choice(self._GB_POS)}) X"
-        return f"FLYBALL ({self.rng.choice(self._FB_POS)}) X"
+    def letters(self, out_type: str) -> dict[str, float] | None:
+        if out_type == "groundball" and self.kind == "batter":
+            a = self.profile["gb_a"]
+            return {"A": a, "B": 1.0 - a}
+        return self._LETTERS[self.kind].get(out_type)
+
+    def allocate(self, weights: list[float],
+                 forced: dict[int, str] | None = None) -> list[str]:
+        """Out texts for pieces of the given chance weights (in the order
+        given; callers shuffle equal weights for variety). `forced` pins
+        pieces to MAX_LINEOUT."""
+        forced = forced or {}
+        types = _quota(weights, self.mix(),
+                       {i: "lineout" for i in forced})
+        texts = [""] * len(weights)
+        for out_type in self._TYPES:
+            idx = [i for i, t in enumerate(types) if t == out_type]
+            if not idx:
+                continue
+            sub = [weights[i] for i in idx]
+            fielders = _quota(sub, self._FIELDERS[self.kind][out_type])
+            letter_shares = self.letters(out_type)
+            letters = (_quota(sub, letter_shares) if letter_shares
+                       else [""] * len(idx))
+            for i, pos, letter in zip(idx, fielders, letters):
+                if i in forced:
+                    texts[i] = f"lineout ({pos}) into as many outs as possible"
+                elif out_type == "foulout":
+                    texts[i] = f"foulout ({pos})"
+                elif letter:
+                    texts[i] = f"{out_type} ({pos}){letter}"
+                else:
+                    texts[i] = f"{out_type} ({pos})"
+        return texts
 
 
 class _HitVariants:
-    """Player-aware */** mix on hit texts (see hit_profile).
+    """The */** mix on hit texts (see hit_profile).
 
-    Variants are allocated by largest-deficit quota over the chances
-    actually placed, so the card's realized mix matches the profile even
-    when a player has only a couple of single chances to spread around.
+    Variants are allocated by largest-deficit quota as each hit cell is
+    placed. Cells are whole (real cards never split a hit cell between
+    variants), so with only one to four cells per category the realized
+    mix can only approximate the profile: the first, largest cell goes to
+    the largest share (Mays 1965 prints DOUBLE** on .86 of his doubles
+    against a .54 share). An exact whole-cell assignment does no better
+    in practice, so the greedy stays.
     """
 
     def __init__(self, rng: random.Random, profile: dict,
@@ -772,6 +1026,109 @@ def _hbp_cells(n: int, free: dict, rng: random.Random) -> list[tuple[int, int]]:
     return chosen
 
 
+def _place_categories(targets: dict[str, float], prefs: dict, free: dict,
+                      placed: dict, text) -> dict[str, float]:
+    """Place the hit/BB/SO targets on the free cells (mutating `free` and
+    `placed`, whose split cells keep their unused d20 tail open for outs).
+    `text(cat, amount)` gives each placement's text. Returns the chances
+    placed per category."""
+    got = {cat: 0.0 for cat in _PLACE_ORDER}
+
+    def assign_full(cell, label):
+        placed[cell] = [(label, 1, 20)]
+        free.pop(cell)
+
+    def open_tail(cell) -> int:
+        return placed[cell][-1][2] + 1
+
+    drift = 0.0   # placed minus target over the categories done so far
+    for cat in _PLACE_ORDER:
+        t = targets.get(cat, 0.0)
+        # Full cells, largest usable weight first, following preference order.
+        while t > _EPSILON:
+            cell = None
+            best_w = 0
+            for cand in prefs[cat]:
+                if cand in free:
+                    w = DICE_WEIGHTS[cand[1]]
+                    if w <= t + _EPSILON and w > best_w:
+                        cell = cand
+                        best_w = w
+            if cell is None:
+                break
+            assign_full(cell, text(cat, best_w))
+            t -= best_w
+            got[cat] += best_w
+        if t > _EPSILON:
+            # One d20 split. Its miss also lands on the out total, so a
+            # candidate is judged by the worse of its own miss and the
+            # running miss of everything placed so far; among cells that
+            # do equally well, the lightest wastes the least capacity on
+            # its unused tail. Placing nothing is a candidate for a sliver
+            # (one on a 2-chance row can miss by more than the sliver).
+            best = None
+            if t < 0.1 and any(c in free for c in prefs[cat]):
+                worst = max(t, abs(drift - t))
+                best = ((round(worst * 20), 0, worst, t), None, 0)
+            for cand in prefs[cat]:
+                if cand not in free:
+                    continue
+                w = DICE_WEIGHTS[cand[1]]
+                near = round(20.0 * t / w)
+                for r in {max(1, min(20, near + k)) for k in (-1, 0, 1)}:
+                    err = w * r / 20.0 - t
+                    worst = max(abs(err), abs(drift + err))
+                    key = (round(worst * 20), w, worst, abs(err))
+                    if best is None or key < best[0]:
+                        best = (key, cand, r)
+            _key, cell, r = best if best else (None, None, 0)
+            if cell is None and t < 0.1:
+                t = 0.0
+            elif cell is not None:
+                amount = DICE_WEIGHTS[cell[1]] * min(r, 20) / 20.0
+                if r >= 20:
+                    assign_full(cell, text(cat, amount))
+                else:
+                    placed[cell] = [(text(cat, amount), 1, r)]  # tail filled later
+                    free.pop(cell)
+                t -= amount
+                got[cat] += amount
+        if t > _EPSILON:
+            # Safety net for very crowded cards: continue this category in
+            # the unused d20 tails of earlier splits.
+            tails = sorted((c for c in placed if open_tail(c) <= 20),
+                           key=lambda c: DICE_WEIGHTS[c[1]])
+            for cell in tails:
+                if t <= _EPSILON:
+                    break
+                w = DICE_WEIGHTS[cell[1]]
+                start = open_tail(cell)
+                avail_slots = 21 - start
+                want_slots = min(avail_slots, max(1, round(20.0 * t / w)))
+                amount = w * want_slots / 20.0
+                placed[cell].append(
+                    (text(cat, amount), start, start + want_slots - 1))
+                t -= amount
+                got[cat] += amount
+        drift += got[cat] - targets.get(cat, 0.0)
+    return got
+
+
+_PLACE_ORDER = (HR, TRIPLE, DOUBLE, SINGLE, WALK, SO)
+# An X block is kept when the rest of the card then lands within this many
+# chances of every target; otherwise the other real blocks are tried.
+_X_FIT = 0.05
+
+
+def _placement_miss(targets: dict[str, float], fixed: float,
+                    got: dict[str, float]) -> float:
+    """Largest |placed - target| over the placed categories and OUT, given
+    `fixed` chances (X/HBP/reserved) already on the card."""
+    miss = max(abs(got[c] - targets.get(c, 0.0)) for c in got)
+    outs = CHANCES_PER_CARD - fixed - sum(got.values())
+    return max(miss, abs(outs - targets.get(OUT, 0.0)))
+
+
 def layout_card(targets: dict[str, float], *, card_type: str, name: str,
                 year: int | None, team: str | None, stats: dict,
                 header_lines: list[str], profile: dict | None = None,
@@ -782,7 +1139,10 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
     cosmetic out locations is seeded from name+year). `profile` (see
     hit_profile) controls the */**/++/DP-letter mix. `hr_text` is how home
     runs print ("N-HR" on advanced pitcher grids). Whole HBP chances
-    (advanced batter grids) go on edge rows before anything else.
+    (advanced batter grids) go on edge rows before anything else. Batter
+    grids keep two 1-chance rows (dice 2/12) for the max-effort lineout and
+    the injury, as every real card does; out texts are allocated by quota
+    once every out piece is known (_OutFlavors).
     """
     profile = profile or dict(_DEFAULT_PROFILE)
     rng = random.Random(f"{name}|{year}|{card_type}|{seed_extra}")
@@ -801,105 +1161,74 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
         placed[cell] = [(text, 1, 20)]
         free.pop(cell)
 
-    def assign_split(cell, text, upto):
-        placed[cell] = [(text, 1, upto)]  # tail filled later
-        free.pop(cell)
-
     def open_tail(cell) -> int:
         """First unused d20 slot of a partially used cell (21 = none)."""
         return placed[cell][-1][2] + 1
 
-    # X block first (pitcher only): full cells summing exactly to the target.
+    # X block first (pitcher only, see _x_blocks); with several candidate
+    # blocks the first that leaves the rest of the card on target is used.
     if card_type == "pitcher":
         x_target = int(round(targets.get(XCHANCE, 0)))
-        if x_target == X_CHANCES_PER_PITCHER_CARD:
-            x_cells = list(_X_CELLS)
-        else:  # extreme card with a reduced block: greedy exact-sum pick
-            x_cells = []
-            remaining = x_target
-            pool = sorted(free, key=lambda cd: -DICE_WEIGHTS[cd[1]])
-            for cell in pool:
-                w = DICE_WEIGHTS[cell[1]]
-                if w <= remaining:
-                    x_cells.append(cell)
-                    remaining -= w
-                if remaining == 0:
-                    break
-        if x_cells:
-            catcher_cell = rng.choice(x_cells)
-            for cell in x_cells:
-                text = ("CATCHER'S CARD X" if cell == catcher_cell
-                        else flavors.x_chance())
-                assign_full(cell, text)
+        best = None
+        for block in _x_blocks(x_target, rng):
+            trial = dict(free)
+            for cell, _text in block:
+                trial.pop(cell)
+            got = _place_categories(targets, prefs, trial, {}, lambda c, a: c)
+            miss = _placement_miss(targets, x_target, got)
+            if best is None or miss < best[0] - 1e-9:
+                best = (miss, block)
+            if miss <= _X_FIT:
+                break
+        for cell, text in (best[1] if best else []):
+            assign_full(cell, text)
 
     hbp = int(round(targets.get(HBP, 0)))
     if hbp > 0:
         for cell in _hbp_cells(hbp, free, rng):
             assign_full(cell, variants.text(HBP))
 
-    order = [HR, TRIPLE, DOUBLE, SINGLE, WALK, SO]
-    for cat in order:
-        t = targets.get(cat, 0.0)
-        # Full cells, largest usable weight first, following preference order.
-        while t > _EPSILON:
-            cell = None
-            best_w = 0
-            for cand in prefs[cat]:
-                if cand in free:
-                    w = DICE_WEIGHTS[cand[1]]
-                    if w <= t + _EPSILON and w > best_w:
-                        cell = cand
-                        best_w = w
-            if cell is None:
-                break
-            assign_full(cell, variants.text(cat, best_w))
-            t -= best_w
-        if t > _EPSILON:
-            # One d20 split; among cells that approximate the remainder
-            # equally well, prefer the lightest so the unused tail wastes
-            # as little capacity as possible.
-            best = None
-            for cand in prefs[cat]:
-                if cand not in free:
-                    continue
-                w = DICE_WEIGHTS[cand[1]]
-                r = max(1, min(20, round(20.0 * t / w)))
-                err = abs(w * r / 20.0 - t)
-                key = (round(err * 20), w, err)
-                if best is None or key < best[0]:
-                    best = (key, cand, r)
-            if best is not None:
-                _key, cell, r = best
-                amount = DICE_WEIGHTS[cell[1]] * min(r, 20) / 20.0
-                if r >= 20:
-                    assign_full(cell, variants.text(cat, amount))
-                else:
-                    assign_split(cell, variants.text(cat, amount), r)
-                t -= amount
-        if t > _EPSILON:
-            # Safety net for very crowded cards: continue this category in
-            # the unused d20 tails of earlier splits.
-            tails = sorted((c for c in placed if open_tail(c) <= 20),
-                           key=lambda c: DICE_WEIGHTS[c[1]])
-            for cell in tails:
-                if t <= _EPSILON:
-                    break
-                w = DICE_WEIGHTS[cell[1]]
-                start = open_tail(cell)
-                avail_slots = 21 - start
-                want_slots = min(avail_slots, max(1, round(20.0 * t / w)))
-                amount = w * want_slots / 20.0
-                placed[cell].append(
-                    (variants.text(cat, amount), start, start + want_slots - 1))
-                t -= amount
+    # Batter grids: hold 1-chance rows for the max-effort lineout and the
+    # injury (as many as the out total allows) so residual hit/BB/K splits,
+    # which favor light rows, can't take them all.
+    reserved: list[tuple[int, int]] = []
+    if card_type == "batter":
+        room = targets.get(OUT, 0.0)
+        ones = sorted(c for c in free if DICE_WEIGHTS[c[1]] == 1)
+        rng.shuffle(ones)
+        while ones and len(reserved) < 2 and room >= 1.0 - _EPSILON:
+            fresh = [c for c in ones if c[0] not in {r[0] for r in reserved}]
+            cell = (fresh or ones)[0]
+            ones.remove(cell)
+            reserved.append(cell)
+            free.pop(cell)
+            room -= 1.0
 
-    # Outs fill every remaining cell and every open tail.
-    for cell in list(free):
-        assign_full(cell, flavors.next())
-    for cell, entries in placed.items():
-        text, lo, hi = entries[-1]
-        if hi < 20:
-            entries.append((flavors.next(), hi + 1, 20))
+    _place_categories(targets, prefs, free, placed, variants.text)
+
+    # Outs fill every remaining cell (the reserved rows included) and every
+    # open tail, allocated by quota over all of them at once. Equal-weight
+    # pieces are shuffled so layouts of the same chances differ.
+    for cell in reserved:
+        free[cell] = None
+    pieces = [(cell, 1) for cell in free]
+    pieces += [(cell, open_tail(cell)) for cell in placed if open_tail(cell) <= 20]
+    rng.shuffle(pieces)
+    pieces.sort(key=lambda p: -DICE_WEIGHTS[p[0][1]] * (21 - p[1]) / 20.0)
+    weights = [DICE_WEIGHTS[cell[1]] * (21 - lo) / 20.0 for cell, lo in pieces]
+    forced = {}
+    if card_type == "batter":
+        # the max-effort lineout: a reserved 1-chance row, else the largest
+        # out piece (a card with under one chance of outs)
+        if reserved:
+            forced[pieces.index((reserved[0], 1))] = _OutFlavors.MAX_LINEOUT
+        elif pieces:
+            forced[0] = _OutFlavors.MAX_LINEOUT
+    for (cell, lo), text in zip(pieces, flavors.allocate(weights, forced)):
+        if lo == 1:
+            assign_full(cell, text)
+        else:
+            placed[cell].append((text, lo, 20))
 
     # Build columns dict
     card_columns: dict[int, dict[int, list[Split]]] = {c: {} for c in columns}
@@ -909,35 +1238,45 @@ def layout_card(targets: dict[str, float], *, card_type: str, name: str,
 
     card = Card(name=name, card_type=card_type, team=team, year=year,
                 header_lines=header_lines, stats=stats, columns=card_columns)
-    _decorate(card, rng, profile)
+    _decorate(card, rng, profile, reserved[1] if len(reserved) > 1 else None)
     return card
 
 
-def _decorate(card: Card, rng: random.Random, profile: dict) -> None:
+def _decorate(card: Card, rng: random.Random, profile: dict,
+              injury_cell: tuple[int, int] | None) -> None:
     """Batter-card flourishes seen on every real card: exactly one
-    'plus injury' result, one max-effort lineout, and a speed-dependent
-    number of ++ groundouts (which favor the offense when the infield is
-    in or a runner is being held)."""
+    'plus injury' result and a speed-dependent number of ++ groundouts
+    (which favor the offense when the infield is in or a runner is being
+    held). The injury goes on its reserved 1-chance row (where real cards
+    put it: 17 of 22 on rows 2/12); without one, on the largest out split,
+    else a strikeout. ++ goes on groundball-A splits only, shortstop and
+    second base first (real cards: 51 of 54 on A grounders, all to ss/2b).
+    """
     if card.card_type != "batter":
         return
-    out_cells = [(col, d) for col, d, s in card.iter_splits()
-                 if s.category == OUT and s.lo == 1 and s.hi == 20]
-    if out_cells:
-        rare = min(out_cells, key=lambda cd: (DICE_WEIGHTS[cd[1]], cd[0]))
-        for split in card.columns[rare[0]][rare[1]]:
+    if injury_cell is None:
+        def size(item):
+            _col, d, s = item
+            return DICE_WEIGHTS[d] * s.fraction
+        splits = list(card.iter_splits())
+        outs = [x for x in splits if x[2].category == OUT and not _MAX_RE.search(x[2].text)]
+        strikeouts = [x for x in splits if x[2].category == SO]
+        pick = max(outs or strikeouts or [], key=size, default=None)
+        if pick is not None:
+            pick[2].injury = True
+    else:
+        for split in card.columns[injury_cell[0]][injury_cell[1]]:
             split.injury = True
-        remaining = [c for c in out_cells if c != rare]
-        if remaining:
-            col, d = rng.choice(remaining)
-            pos = rng.choice(["2b", "3b", "ss", "1b"])
-            card.columns[col][d] = [
-                Split(lo=1, hi=20,
-                      text=f"lineout ({pos}) into as many outs as possible")]
-    gb_splits = [s for _, _, s in card.iter_splits()
-                 if s.text.startswith("groundball") and not s.text.endswith("++")]
-    rng.shuffle(gb_splits)
-    for split in gb_splits[: profile.get("plus_plus", 0)]:
+    gb_a = [s for _, _, s in card.iter_splits()
+            if s.text.startswith("groundball") and s.text.endswith("A")]
+    rng.shuffle(gb_a)
+    gb_a.sort(key=lambda s: not s.text.startswith(("groundball (ss)",
+                                                   "groundball (2b)")))
+    for split in gb_a[: profile.get("plus_plus", 0)]:
         split.text += "++"
+
+
+_MAX_RE = re.compile(r"as many outs")
 
 
 # --- top-level API -----------------------------------------------------------
@@ -965,11 +1304,40 @@ def _pitching_display_stats(stats: dict) -> dict:
     return out
 
 
-def _missing_data_warnings(stats: dict) -> list[str]:
-    notable = {"IBB", "SF", "HBP", "SO", "TBF", "IP"}
-    warnings = [f"{f} not tracked for this season (treated as 0)"
-                for f in stats.get("missing", []) if f in notable]
-    if "CS" in stats.get("missing", []) and (stats.get("SB") or 0) > 0:
+_FIELD_NAMES = {"IBB": "intentional walks", "SF": "sacrifice flies",
+                "HBP": "hit-by-pitches", "SO": "strikeouts"}
+# Untracked fields that change a card of each type: batter rates use all
+# four; a pitcher's use his own IBB/SO and the league's IBB/SO (its BB and
+# K rates feed the formula). Pitcher HR and batters faced are reported
+# where they're imputed (_pitching_rates).
+_RELEVANT = {"batter": {"IBB", "SF", "HBP", "SO"}, "pitcher": {"IBB", "SO"}}
+_LEAGUE_GAP = re.compile(r"^(\w+) not tracked in ")
+
+
+def _missing_data_warnings(stats: dict, card_type: str = "batter",
+                           league: dict | None = None) -> list[str]:
+    """One plain-English line for the stats this season didn't record
+    (league-wide or for this player, merged by field and limited to the
+    ones that matter to this card type), plus the caught-stealing note for
+    a base stealer. Other league notes pass through."""
+    fields, passthrough = set(), []
+    for note in (league or {}).get("warnings", []):
+        m = _LEAGUE_GAP.match(note)
+        if m:
+            fields.add(m.group(1))
+        else:
+            passthrough.append(note)
+    missing = set(stats.get("missing") or [])
+    fields |= missing
+    fields &= _RELEVANT[card_type]
+    warnings = list(passthrough)
+    if fields:
+        names = ", ".join(f"{_FIELD_NAMES[f]} ({f})"
+                          for f in sorted(fields, key=list(_FIELD_NAMES).index))
+        year = stats.get("year") or (league or {}).get("year")
+        when = f"in {year}" if year else "this season"
+        warnings.append(f"not recorded {when}: {names}; the card treats them as 0")
+    if card_type == "batter" and "CS" in missing and (stats.get("SB") or 0) > 0:
         warnings.append(
             "caught-stealing not tracked this season: stealing rating "
             "estimated from steal volume (capped at A)")
@@ -985,8 +1353,7 @@ def generate_batter_card(stats: dict, league: dict,
     stratogen.fielding.position_ratings().
     """
     targets, warnings = batter_chance_targets(stats, league)
-    warnings = (list(league.get("warnings", []))
-                + _missing_data_warnings(stats) + warnings)
+    warnings = _missing_data_warnings(stats, "batter", league) + warnings
     card = layout_card(
         targets, card_type="batter",
         name=stats.get("name", "UNKNOWN").upper(),
@@ -1001,8 +1368,7 @@ def generate_batter_card(stats: dict, league: dict,
 def generate_pitcher_card(stats: dict, league: dict,
                           fielding_rating: int = 3) -> tuple[Card, list[str]]:
     targets, warnings = pitcher_chance_targets(stats, league)
-    warnings = (list(league.get("warnings", []))
-                + _missing_data_warnings(stats) + warnings)
+    warnings = _missing_data_warnings(stats, "pitcher", league) + warnings
     card = layout_card(
         targets, card_type="pitcher",
         name=stats.get("name", "UNKNOWN").upper(),

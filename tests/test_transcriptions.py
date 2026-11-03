@@ -1,9 +1,10 @@
 """The JSON-transcribed real cards: loading, vocabulary, structure, stats.
 
 These 25 cards (data/real_cards/transcriptions/) expand the ground-truth
-corpus and guard the import layer (stratogen/card_json.py). Unofficial cards
-and two documented edge cases are tested *tolerantly*: a failure only they
-exhibit is allowed (xfail), per the project's "real cards aren't perfect"
+corpus and guard the import layer (stratogen/card_json.py). Two documented
+real-card compromises are tolerated per card, side and category (xfail);
+every other category of those cards, and every unofficial card, is held
+to the strict bars, per the project's "real cards aren't perfect"
 philosophy.
 """
 
@@ -21,13 +22,19 @@ from stratogen.model import CHANCES_PER_CARD, XCHANCE, categorize
 CARDS = cj.load_transcriptions()
 JSON_FILES = sorted(cj.TRANSCRIPTIONS_DIR.glob("*.json"))
 
-# Documented tolerances (failure allowed, with reason). See the dir README.
-TOLERANT_CARDS = {
+# Documented tolerances: {card_id: {side: categories allowed to fail}} and
+# the reason. Any other failing category still fails. See the dir README.
+TOLERANCES = {
+    "batter_judge-aaron_2024": {"basic": {"HR", "SO"}, "advanced": {"SO"}},
+    "pitcher_bruney-brian_2008": {"advanced": {"H_per_PA"}},
+}
+TOLERANCE_REASONS = {
     "batter_judge-aaron_2024":
-        "extreme 2024 season: HR and walk totals can't both fit 108 chances, "
-        "so the real basic card trades away HR (confirmed from the photo)",
+        "the real card under-prints HR (basic side) and SO (both sides); "
+        "the generated card fits HR, BB and SO exactly, so this is the real "
+        "card's compromise, not a 108-chance limit",
     "pitcher_bruney-brian_2008":
-        "36-IP reliever: tiny platoon samples make the combined-advanced "
+        "34-IP reliever: tiny platoon samples make the combined-advanced "
         "hit rate noisy",
 }
 
@@ -36,7 +43,8 @@ STRICT_RATE = 0.020     # HR / BB / SO per PA
 
 
 def _tolerant(card_id, official):
-    return (not official) or (card_id in TOLERANT_CARDS)
+    """Excluded from the aggregate guard (unofficial or documented)."""
+    return (not official) or (card_id in TOLERANCES)
 
 
 # --- loading -----------------------------------------------------------------
@@ -169,8 +177,6 @@ def test_every_grid_is_a_valid_108_chance_card(cid, side_label, gi):
     problems = grid_card.validate()
     total = sum(grid_card.chances().values())
     ok = (not problems) and math.isclose(total, CHANCES_PER_CARD, abs_tol=1e-6)
-    if not ok and _tolerant(cid, card.official):
-        pytest.xfail(f"{cid}: tolerant card; {problems or total}")
     assert ok, f"{cid} {side_label} grid {gi}: {problems or total}"
 
 
@@ -260,9 +266,55 @@ CASES = transcription_cases()
 SCORE_TARGETS = [(c.card_id, rep) for c in CASES for rep in c.reps]
 
 
+RESOLVED = {
+    "batter_benintendi-andrew_2022", "batter_carey-andy_1953",
+    "batter_combs-earle_1930", "batter_henderson-rickey_1986",
+    "batter_judge-aaron_2024", "batter_lemahieu-dj_2021",
+    "batter_linz-phil_1963", "batter_pipp-wally_1921",
+    "batter_posada-jorge_2003", "batter_rizzuto-phil_1949",
+    "batter_silvera-charlie_1949", "batter_strawberry-darryl_1985",
+    "pitcher_bruney-brian_2008", "pitcher_capuano-chris_2014",
+    "pitcher_gibson-paul_1994", "pitcher_mendoza-ramiro_2001",
+    "pitcher_monroe-zach_1958", "pitcher_orth-al_1906",
+    "pitcher_perez-melido_1994", "pitcher_pettitte-andy_2012",
+    "pitcher_shawkey-bob_1917", "pitcher_warhop-jack_1914",
+    "pitcher_zuber-bill_1945",
+}
+
+
 def test_have_statistical_cases():
-    # most cards resolve to a real season; HOF/undated are excluded
-    assert len(CASES) >= 20
+    """Every dated card resolves to its Lahman season (only the HOF Sewell
+    and the undated McDaniel can't); a card silently dropping out of the
+    benchmark fails here."""
+    assert {c.card_id for c in CASES} == RESOLVED
+
+
+# Printed-vs-Lahman differences known to be on the card, not the match.
+KNOWN_PRINT_DIFFS = {
+    ("batter_linz-phil_1963", "HR"):
+        "statRecord says 6, but the card's own SLG .349 and Lahman say 2; "
+        "re-check the photo",
+}
+
+
+@pytest.mark.parametrize("card_id", sorted(RESOLVED))
+def test_printed_line_matches_lahman(card_id):
+    """benchmark_cases() cross-checks the .txt cards' printed lines; do the
+    same for the transcriptions (a wrong player match or a bad
+    transcription shows up here)."""
+    case = next(c for c in CASES if c.card_id == card_id)
+    printed = cj.stat_record(case.transcription.basic or case.transcription.advanced)
+    if not printed:
+        pytest.skip("no printed stat line (advanced-only unofficial card)")
+    actual = case.actual_stats
+    keys = (("AB", "HR", "SO") if case.card_type == "batter"
+            else ("W", "L", "SO", "BB"))
+    for key in keys:
+        if key not in printed or (card_id, key) in KNOWN_PRINT_DIFFS:
+            continue
+        assert abs(printed[key] - actual[key]) <= 2, (key, printed[key], actual[key])
+    if case.card_type == "pitcher" and "IP" in printed:
+        assert abs(printed["IP"] - actual["IP"]) <= 1.0
 
 
 @pytest.mark.parametrize("card_id,rep", SCORE_TARGETS)
@@ -279,9 +331,9 @@ def test_card_reproduces_real_season(card_id, rep):
         ("SO", err["SO"], STRICT_RATE),
     ]
     worst = [(k, v, lim) for k, v, lim in checks if v > lim]
-    if worst and _tolerant(card_id, case.official):
-        reason = TOLERANT_CARDS.get(card_id, "unofficial card")
-        pytest.xfail(f"{card_id} [{rep}]: {worst} — {reason}")
+    allowed = TOLERANCES.get(card_id, {}).get(rep, set())
+    if worst and {k for k, _v, _lim in worst} <= allowed:
+        pytest.xfail(f"{card_id} [{rep}]: {worst}: {TOLERANCE_REASONS[card_id]}")
     assert not worst, f"{card_id} [{rep}] exceeds bars: {worst}"
 
 
@@ -290,7 +342,7 @@ def test_official_corpus_is_tight_in_aggregate():
     (guards against systemic drift the generous per-card bars might miss)."""
     errs = {"hit": [], "HR": [], "BB": [], "SO": []}
     for case in CASES:
-        if not case.official or case.card_id in TOLERANT_CARDS:
+        if _tolerant(case.card_id, case.official):
             continue
         scorer = (score_pitcher_card if case.card_type == "pitcher"
                   else score_batter_card)
@@ -314,3 +366,36 @@ def test_markers_preserved_in_json():
     markers = {m for g in d["grids"] for col in g["columns"]
                for cell in col["cells"] for m in (cell.get("markers") or [])}
     assert {"omega", "diamond", "downTriangle", "upTriangle"} <= markers
+
+
+
+# --- generated basic cards vs the real basic sides --------------------------------
+
+# A real basic side the generated card may trail in one category, by design.
+GENERATED_TRADEOFFS = {
+    ("batter_silvera-charlie_1949", "1B"):
+        "his 2B/3B/HR clamp to 0; the deficit comes out of singles so total "
+        "hits stay exact (the real card misses H/PA by .0035)",
+}
+
+
+@pytest.mark.parametrize("card_id", sorted(
+    c.card_id for c in CASES if "basic" in c.reps))
+def test_generated_card_matches_real_basic_side(card_id):
+    """Like tests/test_benchmark.py for the .txt fixtures: per category the
+    generated basic card may trail the real basic side by at most 0.002 per
+    PA (advanced sides: tests/test_platoon.py)."""
+    from stratogen.generate import generate_batter_card, generate_pitcher_card
+    case = next(c for c in CASES if c.card_id == card_id)
+    if case.card_type == "pitcher":
+        scorer, gen = score_pitcher_card, generate_pitcher_card
+    else:
+        scorer, gen = score_batter_card, generate_batter_card
+    card, _ = gen(case.actual_stats, case.league)
+    real = scorer(case.reps["basic"], case.actual_stats, case.league)
+    mine = scorer(card, case.actual_stats, case.league)
+    for key, value in real.items():
+        if (card_id, key) in GENERATED_TRADEOFFS:
+            assert mine["H_per_PA"] <= real["H_per_PA"]
+            continue
+        assert mine[key] <= value + 0.002, (key, mine[key], value)

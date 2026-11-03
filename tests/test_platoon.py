@@ -384,7 +384,7 @@ def test_real_advanced_cards_score_well_side_by_side():
     land in the same ballpark as the basic-side bars."""
     for c in ADV_CASES:
         if not c.official or c.card_id == "pitcher_bruney-brian_2008":
-            continue   # Bruney: 36-IP reliever, documented tolerance
+            continue   # Bruney: 34-IP reliever, documented tolerance
         s = c.actual_stats
         info = db.player_info(s["player_id"])
         ctx = pl.league_context(c.league, db)
@@ -517,19 +517,36 @@ def test_cli_advanced(capsys, monkeypatch):
 # --- no regressions to the basic side ----------------------------------------------
 
 # Fingerprints of basic-card output (targets, grid, warnings). First recorded
-# from the code before advanced generation existed, then re-recorded once when
-# the out-type mix and DP-grounder share were recalibrated to the real cards
-# (chances, hit cells and warnings were verified identical; only out texts
-# moved). '++' is stripped and the header excluded, so they only depend on the
+# from the code before advanced generation existed, then re-recorded when:
+# - the out-type mix and DP-grounder share were recalibrated to the real cards
+#   (chances, hit cells and warnings were verified identical; only out texts
+#   moved);
+# - pitcher cards took the X block's singles out of the singles share alone
+#   (batter cards verified identical; on the pitchers only the 1B/2B/3B split
+#   moved, total hits unchanged, plus Chapman's now-quantified hits warning);
+# - pitcher rates left sacrifice hits out of batters faced
+#   (simulate.pitcher_effective_pa; batter cards verified identical, the
+#   pitchers' BB/SO/HR/hit targets rose by their SH share, ~1%);
+# - out texts were allocated by quota, batter grids reserved two 1-chance rows
+#   for the max-effort lineout and injury, and residual splits weighed the
+#   running miss (verified: targets and warnings identical; placed chances
+#   moved by at most 0.05 per category, Cobb BB 6.25->6.30, Judge SO
+#   29.55->29.60, Chapman SO 90.05->90.00; the rest is out texts and which
+#   cells hold the batters' hits);
+# - batter */** shares became the real-card means (verified: only the */**
+#   suffixes of batter hit texts moved; pitchers identical);
+# - generation warnings were made specific, sized and merged (verified: only
+#   Gwynn/Cobb/Maddux/Chapman warnings changed; targets and grids identical).
+# '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
-    ("mayswi01", 1965, "batter", "9f2a5e9d8cfbc2db"),
-    ("gwynnto01", 1995, "batter", "97bd25606327eb01"),
-    ("cobbty01", 1911, "batter", "cbc297e924d0548d"),
-    ("judgeaa01", 2024, "batter", "81710993e5f25871"),
-    ("ryanno01", 1974, "pitcher", "7ea742355e783354"),
-    ("maddugr01", 1995, "pitcher", "013ab417a8b5d918"),
-    ("chapmar01", 2014, "pitcher", "f7287c3cf44cce54"),
+    ("mayswi01", 1965, "batter", "57ea21c00a2ae4d7"),
+    ("gwynnto01", 1995, "batter", "70695fd9d9e8e55f"),
+    ("cobbty01", 1911, "batter", "d9c65c4e98c7636d"),
+    ("judgeaa01", 2024, "batter", "b2cf5d1f9112a36b"),
+    ("ryanno01", 1974, "pitcher", "d4f287e1be21fe60"),
+    ("maddugr01", 1995, "pitcher", "a48eedad8177d0fb"),
+    ("chapmar01", 2014, "pitcher", "f89b52cd37847c7d"),
 ]
 
 

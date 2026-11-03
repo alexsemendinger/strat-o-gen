@@ -6,8 +6,15 @@ we measure the error profile of the real-card fixtures and require
 generated cards to land in the same ballpark.
 
 Both real and generated cards are scored by the same tester against the
-same average opposing card, so any bias in the average-card construction
-affects both sides equally and cancels out of the comparison.
+same average opposing card. That comparison is not neutral, though:
+generated cards are built by *inverting* this tester (same X_SINGLE_RATE,
+same average cards, same HBP and sacrifice handling), so they score near
+zero on whatever the tester assumes, while any error in those assumptions
+shows up as error on the real cards only. "Generated matches or beats
+real" is therefore partly built in; what it does guard is the generator's
+own losses (clamping, d20 granularity, layout). The tester's free
+parameters are checked against the real cards separately (e.g.
+tests/test_benchmark.py::test_x_single_rate_is_consistent_with_real_pitcher_cards).
 """
 
 from __future__ import annotations
@@ -156,7 +163,7 @@ def score_pitcher_card(card_or_chances, actual_stats: dict,
                        league: dict) -> dict[str, float]:
     implied = derived_stats(
         combined_rates(average_batter_chances(league), card_or_chances))
-    return pitching_errors(implied, actual_pitching_rates(actual_stats))
+    return pitching_errors(implied, actual_pitching_rates(actual_stats, league))
 
 
 # --- advanced (platoon) cards ---------------------------------------------------
