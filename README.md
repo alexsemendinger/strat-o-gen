@@ -189,11 +189,21 @@ Other simplifications:
   actual, very noisy splits).
 - Fielding ratings (1-5 per position, printed on the card header) are
   computed from range factor, fielding percentage, and catcher
-  caught-stealing rates vs same-position/same-season peers, blended over
-  the prior two seasons and shrunk for small samples. Calibrated against
-  the 20 ratings printed on the fixture cards (10 exact, 19 within ±1).
-  Box-score stats can't see range a fielder never reaches or scouting
-  judgment, so expect occasional ±1 disagreement with official cards.
+  caught-stealing rates vs same-position/same-season peers in comparable
+  leagues (AL+NL together from 1901; each Negro or 19th-century league on
+  its own), blended over the prior two seasons and shrunk for small
+  samples. Pitchers' range is chances per nine innings, so relievers and
+  starters share one scale. Every position played is listed, as on real
+  cards. Agreement with every range rating printed on the real cards:
+  basic sides (14 fixtures + 19 JSON cards) 28/53 exact, 50/53 within ±1;
+  advanced sides 16/34 exact, 31/34 within ±1; pitchers 8/10 exact
+  (leave-one-out 6/10), all within ±1. Box-score stats can't see range a
+  fielder never reaches or scouting judgment (Judge's rf-1, LeMahieu's
+  2b-1), and a widened corpus didn't support re-fitting the position
+  players' weights (no variant beat the current one leave-one-out).
+  Before 1954 the data has no AL/NL corner-outfield split: corners are
+  rated on the combined outfield line, and headers print `outfield-N`
+  unless an `Appearances.csv` is added to `data/lahman/`.
 - Baserunning symbols are player-derived but heuristic: isolated power
   sets the `**` share (automatic two-base advancement), soft contact the
   `*` share, GIDP tendency the groundball-A (double play) share, and
@@ -202,7 +212,13 @@ Other simplifications:
 - Stealing ratings cap at A for seasons where caught-stealing wasn't
   tracked (mostly pre-1951): success rate is unknowable, so volume alone
   decides and the card carries a warning. AA requires a measured elite
-  rate.
+  rate. Where stolen bases weren't recorded at all (NL 1876-85, AA
+  1882-85, UA 1884) stealing is the neutral C. 18/20 exact on the real
+  cards (LeMahieu 2021 and Carey 1953 miss by one).
+- Running (1-8 .. 1-17) comes from Bill James's speed score, catchers
+  3.5 slower: 9/20 exact, 17/20 within ±1 on the real cards (leave-one-
+  out 8/20, 15/20). Reputation ratings (Mays 1965's 1-17 at 34) are the
+  misses.
 - HBP isn't placed on basic cards (matching all 14 fixture cards);
   advanced batter grids carry it, as the real advanced cards do.
 - Errors/X-chart resolution assumes league-average defense.
@@ -314,10 +330,8 @@ enforced by `tests/test_advanced_ratings.py`; "LOO" = leave-one-out.
 | `relief(N)/X` suffix | Inferred closer rating: N without saves, else ⌊1.7 ln SV⌋ — **weakly grounded** | 5/5 exact (one card constrains it) |
 
 Range (1-5), stealing and running come from `fielding.py` and
-`ratings.py` unchanged. On these twelve advanced batter cards they score
-range 11/27 exact (24/27 within 1), stealing 10/12, running only 3/12 —
-the running formula predates these cards and is the next calibration
-target. The stealing detail (`*2-6,9/- (15-12)`) is parsed
+`ratings.py` (see *Known limitations* for their agreement on every real
+card; on these advanced sides range is 16/34 exact, 31/34 within 1). The stealing detail (`*2-6,9/- (15-12)`) is parsed
 (`parse_stealing_detail`) but not generated: the corpus doesn't pin down
 its meaning.
 
@@ -356,10 +370,14 @@ was actually built.
 ## Updating for a new season
 
 Download the new CSV release from https://sabr.org/lahman-database/ (every
-January), gzip `Batting.csv`, `Pitching.csv`, `People.csv`, `Teams.csv`,
-`Fielding.csv`, and replace the files in `data/lahman/`.
+January) and copy `Batting.csv`, `Pitching.csv`, `People.csv`,
+`Teams.csv` and `Fielding.csv` into `data/lahman/` — plain `.csv` files
+work; no need to gzip (when both `X.csv` and `X.csv.gz` exist the newer
+one is read). Optionally add `Appearances.csv` too: it names the corner
+outfield spots for seasons without split fielding (before 1954).
 `FieldingOFsplit.csv` isn't in the CSV release; export it from the Access
-(.mdb) release with mdbtools (`mdb-export lahman.mdb FieldingOFsplit`).
+(.mdb) release with mdbtools (`mdb-export lahman.mdb FieldingOFsplit`) —
+without it the new season's outfielders are rated as generic `outfield`.
 The app's year bound updates automatically from the data.
 
 ## Credits
