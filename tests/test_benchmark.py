@@ -144,7 +144,9 @@ def test_x_single_rate_is_consistent_with_real_pitcher_cards():
     cards directly. Solving each official pitcher card (basic side, real
     season) for the X rate that reproduces his hits allowed gave a mean of
     4.15 per 30 over 15 cards (SE 0.36), which put Bundy's 4.9 2.1 SE high
-    and moved the constant to 4.1 (see simulate.X_SINGLE_RATE). Fails if
+    and moved the constant to 4.1 (see simulate.X_SINGLE_RATE). Over 19
+    cards: median 4.01, mean 3.66 (SE 0.45), pulled down by Chapman 2014
+    (-2.0: his card prints no hits and still allows too many). Fails if
     new cards or scorer changes push the evidence 2 SE away again."""
     import statistics
     from stratogen.benchmark import transcription_cases

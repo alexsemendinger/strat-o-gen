@@ -40,7 +40,7 @@ def test_fixtures_resolve_from_any_working_directory(tmp_path, monkeypatch):
     assert card_json.TRANSCRIPTIONS_DIR.is_absolute()
     n_txt = len(card_text.load_real_cards())
     n_json = len(card_json.load_transcriptions())
-    assert n_txt == 14 and n_json >= 27
+    assert n_txt == 14 and n_json >= 73
     monkeypatch.chdir(tmp_path)
     assert len(card_text.load_real_cards()) == n_txt
     assert len(card_json.load_transcriptions()) == n_json

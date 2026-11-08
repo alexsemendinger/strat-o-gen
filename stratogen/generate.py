@@ -705,17 +705,18 @@ _CENTER_OUT = (7, 6, 8, 5, 9, 4, 10, 3, 11, 2, 12)
 _EDGE_IN = tuple(reversed(_CENTER_OUT))
 
 # The X-chart block of a real pitcher card: 30 chances on fixed fielders.
-# 32 of the 37 real pitcher grids (basic and advanced sides) carry exactly
-# this budget; the other five are bigger blocks for extreme relievers that
-# contain it. Infielders and the pitcher read GROUNDBALL (pos) X,
+# 42 of the 47 official real pitcher grids (basic and advanced sides) carry
+# exactly this budget; the other five are bigger blocks for extreme
+# relievers that contain it. Infielders and the pitcher read GROUNDBALL (pos) X,
 # outfielders FLYBALL (pos) X, the catcher's chances CATCHER'S CARD X.
 X_BUDGET = {"ss": 7, "2b": 6, "3b": 3, "c": 3, "cf": 3, "1b": 2,
             "lf": 2, "p": 2, "rf": 2}
 _X_OUTFIELD = {"lf", "cf", "rf"}
 
-# The cell layouts (column, dice sum, fielder) of the 16 distinct standard
-# X blocks on the official real cards; a card uses one of them, chosen per
-# player, so its X chances sit where real cards put them.
+# The cell layouts (column, dice sum, fielder) of 16 distinct standard X
+# blocks on the official real cards (the corpus now holds 32); a card uses
+# one of them, chosen per player, so its X chances sit where real cards
+# put them.
 _X_TEMPLATES = (
     ((4, 3, "rf"), (4, 4, "cf"), (4, 6, "2b"), (4, 10, "3b"), (4, 11, "lf"), (4, 12, "2b"),
      (5, 3, "1b"), (5, 4, "ss"), (5, 5, "ss"), (5, 10, "c"), (5, 11, "p")),   # Colon 2016

@@ -78,12 +78,13 @@ def _tolerant(card_id, official):
 def test_loads_all_cards():
     """Every JSON file loads as its own side of a card (sides join by
     cardId, so two files claiming the same side would show up here), and
-    the corpus only grows (27 cards when the 365 pages were added)."""
+    the corpus only grows (27 cards when the 365 pages were added, 73 with
+    the Strat-O-Matic site and archived-blog batches)."""
     assert sum(len(c.sides) for c in CARDS.values()) == len(JSON_FILES)
-    assert len(CARDS) >= 27
+    assert len(CARDS) >= 73 and len(JSON_FILES) >= 108
     assert all(c.card_type in ("batter", "pitcher") for c in CARDS.values())
-    assert sum(c.card_type == "batter" for c in CARDS.values()) >= 14
-    assert sum(c.card_type == "pitcher" for c in CARDS.values()) >= 13
+    assert sum(c.card_type == "batter" for c in CARDS.values()) >= 49
+    assert sum(c.card_type == "pitcher" for c in CARDS.values()) >= 24
 
 
 def test_unofficial_cards_flagged():

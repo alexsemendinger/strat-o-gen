@@ -7,7 +7,7 @@ available ground truth, but individual cards may contain transcription or
 source errors — if one card consistently fails statistical tests that the
 others pass, suspect the card data before suspecting the code.
 
-More real cards — both sides of 27 cards, in a richer lossless JSON schema
+More real cards — 73 of them, 108 sides, in a richer lossless JSON schema
 (advanced platoon grids, situational glyphs, extra ratings) — live in
 [`transcriptions/`](transcriptions/README.md).
 

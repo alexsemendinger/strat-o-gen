@@ -133,8 +133,9 @@ real cards — see below), shrunk
 automatically for extreme modern relievers whose strikeouts don't fit or
 who allowed fewer hits than the block's own singles. The block uses the
 real cards' standard fielders — 30 chances split ss 7 / 2b 6 / 3b 3 /
-c 3 / cf 3 / 1b 2 / lf 2 / p 2 / rf 2, as 32 of the 37 real pitcher grids
-print it (the other five are bigger relief blocks containing it) — laid
+c 3 / cf 3 / 1b 2 / lf 2 / p 2 / rf 2, as 42 of the 47 official real
+pitcher grids print it (the other five are bigger relief blocks containing
+it) — laid
 out like one of the 16 distinct real layouts; a shrunken block keeps the
 closest exact-sum share of each fielder. 2B/3B allowed aren't
 recorded, so a pitcher's non-HR hits follow the league's 1B/2B/3B mix,
@@ -170,28 +171,37 @@ suite computes each card's **exact** expected outcome rates (no simulation
 noise — the dice probabilities are summed in closed form) against a
 league-average opponent and compares them to the player's actual season line:
 
-- Real official basic batter cards land within **.000–.008 of the
-  season batting average** (median .004; BA compared on the season's own
-  at-bats, so matching hits means matching BA). Extreme seasons cost
-  more: the real Aaron Judge 2024 card under-prints his HR (basic side)
-  and strikeouts (both sides), though a card can hold all of them — the
-  generated one fits HR, BB and SO exactly. That card is tolerated for
-  exactly those categories; every other category is held to the bars.
+- Real official basic batter cards land within **.000–.009 of the
+  season batting average** (41 cards, median .005; BA compared on the
+  season's own at-bats, so matching hits means matching BA). Extreme
+  seasons cost more: the real Aaron Judge 2024 card under-prints his HR
+  (basic side) and strikeouts (both sides), though a card can hold all of
+  them — the generated one fits HR, BB and SO exactly. Chapman 2014's 52%
+  strikeout rate is more than any 108-chance card can express, two
+  tiny-sample cards (Choate 2014, Ramos 2010) and the two 1941 magazine
+  facsimiles (intentional walks unrecorded that year) miss in one or two
+  categories. Those cards are tolerated for exactly those categories,
+  each with its reason (`tests/test_transcriptions.py`); every other
+  category is held to the bars.
 - Generated cards must stay **within 0.002 per PA of the real card in
   every category**: the 14 fixtures (`tests/test_benchmark.py`), the basic
   sides of the JSON cards with a real season
-  (`tests/test_transcriptions.py`, one named trade-off: Silvera 1949's
-  singles, where his clamped extra-base hits come out of singles to keep
-  total hits exact) and the advanced sides (`tests/test_platoon.py`). On
+  (`tests/test_transcriptions.py`, two named trade-offs: Silvera 1949's
+  and Rapp 1952's singles, where clamped extra-base hits come out of
+  singles to keep total hits exact) and the advanced sides
+  (`tests/test_platoon.py`). On
   the fixtures they currently match or beat the real card everywhere.
 - That comparison is not neutral: generated cards are built by inverting
   the tester (same X hit rate, average cards, HBP and sacrifice handling),
   so an error in those assumptions counts against the real cards only.
   The tester's own parameters are checked against the real cards: the
-  X hit rate the 15 official pitcher cards imply is 4.15 ± 0.36 per 30,
-  which put the community figure of 4.9 2.1 standard errors high; fitted
-  on 14 cards, the rate predicts the 15th card's hits allowed better than
-  4.9 on 13 of 15, so the constant is now 4.1.
+  X hit rate the first 15 official pitcher cards implied was 4.15 ± 0.36
+  per 30, which put the community figure of 4.9 2.1 standard errors high;
+  fitted on 14 cards, the rate predicted the 15th card's hits allowed
+  better than 4.9 on 13 of 15, so the constant is now 4.1. Over the 19
+  cards now in the corpus the median is 4.01 (mean 3.66 ± 0.45, or 3.97 ±
+  0.33 without Chapman 2014, whose card prints no hits at all and still
+  allows too many).
 - A deterministic sweep of ~600 random pool seasons (`tests/test_sweep.py`)
   checks validity, layout precision (every category within 0.11 chances
   of its target) and the batter-card conventions beyond the fixtures.
@@ -229,13 +239,21 @@ grid_chances = (2 × player_rate_in_matchup − league_rate_in_matchup) × 108
   line; the player's split is renormalized so his share-weighted mix is
   exactly his line.
 - **Printed percentages.** Batters face lefties at the league's LHP share,
-  part-time righties more (platoon players start against lefties);
-  pitchers face left-side hitters (switch hitters included vs a righty) at
-  0.91× the league share. Mean error vs the real cards: 3.6 points (13
-  batters), 4.0 (8 official pitchers).
+  part-time righties more (platoon players start against lefties) unless
+  they started most of the games they played (a regular who was hurt,
+  called up or traded isn't platooned: games started / played from
+  Appearances). Pitchers face left-side hitters (switch hitters included
+  vs a righty) at the league share times a factor for hand and role:
+  relievers are used against same-handed hitters and starters face
+  stacked lineups (right-handed starters 1.04, right-handed relievers
+  0.89, left-handed starters 0.81, left-handed relievers 1.30, mixed by
+  the share of innings in relief). Mean error vs the real cards: 4.7
+  points per batter (24 players; real splits swing — Virdon printed 7% to
+  44% vs lefties across his seasons), 3.0 points over 13 official
+  pitchers (4.3 leave-one-out).
 - **Power N/W**, per batter grid: W below 1.35% HR per PA (capped at 1.35×
   the league rate in low-HR eras), and always when the N formula would
-  clamp. Matches 22 of the 26 labels on the real cards. A pitcher grid's
+  clamp. Matches 60 of the 68 labels on the real cards. A pitcher grid's
   N-HR is a `SINGLE**` for a W batter, so a W grid carries all of the
   batter's homers (2 × rate × 108): it never clamps, so a 0-HR season is
   exact.
@@ -309,7 +327,8 @@ Other simplifications:
   combined outfield line, so a pre-1954 outfielder carries the same
   rating at every spot he played.
 - Baserunning symbols: the `*`/`**` shares are the real cards' means for
-  every batter (SINGLE** .33, SINGLE* .19, DOUBLE** .39); isolated power,
+  every batter (SINGLE** .35, SINGLE* .18, DOUBLE** .40; 37 cards, each
+  player counted once); isolated power,
   which used to set them, anti-correlates with the real cards' shares.
   GIDP tendency sets the groundball-A (double play) share and speed the
   `++` count. With whole cells and only a few hit cells per category, a
@@ -318,13 +337,17 @@ Other simplifications:
   tracked (mostly pre-1951): success rate is unknowable, so volume alone
   decides and the card carries a warning. AA requires a measured elite
   rate. Where stolen bases weren't recorded at all (NL 1876-85, AA
-  1882-85, UA 1884) stealing is the neutral C. On the 37 dated real
-  batter cards: 35 exact, all within one grade (Carey 1953's 2-for-3
-  cameo and Linz 1963's 1-for-7 miss).
+  1882-85, UA 1884) stealing is the neutral C. On the 48 dated real
+  batter cards: 45 exact, all within one grade (Carey 1953's 2-for-3
+  cameo, Linz 1963's 1-for-7 and Conor Jackson 2008's 10-for-12 miss).
+  Original printings that a modern printing of the same season supersedes
+  are left out: the 1960s originals rated by the rules of their day
+  (Virdon 1960: stealing B on the original, C on the modern card).
 - Running (1-8 .. 1-17) comes from Bill James's speed score, catchers
-  3.5 slower: on the 37 dated real batter cards 19 exact, 32 within ±1,
-  mean error 0.78. Reputation ratings (Mays 1965's 1-17 at 34) are the
-  big misses.
+  3.5 slower: on the 48 dated real batter cards 23 exact, 40 within ±1,
+  mean error 0.90. Reputation ratings (Mays 1965's 1-17 at 34) and slow
+  sluggers the speed score reads as average (Adcock 1957 and Howard 1971
+  print 1-8) are the big misses.
 - HBP isn't placed on basic cards (official basic cards drop it too: their
   walk chances fit BB alone far better than BB + HBP); advanced batter
   grids carry it, as the real advanced cards do. A hit-by-pitch magnet's
@@ -373,7 +396,9 @@ SH that include sacrifice flies are corrected). Opportunity rates and
 the two error/DP shares are small constants calibrated on **training**
 league-seasons (every year divisible by 4, 62 of them) and verified on
 the 186 **held-out** ones; they were last re-fit after the card changes
-(quota-allocated outs, fixed `*`/`**` shares) and the `DOUBLE**` fix.
+(quota-allocated outs, fixed `*`/`**` shares) and the `DOUBLE**` fix,
+and verified again after the X hit rate moved to 4.1 and the `*`/`**`
+shares were refitted on the larger corpus.
 
 **Accuracy.** League-average lineups (27 independently laid-out average
 batter cards against 4 average pitcher cards, 30,000 half-innings) vs
@@ -382,20 +407,20 @@ innings), all 248 AL/NL seasons 1901-2024:
 
 | era | train R sim/real | held-out R sim/real |
 |---|---|---|
-| 1901-1919 | 0.993 (sd 0.037) | 0.993 (sd 0.040) |
-| 1920-1941 | 1.001 (0.020) | 1.001 (0.024) |
-| 1942-1960 | 1.006 (0.018) | 1.012 (0.018) |
-| 1961-1976 | 1.011 (0.017) | 1.008 (0.014) |
-| 1977-1992 | 1.019 (0.010) | 1.012 (0.019) |
-| 1993-2009 | 1.009 (0.010) | 1.016 (0.012) |
-| 2010-2024 | 0.984 (0.023) | 1.003 (0.019) |
-| all | 1.003 (sd 0.023), range 0.943-1.054 | 1.006 (sd 0.024), range 0.932-1.080 |
+| 1901-1919 | 0.998 (sd 0.038) | 0.994 (sd 0.038) |
+| 1920-1941 | 1.004 (0.024) | 0.999 (0.022) |
+| 1942-1960 | 1.011 (0.019) | 1.014 (0.020) |
+| 1961-1976 | 1.015 (0.010) | 1.015 (0.013) |
+| 1977-1992 | 1.014 (0.014) | 1.014 (0.021) |
+| 1993-2009 | 1.010 (0.019) | 1.014 (0.011) |
+| 2010-2024 | 1.005 (0.028) | 1.014 (0.020) |
+| all | 1.008 (sd 0.023), range 0.945-1.067 | 1.008 (sd 0.024), range 0.928-1.071 |
 
-All 248 seasons land within ±8% (the extremes are 1914 NL at +8.0% and
-1907 AL at −6.8%); 95% of the training and 96% of the held-out seasons
-are within ±5%. On the held-out seasons the other rates average
-0.99-1.02 of real; SB, CS, HBP, E, WP, SH and GIDP are within ±10% in
-97-100% of seasons, PB in 87% and IBB in 80%. Double plays turned run 0.89 of real by design: the engine
+All 248 seasons land within ±8% (the extremes are 1919 AL at +7.1% and
+1901 AL at −7.2%); 95% of the training and of the held-out seasons are
+within ±5%. On the held-out seasons the other rates average 1.00-1.02 of
+real; SB, CS, HBP, E, WP, SH and GIDP are within ±10% in 98-100% of
+seasons, PB in 88% and IBB in 82%. Double plays turned run 0.89 of real by design: the engine
 turns DP grounders and max-effort lineouts only, not strike-'em-out-
 throw-'em-out, liners or flies doubling a runner off, or outfield
 assists. Weak spots: the dead-ball era drifts with the year (1901-1907
@@ -491,7 +516,7 @@ data/
   lahman/               Bundled Lahman database (gzipped CSVs)
   real_cards/           Transcribed real cards = ground truth fixtures
     *.txt               14 cards in the plain-text format
-    transcriptions/     25 more in JSON (basic + advanced sides, symbols)
+    transcriptions/     73 more in JSON: 108 sides (basic + advanced, symbols)
 tests/                  pytest suite (parser, data, benchmark, platoon, app,
                         CLI, service)
 ```
