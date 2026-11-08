@@ -1,0 +1,80 @@
+{
+  "cardId": "batter_saltalamacchia-jarrod_2009",
+  "sourceImage": "https://web.archive.org/web/20240703212050im_/https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpZ6cukjH1UAayxZdcVaMN8EnQApB5A5ljzAqY2iYoSibGdpFDmQFkOCXKFlipEIRJgW9KgCf5xkpSx0gHtnvc6LCRFCpw_t2Svb9M_YpsKZdv59DTnI5nJncnrtDHiskzaLAoQezyesw/s1600/2010+Strat-O-Matic+Saltalamacchia.jpg",
+  "sourceUrl": "https://web.archive.org/web/20261015080558/https://rangerscards.blogspot.com/2010/05/",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Jarrod Saltalamacchia",
+    "bats": null,
+    "throws": null,
+    "team": "Texas",
+    "year": 2009,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "c", "rating": 4, "error": null } ],
+    "stealing": "E",
+    "running": "1-9",
+    "notes": "Header reads: 'J. SALTALAMACCHIA   catcher-4   stealing-E   running 1-9' and 'TEXAS'. The basic side lists only the primary fielding position (catcher-4). Image file is named '2010 Strat-O-Matic' (the 2010 release of the 2009 season)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "HOMERUN 1-15 / DOUBLE 16-20", "outcomes": [ { "range": [1,15], "result": "HOMERUN" }, { "range": [16,20], "result": "DOUBLE" } ] },
+          { "roll": 5, "raw": "DOUBLE** 1-10 / SINGLE** 11-20", "outcomes": [ { "range": [1,10], "result": "DOUBLE**" }, { "range": [11,20], "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "SINGLE* 1-2 / lineout (2b) 3-20", "outcomes": [ { "range": [1,2], "result": "SINGLE*" }, { "range": [3,20], "result": "lineout (2b)" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 11, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 12, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "lineout (3b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (3b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 4, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "strikeout plus injury", "outcomes": [ { "range": null, "result": "strikeout plus injury" } ] },
+          { "roll": 11, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 12, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 3, "raw": "groundball (2b)A", "outcomes": [ { "range": null, "result": "groundball (2b)A" } ] },
+          { "roll": 4, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 11, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 12, "raw": "groundball (1b)B", "outcomes": [ { "range": null, "result": "groundball (1b)B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 2009,
+    "stats": { "AVG": ".233", "AB": 283, "2B": 12, "3B": 0, "HR": 9, "RBI": 34, "BB": 22, "SO": 97, "SB": 0, "CS": 2, "SLG%": ".371", "ON BASE%": ".290" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic side, flatbed scan (848x1456) posted on a Rangers card blog in May 2010, retrieved from its Wayback capture; read from a full-card overview, then a second independent pass over 1.1x half-card crops. Col2 roll10 prints 'plus injury' under 'strikeout'; col2 roll2 'lineout (3b) into as many outs as possible' captured verbatim."
+  }
+}
