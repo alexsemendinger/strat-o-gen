@@ -139,14 +139,13 @@ def test_average_cards_reproduce_league_rates():
 # --- the tester's own parameters, against the real cards ----------------------
 
 def test_x_single_rate_is_consistent_with_real_pitcher_cards():
-    """X_SINGLE_RATE (4.9 singles per 30 X chances) is a tester parameter
-    the generator inverts, so the generated-vs-real comparison can't see
-    it; check it against the real cards directly. Solving each official
-    pitcher card (basic side, real season) for the X rate that reproduces
-    his hits allowed gives a mean of ~4.2 per 30 with an SE of ~0.5: 4.9
-    is 1.4 SE high, short of the 2 SE that would justify refitting it
-    (see simulate.X_SINGLE_RATE). Fails if new cards or scorer changes
-    push the evidence past that bar."""
+    """X_SINGLE_RATE is a tester parameter the generator inverts, so the
+    generated-vs-real comparison can't see it; check it against the real
+    cards directly. Solving each official pitcher card (basic side, real
+    season) for the X rate that reproduces his hits allowed gave a mean of
+    4.15 per 30 over 15 cards (SE 0.36), which put Bundy's 4.9 2.1 SE high
+    and moved the constant to 4.1 (see simulate.X_SINGLE_RATE). Fails if
+    new cards or scorer changes push the evidence 2 SE away again."""
     import statistics
     from stratogen.benchmark import transcription_cases
     from stratogen.model import DOUBLE, SINGLE, TRIPLE
@@ -163,8 +162,7 @@ def test_x_single_rate_is_consistent_with_real_pitcher_cards():
         h_rate = stats["H"] / pitcher_effective_pa(stats, league)
         implied.append(30 * (216 * h_rate - 108 * league["H_per_PA"] - hits)
                        / ch[XCHANCE])
-    assert len(implied) == 11
+    assert len(implied) >= 15
     mean = statistics.mean(implied)
     se = statistics.stdev(implied) / len(implied) ** 0.5
-    assert mean == pytest.approx(4.18, abs=0.05), implied
     assert abs(30 * X_SINGLE_RATE - mean) < 2 * se, (mean, se)

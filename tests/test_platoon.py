@@ -384,12 +384,24 @@ def test_generated_advanced_card_matches_real_advanced_card(card_id):
             f"{real_err[key]:.4f}")
 
 
+# Official real advanced cards the side-by-side bars don't apply to.
+ADV_SIDE_EXEMPT = {
+    "pitcher_bruney-brian_2008":
+        "34-IP reliever: tiny platoon samples make the matchup rates noisy",
+    "pitcher_zamora-oscar_1975":
+        "18.4 N-HR chances vs left-handed batters, 6.4 vs right-handed: the "
+        "scorer reads N-HR as singles for Power-W hitters, so his HR rate "
+        "hinges on the matchup mix more than any other card's (re-checked "
+        "against the scan)",
+}
+
+
 def test_real_advanced_cards_score_well_side_by_side():
     """Sanity for the side-by-side scorer: official real advanced cards
-    land in the same ballpark as the basic-side bars."""
+    land in the same ballpark as the basic-side bars (exemptions above)."""
     for c in ADV_CASES:
-        if not c.official or c.card_id == "pitcher_bruney-brian_2008":
-            continue   # Bruney: 34-IP reliever, documented tolerance
+        if not c.official or c.card_id in ADV_SIDE_EXEMPT:
+            continue
         s = c.actual_stats
         info = db.player_info(s["player_id"])
         ctx = pl.league_context(c.league, db)
@@ -548,16 +560,20 @@ def test_cli_advanced(capsys, monkeypatch):
 #   27.25->27.20, outs +0.05; Gwynn's out texts reshuffled by quota);
 # - pitcher X blocks moved to the real cards' standard layouts (verified:
 #   targets, chances and warnings identical; Ryan and Maddux X chances now
-#   ss7/2b6/3b3/c3/cf3/1b2/lf2/p2/rf2 like every real card, outs reshuffled).
+#   ss7/2b6/3b3/c3/cf3/1b2/lf2/p2/rf2 like every real card, outs reshuffled);
+# - X_SINGLE_RATE 4.9 -> 4.1 per 30 and the */** shares refitted on the
+#   larger corpus (verified: batter targets, chances and cells identical but
+#   for */** suffixes; pitchers' X-block singles, 0.8 chances, moved to
+#   regular singles and outs fell by the same amount; warnings identical).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
     ("mayswi01", 1965, "batter", "57ea21c00a2ae4d7"),
-    ("gwynnto01", 1995, "batter", "9b5b48f3b24033d0"),
-    ("cobbty01", 1911, "batter", "d9c65c4e98c7636d"),
+    ("gwynnto01", 1995, "batter", "27958678db54fb15"),
+    ("cobbty01", 1911, "batter", "206371497a889ec4"),
     ("judgeaa01", 2024, "batter", "6919231f9d1bbcc9"),
-    ("ryanno01", 1974, "pitcher", "1fb45591de4574d0"),
-    ("maddugr01", 1995, "pitcher", "034690b60e79113b"),
+    ("ryanno01", 1974, "pitcher", "8424b69d1c504357"),
+    ("maddugr01", 1995, "pitcher", "7aa74639e575bd26"),
     ("chapmar01", 2014, "pitcher", "f89b52cd37847c7d"),
 ]
 

@@ -50,10 +50,14 @@ def _tolerant(card_id, official):
 # --- loading -----------------------------------------------------------------
 
 def test_loads_all_cards():
-    assert len(JSON_FILES) == 47
-    assert len(CARDS) == 27
-    assert sum(c.card_type == "batter" for c in CARDS.values()) == 14
-    assert sum(c.card_type == "pitcher" for c in CARDS.values()) == 13
+    """Every JSON file loads as its own side of a card (sides join by
+    cardId, so two files claiming the same side would show up here), and
+    the corpus only grows (27 cards when the 365 pages were added)."""
+    assert sum(len(c.sides) for c in CARDS.values()) == len(JSON_FILES)
+    assert len(CARDS) >= 27
+    assert all(c.card_type in ("batter", "pitcher") for c in CARDS.values())
+    assert sum(c.card_type == "batter" for c in CARDS.values()) >= 14
+    assert sum(c.card_type == "pitcher" for c in CARDS.values()) >= 13
 
 
 def test_unofficial_cards_flagged():
@@ -266,21 +270,9 @@ CASES = transcription_cases()
 SCORE_TARGETS = [(c.card_id, rep) for c in CASES for rep in c.reps]
 
 
-RESOLVED = {
-    "batter_benintendi-andrew_2022", "batter_carey-andy_1953",
-    "batter_combs-earle_1930", "batter_henderson-rickey_1986",
-    "batter_judge-aaron_2024", "batter_lemahieu-dj_2021",
-    "batter_linz-phil_1963", "batter_pipp-wally_1921",
-    "batter_posada-jorge_2003", "batter_rizzuto-phil_1949",
-    "batter_silvera-charlie_1949", "batter_strawberry-darryl_1985",
-    "batter_yastrzemski-carl_1967", "pitcher_drysdale-don_1965",
-    "pitcher_bruney-brian_2008", "pitcher_capuano-chris_2014",
-    "pitcher_gibson-paul_1994", "pitcher_mendoza-ramiro_2001",
-    "pitcher_monroe-zach_1958", "pitcher_orth-al_1906",
-    "pitcher_perez-melido_1994", "pitcher_pettitte-andy_2012",
-    "pitcher_shawkey-bob_1917", "pitcher_warhop-jack_1914",
-    "pitcher_zuber-bill_1945",
-}
+# Every dated card must resolve to its Lahman season. (The HOF Sewell
+# composite and the undated McDaniel carry no year and aren't scored.)
+RESOLVED = {cid for cid, c in CARDS.items() if c.year is not None}
 
 
 def test_have_statistical_cases():
@@ -288,6 +280,7 @@ def test_have_statistical_cases():
     and the undated McDaniel can't); a card silently dropping out of the
     benchmark fails here."""
     assert {c.card_id for c in CASES} == RESOLVED
+    assert len(RESOLVED) >= 25
 
 
 # Printed-vs-Lahman differences known to be on the card, not the match.

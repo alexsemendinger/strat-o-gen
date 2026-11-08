@@ -554,14 +554,16 @@ def _lineup_with_profile(league, profile, running, stealing=None):
 
 
 def test_advancement_symbols_change_run_scoring():
-    """Same outcome frequencies, different symbols: a lineup whose hits
-    carry ** and few DP groundouts must outscore a lineup of soft * hits
-    and DP-prone outs. This is invisible to the per-PA tester."""
+    """Same outcome frequencies, different symbols: a lineup whose singles
+    carry ** and few DP groundouts must outscore a lineup of soft * singles
+    and DP-prone outs. This is invisible to the per-PA tester. (Doubles
+    are left equal: DOUBLE** moves runners exactly two bases with no
+    gamble, so it isn't the more aggressive double.)"""
     league = db.league_batting(2001, "NL")
     _, pitcher = average_cards(league)
-    hard = {"single_2star": 0.60, "single_star": 0.05, "double_2star": 0.60,
+    hard = {"single_2star": 0.60, "single_star": 0.05, "double_2star": 0.40,
             "gb_a": 0.20, "plus_plus": 2}
-    soft = {"single_2star": 0.05, "single_star": 0.50, "double_2star": 0.15,
+    soft = {"single_2star": 0.05, "single_star": 0.50, "double_2star": 0.40,
             "gb_a": 0.95, "plus_plus": 0}
     rg_hard = GameSimulator(_lineup_with_profile(league, hard, 13),
                             pitcher, seed=5).runs_per_game(6000)

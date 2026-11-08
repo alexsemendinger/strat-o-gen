@@ -128,7 +128,8 @@ intentional walks and sacrifice hits (`simulate.pitcher_effective_pa`;
 where pitching SH or batters faced weren't recorded, a per-league factor
 from the Pitching table stands in). Pitcher cards additionally carry the
 standard 30-chance X-chart block (defense-dependent results, yielding
-X_SINGLE_RATE = 4.9 singles per 30 with average defense), shrunk
+X_SINGLE_RATE = 4.1 singles per 30 with average defense, fitted to the
+real cards — see below), shrunk
 automatically for extreme modern relievers whose strikeouts don't fit or
 who allowed fewer hits than the block's own singles. The block uses the
 real cards' standard fielders — 30 chances split ss 7 / 2b 6 / 3b 3 /
@@ -160,9 +161,11 @@ groundball-A results.
 ## How we know the cards are good
 
 `data/real_cards/` contains transcribed real cards used as ground truth:
-14 in a plain-text format (`*.txt`) and 25 more in a richer JSON format
+14 in a plain-text format (`*.txt`) and the rest in a richer JSON format
 (`transcriptions/`, capturing both the basic and advanced/platoon sides plus
-situational symbols — see that directory's README and SYMBOLS.md). The test
+situational symbols — see that directory's README and SYMBOLS.md): photos
+of physical cards, Strat-O-Matic's own published card images and exact
+365 card pages, and scans archived from collectors' blogs. The test
 suite computes each card's **exact** expected outcome rates (no simulation
 noise — the dice probabilities are summed in closed form) against a
 league-average opponent and compares them to the player's actual season line:
@@ -184,10 +187,11 @@ league-average opponent and compares them to the player's actual season line:
 - That comparison is not neutral: generated cards are built by inverting
   the tester (same X hit rate, average cards, HBP and sacrifice handling),
   so an error in those assumptions counts against the real cards only.
-  The tester's own parameters are checked against the real cards: e.g.
-  the X hit rate the 11 official pitcher cards imply is 4.2 ± 0.5 per 30,
-  so the published 4.9 stays (1.4 standard errors off, short of the 2
-  that would justify refitting).
+  The tester's own parameters are checked against the real cards: the
+  X hit rate the 15 official pitcher cards imply is 4.15 ± 0.36 per 30,
+  which put the community figure of 4.9 2.1 standard errors high; fitted
+  on 14 cards, the rate predicts the 15th card's hits allowed better than
+  4.9 on 13 of 15, so the constant is now 4.1.
 - A deterministic sweep of ~600 random pool seasons (`tests/test_sweep.py`)
   checks validity, layout precision (every category within 0.11 chances
   of its target) and the batter-card conventions beyond the fixtures.
@@ -314,12 +318,13 @@ Other simplifications:
   tracked (mostly pre-1951): success rate is unknowable, so volume alone
   decides and the card carries a warning. AA requires a measured elite
   rate. Where stolen bases weren't recorded at all (NL 1876-85, AA
-  1882-85, UA 1884) stealing is the neutral C. 18/20 exact on the real
-  cards (LeMahieu 2021 and Carey 1953 miss by one).
+  1882-85, UA 1884) stealing is the neutral C. On the 37 dated real
+  batter cards: 35 exact, all within one grade (Carey 1953's 2-for-3
+  cameo and Linz 1963's 1-for-7 miss).
 - Running (1-8 .. 1-17) comes from Bill James's speed score, catchers
-  3.5 slower: 9/20 exact, 17/20 within ±1 on the real cards (leave-one-
-  out 8/20, 15/20). Reputation ratings (Mays 1965's 1-17 at 34) are the
-  misses.
+  3.5 slower: on the 37 dated real batter cards 19 exact, 32 within ±1,
+  mean error 0.78. Reputation ratings (Mays 1965's 1-17 at 34) are the
+  big misses.
 - HBP isn't placed on basic cards (official basic cards drop it too: their
   walk chances fit BB alone far better than BB + HBP); advanced batter
   grids carry it, as the real advanced cards do. A hit-by-pitch magnet's

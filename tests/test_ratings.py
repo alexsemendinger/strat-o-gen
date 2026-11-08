@@ -1,31 +1,46 @@
 """Stealing and running ratings against every real card that prints them.
 
-Truth: the 20 dated real batter cards — the plain-text fixtures (Raines'
+Truth: every dated real batter card — the plain-text fixtures (Raines'
 composite and the fictional Posnanski excluded) and the JSON
-transcriptions (both sides print the same stealing/running).
+transcriptions (a card's sides print the same stealing/running) — read
+straight from the cards, so new cards join the check automatically.
 """
+
+import json
 
 import pytest
 
 from stratogen import ratings
+from stratogen.benchmark import benchmark_cases, transcription_cases
 from stratogen.fielding import position_ratings
 from stratogen.lahman import default_db
 
 db = default_db()
 
-# (player_id, year, stealing, running)
-TRUTH = [
-    ("bondsba01", 2001, "B", 14), ("cartega01", 1975, "C", 12),
-    ("cespeyo01", 2016, "D", 13), ("dawsoan01", 1977, "A", 15),
-    ("fostege01", 1971, "C", 13), ("mayswi01", 1965, "C", 17),
-    ("murphda05", 1976, "E", 10), ("murraed02", 1977, "E", 11),
-    ("beninan01", 2022, "C", 13), ("careyan01", 1953, "C", 14),
-    ("combsea01", 1930, "B", 16), ("henderi01", 1986, "AA", 17),
-    ("judgeaa01", 2024, "B", 13), ("lemahdj01", 2021, "D", 13),
-    ("linzph01", 1963, "D", 14), ("pippwa01", 1921, "B", 12),
-    ("posadjo01", 2003, "D", 9), ("rizzuph01", 1949, "B", 17),
-    ("silvech01", 1949, "D", 8), ("strawda01", 1985, "A", 17),
-]
+
+def _truth():
+    """[(card, player_id, year, stealing, running)] printed on the cards."""
+    rows = []
+    for case in benchmark_cases():
+        if case.synthetic or case.card.card_type != "batter":
+            continue
+        lines = case.card.header_lines
+        steal = next(ln for ln in lines if ln.startswith("stealing-"))[9:]
+        run = int(next(ln for ln in lines if ln.startswith("running 1-"))[10:])
+        rows.append((case.stem, case.actual_stats["player_id"],
+                     case.actual_stats["year"], steal, run))
+    for case in transcription_cases():
+        if case.card_type != "batter":
+            continue
+        side = case.transcription.basic or case.transcription.advanced
+        printed = json.loads(side.path.read_text(encoding="utf-8"))["ratings"]
+        rows.append((case.card_id, case.actual_stats["player_id"],
+                     case.actual_stats["year"], printed["stealing"].strip("()"),
+                     int(str(printed["running"]).split("-")[1])))
+    return rows
+
+
+TRUTH = _truth()
 
 
 def _header(pid, year):
@@ -37,30 +52,24 @@ def _printed(lines, prefix):
     return next(ln[len(prefix):] for ln in lines if ln.startswith(prefix))
 
 
-def test_truth_matches_transcriptions():
-    import json
-    from pathlib import Path
-    root = Path(__file__).resolve().parent.parent / "data" / "real_cards"
-    for path in sorted((root / "transcriptions").glob("som_batter_*_3col.json")):
-        r = json.loads(path.read_text(encoding="utf-8"))["ratings"]
-        year = path.stem.split("_")[-2]
-        if not year.isdigit():
-            continue   # the Sewell Hall of Fame composite
-        row = next(t for t in TRUTH if t[1] == int(year)
-                   and t[0][:4] in path.stem.replace("-", ""))
-        assert (r["stealing"], int(r["running"].split("-")[1])) == row[2:], path
+def test_truth_covers_the_corpus():
+    order = ["AA", "A", "B", "C", "D", "E"]
+    assert len(TRUTH) >= 37
+    assert all(steal in order and 1 <= run <= 20 for _c, _p, _y, steal, run in TRUTH)
 
 
 def test_running_agreement():
-    """9/20 exact, 17/20 within one, mean error 0.85 (leave-one-out, see
-    the running_rating docstring: 8/20, 15/20, 1.00). The old SB/triples
-    heuristic: 6/20, 12/20, 1.45."""
+    """On the 37 dated batter cards: 19 exact, 32 within one, mean error
+    0.78 (on the first 20: 9, 17, 0.85; leave-one-out 8, 15, 1.00; the
+    old SB/triples heuristic 6, 12, 1.45). Reputation ratings (Mays
+    1965's 1-17 at 34) are the big misses."""
     got = [(int(_printed(_header(pid, y), "running 1-")), run)
-           for pid, y, _s, run in TRUTH]
+           for _c, pid, y, _s, run in TRUTH]
+    n = len(got)
     exact = sum(g == t for g, t in got)
     within = sum(abs(g - t) <= 1 for g, t in got)
-    mae = sum(abs(g - t) for g, t in got) / len(got)
-    assert exact >= 9 and within >= 17 and mae <= 0.9, got
+    mae = sum(abs(g - t) for g, t in got) / n
+    assert exact >= 0.45 * n and within >= 0.80 * n and mae <= 0.9, got
 
 
 def test_running_reaches_the_slow_end():
@@ -70,13 +79,14 @@ def test_running_reaches_the_slow_end():
 
 
 def test_stealing_agreement():
-    """18/20 exact; LeMahieu 2021 (C vs D) and Carey 1953 (D vs C) miss —
-    both about attempts per opportunity, which volume can't see."""
-    got = [(_printed(_header(pid, y), "stealing-"), steal)
-           for pid, y, steal, _r in TRUTH]
-    assert sum(g == t for g, t in got) >= 18, got
+    """35/37 exact, all within one grade (see stealing_rating); Carey 1953
+    (a 2-for-3 cameo printed C) and Linz 1963 (1-for-7 printed D) miss."""
+    got = [(card, _printed(_header(pid, y), "stealing-"), steal)
+           for card, pid, y, steal, _r in TRUTH]
     order = ["AA", "A", "B", "C", "D", "E"]
-    assert all(abs(order.index(g) - order.index(t)) <= 1 for g, t in got)
+    exact = sum(g == t for _c, g, t in got)
+    assert exact >= 0.90 * len(got), [x for x in got if x[1] != x[2]]
+    assert all(abs(order.index(g) - order.index(t)) <= 1 for _c, g, t in got)
 
 
 def test_untracked_stolen_bases_are_neutral():

@@ -28,20 +28,21 @@ from .model import (
     HR, TRIPLE, DOUBLE, SINGLE, WALK, HBP, SO, OUT, XCHANCE, CATEGORIES,
 )
 
-# Fraction of X-chart chances that become singles with average defense
-# (Bundy: ~4.9 hits per 30 X chances).
+# Fraction of X-chart chances that become singles with average defense:
+# 4.1 per 30, fitted to the real cards (Bundy's community figure was 4.9).
 #
-# Checked against the 11 official real pitcher cards with a real season
-# (4 .txt fixtures + 7 JSON basic sides; tests/test_benchmark.py::
-# test_x_single_rate_is_consistent_with_real_pitcher_cards): solving each
-# card's hit total for the X rate that reproduces his hits allowed gives
-# a mean of 4.2 per 30 (median 4.1, sd 1.7, SE 0.5; Kirby 1975 1.9 to
-# Colon 2016 8.2). 4.9 sits 1.4 SE above that mean: suggestive, not
-# conclusive (the bar for refitting was 2 SE plus a held-out gain), so the
-# published figure stays. Leave-one-out, the card mean would cut real
-# cards' mean |H/PA error| only from .0062 to .0050, and the game engine's
-# X error/DP/ROE constants (game.py) were calibrated at 4.9.
-X_SINGLE_RATE = 4.9 / 30.0
+# Solving each official real pitcher card with a real season (4 .txt
+# fixtures + the JSON basic sides; tests/test_benchmark.py::
+# test_x_single_rate_is_consistent_with_real_pitcher_cards) for the X rate
+# that reproduces his hits allowed: over 15 cards the mean is 4.15 per 30
+# (median 4.02, SE 0.36; Bruney 2008 and Kirby 1975 1.9, Colon 2016 8.2),
+# so 4.9 sat 2.1 SE high, past the 2-SE bar set for refitting. Held out,
+# the rate fitted on the other 14 cards predicts each card's hits allowed
+# better than 4.9 on 13 of 15 (mean |H/PA error| .0056 -> .0038). 4.1 sits
+# between the mean and median. Generated cards keep their hit totals (the
+# X block's singles come out of the singles), and the game engine's
+# calibration held (see game.py / README).
+X_SINGLE_RATE = 4.1 / 30.0
 
 RATE_CATEGORIES = (HR, TRIPLE, DOUBLE, SINGLE, WALK, HBP, SO, OUT)
 

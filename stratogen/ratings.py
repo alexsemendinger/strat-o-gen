@@ -23,6 +23,12 @@ def stealing_rating(sb: int, cs: int, cs_missing: bool = False,
     the rating, capped at A: AA is reserved for runners with a *measured*
     elite success rate. When stolen bases weren't recorded at all (NL
     1876-85, AA 1882-85, UA 1884) the rating is the neutral C, not E.
+
+    Fitted on the 37 dated real batter cards: C takes 7 steals, or 5 at a
+    70% success rate (Carter 1975's 5-for-7 is a C, Virdon 1958's 5-for-8
+    a D); D takes 2 (Howard 1971's 1-for-1 and Virdon 1963's 1-for-3 are
+    E). 35/37 exact, all within one grade; the misses are Carey 1953 (a
+    2-for-3 cameo printed C) and Linz 1963 (1-for-7 printed D).
     """
     if sb_missing:
         return "C"
@@ -31,9 +37,9 @@ def stealing_rating(sb: int, cs: int, cs_missing: bool = False,
             return "A"
         if sb >= 20:
             return "B"
-        if sb >= 5:
+        if sb >= 7:
             return "C"
-        if sb >= 1:
+        if sb >= 2:
             return "D"
         return "E"
     attempts = sb + cs
@@ -44,9 +50,9 @@ def stealing_rating(sb: int, cs: int, cs_missing: bool = False,
         return "A"
     if sb >= 10 and rate >= 0.60:
         return "B"
-    if sb >= 4 or (attempts >= 8 and rate >= 0.50):
+    if sb >= 7 or (sb >= 5 and rate >= 0.70):
         return "C"
-    if sb >= 1:
+    if sb >= 2:
         return "D"
     return "E"
 

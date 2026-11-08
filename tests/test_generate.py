@@ -121,39 +121,46 @@ def _card_for(pid, year):
 def test_hit_symbol_shares_are_the_real_card_means():
     """The */** shares are the official basic batter cards' means (isolated
     power, which used to set them, anti-correlates with the real shares),
-    recomputed here from the fixtures, chance-weighted within each card."""
+    recomputed here from the fixtures, chance-weighted within each card and
+    averaged per player so one player's many seasons (Virdon 1955-65)
+    don't outvote everyone else."""
     import statistics
+    from collections import defaultdict
     from stratogen.benchmark import transcription_cases
     from stratogen.card_text import load_real_cards
     from stratogen.generate import (DOUBLE_2STAR_SHARE, SINGLE_2STAR_SHARE,
                                     SINGLE_STAR_SHARE)
-    cards = [c for stem, c in load_real_cards().items()
+    cards = [(stem.split("_")[0], c) for stem, c in load_real_cards().items()
              if c.card_type == "batter"
              and stem not in ("posnanski_2014", "raines_hero")]
-    cards += [c.reps["basic"] for c in transcription_cases()
+    cards += [(c.card_id.split("_")[1], c.reps["basic"]) for c in transcription_cases()
               if c.card_type == "batter" and c.official and "basic" in c.reps]
-    shares = {"SINGLE**": [], "SINGLE*": [], "DOUBLE**": []}
-    for card in cards:
+    by_player = defaultdict(lambda: defaultdict(list))
+    for player, card in cards:
         for base in ("SINGLE", "DOUBLE"):
             parts = {}
             for _c, d, s in card.iter_splits():
                 if s.text.startswith(base):
-                    suffix = s.text[len(base):].strip()
+                    # the symbol is the hit word's suffix; a located hit
+                    # reads 'SINGLE** (lf)'
+                    rest = s.text[len(base):].split()
+                    suffix = rest[0] if rest and rest[0].startswith("*") else ""
                     parts[suffix] = parts.get(suffix, 0.0) + DICE_WEIGHTS[d] * s.fraction
             total = sum(parts.values())
             if not total:
                 continue
             if base == "SINGLE":
-                shares["SINGLE**"].append(parts.get("**", 0.0) / total)
-                shares["SINGLE*"].append(parts.get("*", 0.0) / total)
+                by_player[player]["SINGLE**"].append(parts.get("**", 0.0) / total)
+                by_player[player]["SINGLE*"].append(parts.get("*", 0.0) / total)
             else:
-                shares["DOUBLE**"].append(parts.get("**", 0.0) / total)
-    assert len(shares["SINGLE**"]) >= 19
+                by_player[player]["DOUBLE**"].append(parts.get("**", 0.0) / total)
+    assert len(by_player) >= 19
     for key, value in (("SINGLE**", SINGLE_2STAR_SHARE),
                        ("SINGLE*", SINGLE_STAR_SHARE),
                        ("DOUBLE**", DOUBLE_2STAR_SHARE)):
-        assert statistics.mean(shares[key]) == pytest.approx(value, abs=0.02), (
-            key, statistics.mean(shares[key]))
+        mean = statistics.mean(statistics.mean(v[key]) for v in by_player.values()
+                               if v[key])
+        assert mean == pytest.approx(value, abs=0.02), (key, mean)
 
 
 def test_dp_letters_track_gidp_tendency():

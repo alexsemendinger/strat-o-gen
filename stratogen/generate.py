@@ -834,15 +834,17 @@ _DEFAULT_PROFILE = {"single_2star": 0.30, "single_star": 0.17,
 
 
 # Shares of the */** hit variants: the means of the official basic batter
-# cards in data/real_cards (SINGLE** .325, SINGLE* .186, DOUBLE** .386 of
-# single/double chances). Isolated power used to set them, but on the real
+# cards in data/real_cards, each player counted once (34 cards of 25
+# players: SINGLE** .321, SINGLE* .187, DOUBLE** .412 of single/double
+# chances; Virdon's eleven seasons would otherwise pull SINGLE* to .167).
+# Isolated power used to set them, but on the real
 # cards it predicts worse than these constants and with the wrong sign
 # (corr(ISO, share) -0.20 / -0.12 / -0.41; Judge 2024, ISO .379, prints
 # SINGLE** on .11 of his singles), and running speed doesn't predict them
 # either, so every batter gets the real-card mean.
-SINGLE_2STAR_SHARE = 0.33
+SINGLE_2STAR_SHARE = 0.32
 SINGLE_STAR_SHARE = 0.19
-DOUBLE_2STAR_SHARE = 0.39
+DOUBLE_2STAR_SHARE = 0.41
 
 
 def hit_profile(stats: dict, pa: float | None = None, *,

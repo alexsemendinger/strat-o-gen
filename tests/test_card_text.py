@@ -38,9 +38,12 @@ def test_fixtures_resolve_from_any_working_directory(tmp_path, monkeypatch):
     parametrized fixture test into a silent skip)."""
     assert card_text.REAL_CARDS_DIR.is_absolute()
     assert card_json.TRANSCRIPTIONS_DIR.is_absolute()
+    n_txt = len(card_text.load_real_cards())
+    n_json = len(card_json.load_transcriptions())
+    assert n_txt == 14 and n_json >= 27
     monkeypatch.chdir(tmp_path)
-    assert len(card_text.load_real_cards()) == 14
-    assert len(card_json.load_transcriptions()) == 27
+    assert len(card_text.load_real_cards()) == n_txt
+    assert len(card_json.load_transcriptions()) == n_json
 
 
 def test_missing_fixtures_fail_loudly(tmp_path):
