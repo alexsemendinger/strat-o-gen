@@ -1,0 +1,80 @@
+{
+  "cardId": "batter_virdon-bill_1965-orig",
+  "sourceImage": "https://web.archive.org/web/20260107002948im_/https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhx-d34mwa4mwmZana4XgA0v9WB5n9oofeW61bE07BCpElxRTyX3sHz3-HScQpfOZPfzXPitqUnQyHDA9kaIFu3BHtgkCFgAPq12IuYtYGnZJiwLJGKN7P8rK5k07pXaUZErFQMCaqLuTTz/s1600/65+Strat.jpg",
+  "sourceUrl": "https://web.archive.org/web/20260512180529/https://thoughtsandsox.blogspot.com/2019/05/",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Bill Virdon",
+    "bats": null,
+    "throws": null,
+    "team": "Pittsburgh",
+    "year": 1965,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "cf", "rating": 2, "error": null } ],
+    "stealing": "D",
+    "running": "1-14",
+    "notes": "Header reads: 'BILL VIRDON   centerfield-2   stealing-D   running-1-14' and 'PITTSBURGH PIRATES'. Original one-sided 1965 printing in typewriter-style type (its back, shown in the post's back scan, is blank)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "foulout (c) plus injury", "outcomes": [ { "range": null, "result": "foulout (c) plus injury" } ] },
+          { "roll": 3, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 4, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 5, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "DOUBLE** 1-4 / SINGLE** 5-20", "outcomes": [ { "range": [1,4], "result": "DOUBLE**" }, { "range": [5,20], "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "TRIPLE 1-4 / DOUBLE 5-20", "outcomes": [ { "range": [1,4], "result": "TRIPLE" }, { "range": [5,20], "result": "DOUBLE" } ] },
+          { "roll": 9, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 10, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 11, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 12, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "lineout (1b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (1b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 4, "raw": "groundball (1b) B", "outcomes": [ { "range": null, "result": "groundball (1b) B" } ] },
+          { "roll": 5, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 6, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 7, "raw": "groundball (1b) B", "outcomes": [ { "range": null, "result": "groundball (1b) B" } ] },
+          { "roll": 8, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 9, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 10, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 11, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 12, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "groundball (p) A", "outcomes": [ { "range": null, "result": "groundball (p) A" } ] },
+          { "roll": 3, "raw": "groundball (2b) A", "outcomes": [ { "range": null, "result": "groundball (2b) A" } ] },
+          { "roll": 4, "raw": "lineout (1b)", "outcomes": [ { "range": null, "result": "lineout (1b)" } ] },
+          { "roll": 5, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 6, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-19 / lineout (2b) 20", "outcomes": [ { "range": [1,19], "result": "SINGLE*" }, { "range": [20,20], "result": "lineout (2b)" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 10, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 11, "raw": "groundball (p) B", "outcomes": [ { "range": null, "result": "groundball (p) B" } ] },
+          { "roll": 12, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1965,
+    "stats": { "AT BATS": 481, "DOUBLES": 22, "TRIPLES": 5, "HOMERUNS": 4, "AVERAGE": ".279", "WALKS": 30, "STRIKEOUTS": 49 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "ORIGINAL PRINTING: the typewriter-style, one-sided 1965 Virdon card (left-hand card of the 1600x1420 scan; the right-hand card is the modern-typeface reissue transcribed as batter_virdon-bill_1965). Its header ratings and record match the modern printing, but the grid is arranged differently: e.g. this card has a single WALK (col3 r8; the modern card has WALK at col1 r6) and its DOUBLE** 1-4 / SINGLE** split and TRIPLE 1-4 / DOUBLE split sit at col1 r7-r8 (modern: TRIPLE 1-5 / DOUBLE and DOUBLE** 1-6 / SINGLE** at col3 r8-r9). Neither printing has a HOMERUN result (4 HR in 1965). Source: a 2019 collector's post of his Bill Virdon Strat-O-Matic cards (Wayback capture). Read from 1.1x half-card crops, then a second independent pass over a 1.0x crop of the whole grid. 'outs as pos- sible' is line-wrap hyphenation, recorded as 'into as many outs as possible'. Col1 roll2 prints 'plus injury' under 'foulout (c)'. 1965 BATTING RECORD box lists the seven stats ATBATS, DOUBLES, TRIPLES, HOMERUNS, AVERAGE, WALKS, STRIKEOUTS ('ATBATS' printed as one word; recorded under the corpus label 'AT BATS')."
+  }
+}

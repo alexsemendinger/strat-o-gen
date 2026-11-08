@@ -1,0 +1,81 @@
+{
+  "cardId": "batter_benintendi-andrew_2022",
+  "sourceImage": "som_batter_benintendi-andrew_2022_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Andrew Benintendi",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 2022,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "lf", "rating": 2, "error": null }
+    ],
+    "stealing": "C",
+    "running": "1-13",
+    "notes": "Header reads: 'ANDREW BENINTENDI   leftfield-2   stealing-C   running 1-13' and 'NEW YORK (AL)'. Basic side lists only the primary fielding position (leftfield-2)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "groundball (1b)B", "outcomes": [ { "range": null, "result": "groundball (1b)B" } ] },
+          { "roll": 3, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 4, "raw": "groundball (p)A", "outcomes": [ { "range": null, "result": "groundball (p)A" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "SINGLE* 1-2 / lineout (2b) 3-20", "outcomes": [ { "range": [1,2], "result": "SINGLE*" }, { "range": [3,20], "result": "lineout (2b)" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "groundball (1b)B", "outcomes": [ { "range": null, "result": "groundball (1b)B" } ] },
+          { "roll": 11, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 12, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "TRIPLE 1-6 / DOUBLE 7-20", "outcomes": [ { "range": [1,6], "result": "TRIPLE" }, { "range": [7,20], "result": "DOUBLE" } ] },
+          { "roll": 5, "raw": "DOUBLE** 1-11 / SINGLE** 12-20", "outcomes": [ { "range": [1,11], "result": "DOUBLE**" }, { "range": [12,20], "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 11, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 12, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "lineout (1b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (1b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 4, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 5, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 6, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 7, "raw": "groundball (3b)B", "outcomes": [ { "range": null, "result": "groundball (3b)B" } ] },
+          { "roll": 8, "raw": "groundball (1b)B", "outcomes": [ { "range": null, "result": "groundball (1b)B" } ] },
+          { "roll": 9, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 10, "raw": "groundball (2b)A++ plus injury", "outcomes": [ { "range": null, "result": "groundball (2b)A++ plus injury" } ] },
+          { "roll": 11, "raw": "groundball (2b)A", "outcomes": [ { "range": null, "result": "groundball (2b)A" } ] },
+          { "roll": 12, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 2022,
+    "stats": { "AVG": ".304", "AB": 461, "2B": 23, "3B": 3, "HR": 5, "RBI": 51, "BB": 52, "SO": 77, "SB": 8, "CS": 3, "SLG%": ".399", "ON BASE%": ".373" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Rotated_cw original; read from a 270-deg uprighted copy and full-res column crops (a diagonal shadow crosses cols 2/3 but cells remained legible). Col 3 roll 10 prints 'groundball (2b)A++ plus injury' and col 3 roll 2 'lineout (1b) into as many outs as possible' (verbatim)."
+  }
+}

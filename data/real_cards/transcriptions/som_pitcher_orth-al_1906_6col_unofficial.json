@@ -1,0 +1,121 @@
+{
+  "cardId": "pitcher_orth-al_1906",
+  "sourceImage": "som_pitcher_orth-al_1906_6col_unofficial.jpg",
+  "cardType": "pitcher",
+  "side": "6col",
+  "official": false,
+  "player": {
+    "name": "Al Orth",
+    "throws": "R",
+    "bats": null,
+    "team": null,
+    "year": 1906,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "starter": 8, "relief": 5 },
+    "pitcherFielding": "e34",
+    "battingNumber": null,
+    "hold": null, "wildPitch": null, "balk": null, "bunting": null,
+    "notes": "Header reads: 'AL ORTH   1906   e34   throws RIGHT   pitcher- starter (8)●   relief (5)●'. Bullets (●) print after starter (8) and relief (5). 'e34' is the pitcher's fielding rating. Unofficial card (cream/B&W stock)."
+  },
+  "grids": [
+    {
+      "vs": "LHB",
+      "percent": 30,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "strikeout●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout●" } ] },
+          { "roll": 3, "raw": "strikeout●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout●" } ] },
+          { "roll": 4, "raw": "gb (1b) B", "outcomes": [ { "range": null, "result": "gb (1b) B" } ] },
+          { "roll": 5, "raw": "TR 1-5 / fly (rf) B 6-20", "outcomes": [ { "range": [1,5], "result": "TR" }, { "range": [6,20], "result": "fly (rf) B" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "gb (3b) C", "outcomes": [ { "range": null, "result": "gb (3b) C" } ] },
+          { "roll": 8, "raw": "fly (cf) B", "outcomes": [ { "range": null, "result": "fly (cf) B" } ] },
+          { "roll": 9, "raw": "fly (cf) B", "outcomes": [ { "range": null, "result": "fly (cf) B" } ] },
+          { "roll": 10, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 11, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 12, "raw": "strikeout●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout●" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "strikeout●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout●" } ] },
+          { "roll": 3, "raw": "GB (p) X", "outcomes": [ { "range": null, "result": "GB (p) X" } ] },
+          { "roll": 4, "raw": "CATCH-X", "outcomes": [ { "range": null, "result": "CATCH-X" } ] },
+          { "roll": 5, "raw": "gb (1b) B", "outcomes": [ { "range": null, "result": "gb (1b) B" } ] },
+          { "roll": 6, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 7, "raw": "GB (2b) X", "outcomes": [ { "range": null, "result": "GB (2b) X" } ] },
+          { "roll": 8, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 9, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 10, "raw": "GB (3b) X", "outcomes": [ { "range": null, "result": "GB (3b) X" } ] },
+          { "roll": 11, "raw": "GB (1b) X", "outcomes": [ { "range": null, "result": "GB (1b) X" } ] },
+          { "roll": 12, "raw": "fly (cf) C", "outcomes": [ { "range": null, "result": "fly (cf) C" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "fly (cf) C", "outcomes": [ { "range": null, "result": "fly (cf) C" } ] },
+          { "roll": 3, "raw": "FLY (lf) X", "outcomes": [ { "range": null, "result": "FLY (lf) X" } ] },
+          { "roll": 4, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 5, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "SI* 1-17 / lo (ss) 18-20", "outcomes": [ { "range": [1,17], "result": "SI*" }, { "range": [18,20], "result": "lo (ss)" } ] },
+          { "roll": 9, "raw": "DO 1-12 / fly (lf) B 13-20", "outcomes": [ { "range": [1,12], "result": "DO" }, { "range": [13,20], "result": "fly (lf) B" } ] },
+          { "roll": 10, "raw": "FLY (cf) X", "outcomes": [ { "range": null, "result": "FLY (cf) X" } ] },
+          { "roll": 11, "raw": "FLY (rf) X", "outcomes": [ { "range": null, "result": "FLY (rf) X" } ] },
+          { "roll": 12, "raw": "fly (cf) C", "outcomes": [ { "range": null, "result": "fly (cf) C" } ] }
+        ] }
+      ]
+    },
+    {
+      "vs": "RHB",
+      "percent": 70,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 4, "raw": "TR 1-6 / fly (cf) B 7-20", "outcomes": [ { "range": [1,6], "result": "TR" }, { "range": [7,20], "result": "fly (cf) B" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "gb (ss) C", "outcomes": [ { "range": null, "result": "gb (ss) C" } ] },
+          { "roll": 8, "raw": "fly (rf) B", "outcomes": [ { "range": null, "result": "fly (rf) B" } ] },
+          { "roll": 9, "raw": "fly (rf) B", "outcomes": [ { "range": null, "result": "fly (rf) B" } ] },
+          { "roll": 10, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "strikeout●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout●" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "fly (cf) C", "outcomes": [ { "range": null, "result": "fly (cf) C" } ] },
+          { "roll": 3, "raw": "GB (p) X", "outcomes": [ { "range": null, "result": "GB (p) X" } ] },
+          { "roll": 4, "raw": "CATCH-X", "outcomes": [ { "range": null, "result": "CATCH-X" } ] },
+          { "roll": 5, "raw": "gb (3b) B", "outcomes": [ { "range": null, "result": "gb (3b) B" } ] },
+          { "roll": 6, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 7, "raw": "GB (2b) X", "outcomes": [ { "range": null, "result": "GB (2b) X" } ] },
+          { "roll": 8, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 9, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 10, "raw": "GB (3b) X", "outcomes": [ { "range": null, "result": "GB (3b) X" } ] },
+          { "roll": 11, "raw": "GB (1b) X", "outcomes": [ { "range": null, "result": "GB (1b) X" } ] },
+          { "roll": 12, "raw": "fly (cf) C", "outcomes": [ { "range": null, "result": "fly (cf) C" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "fly (cf) C", "outcomes": [ { "range": null, "result": "fly (cf) C" } ] },
+          { "roll": 3, "raw": "FLY (lf) X", "outcomes": [ { "range": null, "result": "FLY (lf) X" } ] },
+          { "roll": 4, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 5, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "SI* 1-16 / lo (3b) 17-20", "outcomes": [ { "range": [1,16], "result": "SI*" }, { "range": [17,20], "result": "lo (3b)" } ] },
+          { "roll": 9, "raw": "DO 1-12 / fly (rf) B 13-20", "outcomes": [ { "range": [1,12], "result": "DO" }, { "range": [13,20], "result": "fly (rf) B" } ] },
+          { "roll": 10, "raw": "FLY (cf) X", "outcomes": [ { "range": null, "result": "FLY (cf) X" } ] },
+          { "roll": 11, "raw": "FLY (rf) X", "outcomes": [ { "range": null, "result": "FLY (rf) X" } ] },
+          { "roll": 12, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Unofficial cream/B&W advanced-side card, photographed upright; read at full resolution with overlapping half-crops and a center crop for RHB col4. Header carries the year (1906) and team is not printed on this side. e34 is the fielding rating. RHB col5 roll9 'popout (2b)' has a faint smudge over the (2b) but reads clearly."
+  }
+}

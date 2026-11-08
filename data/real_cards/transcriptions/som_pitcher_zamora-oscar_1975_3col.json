@@ -1,0 +1,80 @@
+{
+  "cardId": "pitcher_zamora-oscar_1975",
+  "sourceImage": "https://web.archive.org/web/20231206090844im_/https://4.bp.blogspot.com/-wjb8FdEzLok/Vhgo8FanIUI/AAAAAAAAAKo/o2EQMAE2KUc/s1600/SOMzamora.jpg",
+  "sourceUrl": "https://web.archive.org/web/20240913060513/https://cary333.blogspot.com/2015/10/",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Oscar Zamora",
+    "throws": null,
+    "bats": null,
+    "team": "Chicago (NL)",
+    "year": 1975,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "type": "relief" },
+    "pitcherFielding": null,
+    "battingNumber": null,
+    "notes": "Header reads: 'OSCAR ZAMORA   1 pitcher-relief' and 'PITCHING CARD   CHICAGO CUBS'. The leading '1' is kept verbatim here only (its advanced side prints '#1R', the batting-card designation); 'relief' is the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "groundball (p) B", "outcomes": [ { "range": null, "result": "groundball (p) B" } ] },
+          { "roll": 3, "raw": "FLYBALL (lf) X", "outcomes": [ { "range": null, "result": "FLYBALL (lf) X" } ] },
+          { "roll": 4, "raw": "DOUBLE", "outcomes": [ { "range": null, "result": "DOUBLE" } ] },
+          { "roll": 5, "raw": "DOUBLE** 1-10 / SINGLE** 11-20", "outcomes": [ { "range": [1,10], "result": "DOUBLE**" }, { "range": [11,20], "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "SINGLE* 1-2 / lineout (3b) 3-20", "outcomes": [ { "range": [1,2], "result": "SINGLE*" }, { "range": [3,20], "result": "lineout (3b)" } ] },
+          { "roll": 7, "raw": "GROUND-BALL(2b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b) X" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "flyball (cf) C", "outcomes": [ { "range": null, "result": "flyball (cf) C" } ] },
+          { "roll": 10, "raw": "FLYBALL (cf) X", "outcomes": [ { "range": null, "result": "FLYBALL (cf) X" } ] },
+          { "roll": 11, "raw": "GROUND-BALL(1b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL(1b) X" } ] },
+          { "roll": 12, "raw": "groundball (p) B", "outcomes": [ { "range": null, "result": "groundball (p) B" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "GROUND-BALL(ss) X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss) X" } ] },
+          { "roll": 3, "raw": "GROUND-BALL(p) X", "outcomes": [ { "range": null, "result": "GROUND-BALL(p) X" } ] },
+          { "roll": 4, "raw": "GROUND-BALL(3b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL(3b) X" } ] },
+          { "roll": 5, "raw": "groundball (2b) C", "outcomes": [ { "range": null, "result": "groundball (2b) C" } ] },
+          { "roll": 6, "raw": "flyball (lf) B", "outcomes": [ { "range": null, "result": "flyball (lf) B" } ] },
+          { "roll": 7, "raw": "GROUND-BALL(ss) X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss) X" } ] },
+          { "roll": 8, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 9, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 10, "raw": "HOMERUN 1-13 / DOUBLE 14-20", "outcomes": [ { "range": [1,13], "result": "HOMERUN" }, { "range": [14,20], "result": "DOUBLE" } ] },
+          { "roll": 11, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 12, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 3, "raw": "groundball (1b) C", "outcomes": [ { "range": null, "result": "groundball (1b) C" } ] },
+          { "roll": 4, "raw": "TRIPLE 1-13 / DOUBLE 14-20", "outcomes": [ { "range": [1,13], "result": "TRIPLE" }, { "range": [14,20], "result": "DOUBLE" } ] },
+          { "roll": 5, "raw": "DOUBLE", "outcomes": [ { "range": null, "result": "DOUBLE" } ] },
+          { "roll": 6, "raw": "DOUBLE", "outcomes": [ { "range": null, "result": "DOUBLE" } ] },
+          { "roll": 7, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 8, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 9, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 10, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 11, "raw": "FLYBALL (rf) X", "outcomes": [ { "range": null, "result": "FLYBALL (rf) X" } ] },
+          { "roll": 12, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 1975,
+    "stats": { "WON": 5, "LOST": 2, "E.R.A.": "5.07", "INNINGS PITCHED": 71, "HITS ALLOWED": 84, "WALKS ALLOWED": 15, "STRIKEOUTS": 28, "HOMERUNS ALLOWED": 17 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic side, flatbed scan (613x1035) posted on a collector's blog in 2015 and retrieved from its Wayback capture; read from 1.6x half-card crops, then a second independent pass over per-column crops. Full-word vocabulary (groundball / GROUND-BALL(..) X, FLYBALL (..) X, CATCHER'S CARD X); the X tokens print with no space before the parenthesis ('GROUND-BALL(ss) X'), kept verbatim. 1975 PITCHING RECORD box lists WON, LOST, E.R.A., INNINGS PITCHED, HITS ALLOWED, WALKS ALLOWED, STRIKEOUTS, HOMERUNS ALLOWED."
+  }
+}

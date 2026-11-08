@@ -1,0 +1,5 @@
+# Windows launchers must keep CRLF line endings, also in GitHub ZIP downloads
+# (cmd.exe misparses LF-only batch files around labels and goto/call).
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.vbs text eol=crlf

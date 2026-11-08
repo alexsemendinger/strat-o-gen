@@ -1,0 +1,125 @@
+{
+  "cardId": "pitcher_capuano-chris_2014",
+  "sourceImage": "som_pitcher_capuano-chris_2014_6col.jpg",
+  "cardType": "pitcher",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Chris Capuano",
+    "throws": "L",
+    "bats": null,
+    "team": null,
+    "year": null,
+    "cardNumber": "#1WL",
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "starter": 6, "relief": 3 },
+    "pitcherFielding": "pitcher-2",
+    "battingNumber": null,
+    "hold": "-4",
+    "wildPitch": "wp-18",
+    "balk": "bk- 4",
+    "bunting": "bunting-C",
+    "notes": "Header reads: 'bk- 4   wp-18   e15   #1WL   pitcher-2   starter(6)●' / 'throws LEFT   hold -4   bunting-C   relief(3)/N ●'. Bullets (●) print after starter(6) and after relief(3)/N. 'e15' is the error/fielding rating; '#1WL' is the collection card number. Left grid header: '28% AGAINST LEFT-HAND BATTERS'; right grid header: '72% AGAINST RIGHT-HAND BATTERS'.",
+    "errorRating": "e15"
+  },
+  "grids": [
+    {
+      "vs": "LHB",
+      "percent": 28,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "fly (rf) B ●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "fly (rf) B ●" } ] },
+          { "roll": 3, "raw": "FLY (rf) X", "outcomes": [ { "range": null, "result": "FLY (rf) X" } ] },
+          { "roll": 4, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 5, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 6, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 7, "raw": "SI* 1-13 / lo (2b) 14-20", "outcomes": [ { "range": [1,13], "result": "SI*" }, { "range": [14,20], "result": "lo (2b)" } ] },
+          { "roll": 8, "raw": "gb (2b) B", "outcomes": [ { "range": null, "result": "gb (2b) B" } ] },
+          { "roll": 9, "raw": "9-N-HR", "outcomes": [ { "range": null, "result": "N-HR" } ] },
+          { "roll": 10, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout ●" } ] },
+          { "roll": 11, "raw": "fly (rf) B", "markers": ["diamond"], "outcomes": [ { "range": null, "result": "fly (rf) B" } ] },
+          { "roll": 12, "raw": "fly (rf) B", "outcomes": [ { "range": null, "result": "fly (rf) B" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "GB (1b) X", "outcomes": [ { "range": null, "result": "GB (1b) X" } ] },
+          { "roll": 3, "raw": "GB (p) X", "outcomes": [ { "range": null, "result": "GB (p) X" } ] },
+          { "roll": 4, "raw": "GB (3b) X", "outcomes": [ { "range": null, "result": "GB (3b) X" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "N-HR 1-17 / fly (rf) B 18-20", "markers": ["diamond"], "outcomes": [ { "range": [1,17], "result": "N-HR" }, { "range": [18,20], "result": "fly (rf) B" } ] },
+          { "roll": 7, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "N-HR 1 / DO 2-20", "outcomes": [ { "range": [1,1], "result": "N-HR" }, { "range": [2,20], "result": "DO" } ] },
+          { "roll": 9, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout ●" } ] },
+          { "roll": 10, "raw": "fly (rf) C", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "fly (rf) C" } ] },
+          { "roll": 11, "raw": "SINGLE (rf)", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "SINGLE (rf)" } ] },
+          { "roll": 12, "raw": "GB (1b) X", "outcomes": [ { "range": null, "result": "GB (1b) X" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "2-SINGLE (rf)", "markers": ["upTriangle"], "outcomes": [ { "range": null, "result": "SINGLE (rf)" } ] },
+          { "roll": 3, "raw": "SI* 1-12 / lo (2b) 13-20", "outcomes": [ { "range": [1,12], "result": "SI*" }, { "range": [13,20], "result": "lo (2b)" } ] },
+          { "roll": 4, "raw": "FLY (lf) X", "outcomes": [ { "range": null, "result": "FLY (lf) X" } ] },
+          { "roll": 5, "raw": "FLY (cf) X", "outcomes": [ { "range": null, "result": "FLY (cf) X" } ] },
+          { "roll": 6, "raw": "DO** 1-3 / SI** 4-20", "outcomes": [ { "range": [1,3], "result": "DO**" }, { "range": [4,20], "result": "SI**" } ] },
+          { "roll": 7, "raw": "TR 1-5 / SI** 6-20", "outcomes": [ { "range": [1,5], "result": "TR" }, { "range": [6,20], "result": "SI**" } ] },
+          { "roll": 8, "raw": "GB (2b) X", "outcomes": [ { "range": null, "result": "GB (2b) X" } ] },
+          { "roll": 9, "raw": "fly (lf) B", "outcomes": [ { "range": null, "result": "fly (lf) B" } ] },
+          { "roll": 10, "raw": "CATCH-X", "outcomes": [ { "range": null, "result": "CATCH-X" } ] },
+          { "roll": 11, "raw": "fly (cf) B ●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "fly (cf) B ●" } ] },
+          { "roll": 12, "raw": "GB (2b) X", "outcomes": [ { "range": null, "result": "GB (2b) X" } ] }
+        ] }
+      ]
+    },
+    {
+      "vs": "RHB",
+      "percent": 72,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "fly (cf) C", "outcomes": [ { "range": null, "result": "fly (cf) C" } ] },
+          { "roll": 3, "raw": "FLY (rf) X", "outcomes": [ { "range": null, "result": "FLY (rf) X" } ] },
+          { "roll": 4, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 5, "raw": "GB (ss) X", "outcomes": [ { "range": null, "result": "GB (ss) X" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "fly (cf) B", "outcomes": [ { "range": null, "result": "fly (cf) B" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "N-HR 1-2 / DO 3-20", "outcomes": [ { "range": [1,2], "result": "N-HR" }, { "range": [3,20], "result": "DO" } ] },
+          { "roll": 10, "raw": "fly (rf) B", "outcomes": [ { "range": null, "result": "fly (rf) B" } ] },
+          { "roll": 11, "raw": "SINGLE (lf)", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "SINGLE (lf)" } ] },
+          { "roll": 12, "raw": "SINGLE (lf)", "outcomes": [ { "range": null, "result": "SINGLE (lf)" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "GB (1b) X", "outcomes": [ { "range": null, "result": "GB (1b) X" } ] },
+          { "roll": 3, "raw": "GB (p) X", "outcomes": [ { "range": null, "result": "GB (p) X" } ] },
+          { "roll": 4, "raw": "GB (3b) X", "outcomes": [ { "range": null, "result": "GB (3b) X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "SI* 1-8 / lo (3b) 9-20", "outcomes": [ { "range": [1,8], "result": "SI*" }, { "range": [9,20], "result": "lo (3b)" } ] },
+          { "roll": 7, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [ { "range": null, "result": "strikeout ●" } ] },
+          { "roll": 8, "raw": "TR 1-4 / SI** 5-20", "outcomes": [ { "range": [1,4], "result": "TR" }, { "range": [5,20], "result": "SI**" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "fly (cf) C", "markers": ["downTriangle"], "outcomes": [ { "range": null, "result": "fly (cf) C" } ] },
+          { "roll": 11, "raw": "fly (lf) B", "outcomes": [ { "range": null, "result": "fly (lf) B" } ] },
+          { "roll": 12, "raw": "GB (1b) X", "outcomes": [ { "range": null, "result": "GB (1b) X" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "fly (rf) B", "outcomes": [ { "range": null, "result": "fly (rf) B" } ] },
+          { "roll": 3, "raw": "FLY (lf) X", "outcomes": [ { "range": null, "result": "FLY (lf) X" } ] },
+          { "roll": 4, "raw": "FLY (cf) X", "outcomes": [ { "range": null, "result": "FLY (cf) X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "DO 1-9 / fly (lf) B 10-20", "outcomes": [ { "range": [1,9], "result": "DO" }, { "range": [10,20], "result": "fly (lf) B" } ] },
+          { "roll": 8, "raw": "GB (2b) X", "outcomes": [ { "range": null, "result": "GB (2b) X" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "CATCH-X", "outcomes": [ { "range": null, "result": "CATCH-X" } ] },
+          { "roll": 11, "raw": "gb (ss) X", "outcomes": [ { "range": null, "result": "gb (ss) X" } ] },
+          { "roll": 12, "raw": "GB (2b) X", "outcomes": [ { "range": null, "result": "GB (2b) X" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Upright color advanced (6col) side, read from full-res left/right crops. Two split-die cells where the leading roll number appears merged into the result text are recorded verbatim: LHB col4 roll9 '9-N-HR' and LHB col6 roll2 '2-SINGLE (rf)' (the latter carries an upTriangle marker). Clutch/situational markers preserved: diamond (◆), upTriangle (△), downTriangle (▼), bullet (●)."
+  }
+}

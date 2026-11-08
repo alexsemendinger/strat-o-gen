@@ -1,0 +1,80 @@
+{
+  "cardId": "batter_virdon-bill_1956",
+  "sourceImage": "https://web.archive.org/web/20260107002945im_/https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRcS_9t-B3H_uoMiwtcZ31FHI0Q5Iv7e_wJwhA2Gl1QkV0DPb6iaI-HraOqecG8zhTImSNH0lFpL0YydSCM_z_ftXXVL-s9hvr1qIAZILaZDCgLFwqDga8Hpa-C29e4HBvftxTYSN-FwDc/s1600/56+Strat.jpg",
+  "sourceUrl": "https://web.archive.org/web/20260512180529/https://thoughtsandsox.blogspot.com/2019/05/",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Bill Virdon",
+    "bats": null,
+    "throws": null,
+    "team": "Pittsburgh (NL)",
+    "year": 1956,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "cf", "rating": 1, "error": null } ],
+    "stealing": "D",
+    "running": "1-15",
+    "notes": "Header reads: 'BILL VIRDON   centerfield-1   stealing-D   running 1-15' and 'PITTSBURGH PIRATES'. Virdon was traded from St. Louis to Pittsburgh in May 1956; the card's record is his combined season (580 AB, .319)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 3, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 4, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 5, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 6, "raw": "groundball (1b) A", "outcomes": [ { "range": null, "result": "groundball (1b) A" } ] },
+          { "roll": 7, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "SINGLE* 1 / lineout (2b) 2-20", "outcomes": [ { "range": [1,1], "result": "SINGLE*" }, { "range": [2,20], "result": "lineout (2b)" } ] },
+          { "roll": 10, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 11, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 12, "raw": "foulout (c) plus injury", "outcomes": [ { "range": null, "result": "foulout (c) plus injury" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 3, "raw": "groundball (2b) A", "outcomes": [ { "range": null, "result": "groundball (2b) A" } ] },
+          { "roll": 4, "raw": "groundball (1b) A", "outcomes": [ { "range": null, "result": "groundball (1b) A" } ] },
+          { "roll": 5, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 6, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 7, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "groundball (p) A", "outcomes": [ { "range": null, "result": "groundball (p) A" } ] },
+          { "roll": 11, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 12, "raw": "groundball (1b) B", "outcomes": [ { "range": null, "result": "groundball (1b) B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 3, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 4, "raw": "HOMERUN 1-4 / DOUBLE 5-20", "outcomes": [ { "range": [1,4], "result": "HOMERUN" }, { "range": [5,20], "result": "DOUBLE" } ] },
+          { "roll": 5, "raw": "TRIPLE 1-13 / SINGLE** 14-20", "outcomes": [ { "range": [1,13], "result": "TRIPLE" }, { "range": [14,20], "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "DOUBLE** 1-5 / SINGLE** 6-20", "outcomes": [ { "range": [1,5], "result": "DOUBLE**" }, { "range": [6,20], "result": "SINGLE**" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 9, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 10, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "lineout (1b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (1b) into as many outs as possible" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1956,
+    "stats": { "AT BATS": 580, "DOUBLES": 23, "TRIPLES": 10, "HOMERUNS": 10, "AVERAGE": ".319", "WALKS": 38, "STRIKEOUTS": 71 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic side, classic-typeface card. The scan (1600x1391) shows two printings of the same card side by side (black ink and blue ink) with identical contents; transcribed from full-resolution crops of the black copy, then independently re-read from the blue copy, which agrees cell for cell. Source: a 2019 collector's post of his Bill Virdon Strat-O-Matic cards, retrieved from its Wayback capture. 1956 BATTING RECORD box lists the seven stats AT BATS, DOUBLES, TRIPLES, HOMERUNS, AVERAGE, WALKS, STRIKEOUTS. Col1 roll12 prints 'plus injury' under 'foulout (c)'; col3 roll12 'lineout (1b) into as many outs as possible' captured verbatim."
+  }
+}

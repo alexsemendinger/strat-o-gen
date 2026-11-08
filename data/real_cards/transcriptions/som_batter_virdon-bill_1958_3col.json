@@ -1,0 +1,80 @@
+{
+  "cardId": "batter_virdon-bill_1958",
+  "sourceImage": "https://web.archive.org/web/20260107002946im_/https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi0Q5hUO43TTJgmwwgeP9JH8JtY_zfNVTJDgEVnTOG3rKI5zKGalpFVfvIp4A_a8Uji_uv31ITNR1h9OiPMUHSN9yM6RHriTjKkB8ykzz0zQZ3QJ5YA-PB6E6l7gDI3vEC8CXrORNl73zar/s1600/58+Strat.jpg",
+  "sourceUrl": "https://web.archive.org/web/20260512180529/https://thoughtsandsox.blogspot.com/2019/05/",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Bill Virdon",
+    "bats": null,
+    "throws": null,
+    "team": "Pittsburgh",
+    "year": 1958,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "cf", "rating": 1, "error": null } ],
+    "stealing": "D",
+    "running": "1-15",
+    "notes": "Header reads: 'BILL VIRDON   centerfield-1   stealing-D   running 1-15' and 'PITTSBURGH'."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "groundball (ss)B", "outcomes": [ { "range": null, "result": "groundball (ss)B" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 5, "raw": "TRIPLE 1-13 / DOUBLE 14-20", "outcomes": [ { "range": [1,13], "result": "TRIPLE" }, { "range": [14,20], "result": "DOUBLE" } ] },
+          { "roll": 6, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 9, "raw": "HOMERUN 1 / flyball (rf)B 2-20", "outcomes": [ { "range": [1,1], "result": "HOMERUN" }, { "range": [2,20], "result": "flyball (rf)B" } ] },
+          { "roll": 10, "raw": "DOUBLE** 1-12 / SINGLE** 13-20", "outcomes": [ { "range": [1,12], "result": "DOUBLE**" }, { "range": [13,20], "result": "SINGLE**" } ] },
+          { "roll": 11, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 12, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 4, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 5, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "lineout (1b)", "outcomes": [ { "range": null, "result": "lineout (1b)" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-11 / lineout (2b) 12-20", "outcomes": [ { "range": [1,11], "result": "SINGLE*" }, { "range": [12,20], "result": "lineout (2b)" } ] },
+          { "roll": 8, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "groundball (1b)B", "outcomes": [ { "range": null, "result": "groundball (1b)B" } ] },
+          { "roll": 11, "raw": "groundball (2b)A", "outcomes": [ { "range": null, "result": "groundball (2b)A" } ] },
+          { "roll": 12, "raw": "lineout (1b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (1b) into as many outs as possible" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "groundball (2b)A++ plus injury", "outcomes": [ { "range": null, "result": "groundball (2b)A++ plus injury" } ] },
+          { "roll": 3, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 4, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 7, "raw": "groundball (3b)B", "outcomes": [ { "range": null, "result": "groundball (3b)B" } ] },
+          { "roll": 8, "raw": "groundball (1b)B", "outcomes": [ { "range": null, "result": "groundball (1b)B" } ] },
+          { "roll": 9, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 10, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 11, "raw": "groundball (ss)B", "outcomes": [ { "range": null, "result": "groundball (ss)B" } ] },
+          { "roll": 12, "raw": "groundball (1b)B", "outcomes": [ { "range": null, "result": "groundball (1b)B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1958,
+    "stats": { "AVG": ".267", "AB": 604, "2B": 24, "3B": 11, "HR": 9, "RBI": 46, "BB": 52, "SO": 70, "SB": 5, "CS": 3, "SLG%": ".387", "ON BASE%": ".324" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic side, flatbed scan (932x1600) from a 2019 collector's post of his Bill Virdon Strat-O-Matic cards, retrieved from its Wayback capture; read from a contact-sheet overview, then a second independent pass over full-resolution half-card crops. Col3 roll2 prints 'plus injury' under 'groundball (2b)A++'; col2 roll12 'lineout (1b) into as many outs as possible' captured verbatim."
+  }
+}

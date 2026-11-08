@@ -1,0 +1,35 @@
+{
+  "cardId": "batter_yastrzemski-carl_1967",
+  "sourceUrl": "https://365.strat-o-matic.com/help/hittercard",
+  "cardType": "batter",
+  "official": true,
+  "player": {
+    "name": "Carl Yastrzemski",
+    "bats": "L",
+    "throws": null,
+    "team": null,
+    "year": 1967,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "lf", "rating": 1, "error": "e8", "arm": "-3" } ],
+    "stealing": "C",
+    "stealingDetail": "*2-6,12/10 (15-8)",
+    "bunting": "C",
+    "hitAndRun": "C",
+    "running": "1-14",
+    "power": { "vsL": "N", "vsR": "N" },
+    "balance": "2R",
+    "notes": "Header reads: 'Balance: 2R' / 'L | CARL YASTRZEMSKI (1967) | stealing-(C)  *2-6,12/10 (15-8) | bunting-C  hit & run-C' / 'Defense: lf-1(-3)e8 | running 1-14'. Grid banners: '23% VS.LEFTY PITCHERS - Power-N' and '77% VS.RIGHTY PITCHERS - Power-N'. 'Balance' is a 365 display field (platoon lean, 2R = mildly better vs RHP); team is not printed (Lahman: BOS)."
+  },
+  "gridsMeta": [
+    { "vs": "LHP", "percent": 23, "power": "N" },
+    { "vs": "RHP", "percent": 77, "power": "N" }
+  ],
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Not a photograph: transcribed from the text of the official Strat-O-Matic Baseball 365 example hitter card (Carl Yastrzemski 1967) published on Strat-O-Matic's own help page https://365.strat-o-matic.com/help/hittercard (retrieved 2026-11-03). The card is HTML text, so every cell is exact. Read twice independently: (1) parsed from the HTML table structure, (2) re-split from the tag-stripped text by roll prefixes; 0 differences across 66 cells. 'raw' keeps the 365 rendering verbatim, roll prefix and glyph included. The 365 glyphs are recorded in 'markers' under the meanings in that page's legend: '#' = ballparkHR (ballpark home-run reading: in 365 the printed result is replaced by a d20 roll against the park's HR rating), '>' = ballparkSingle (same, single vs lineout against the park's singles rating), '$' = clutch (reversed with two outs and a runner in scoring position). They are probably the printed card's diamond / down-triangle / omega symbols, but that mapping is unconfirmed, so the 365 names are used. As with the photographed cards, outcomes hold the printed result, and that is what the importer reads. 'B?' results also carry questionMark. HBP appears on col 2 rolls 2 and 12 of both grids; '+ injury' on roll 12 is recorded as 'HBP plus injury'. The 365 card is Strat-O-Matic's own digital rendering of its 1967 season advanced card. It is official product data, but not a photographed physical card."
+  }
+}

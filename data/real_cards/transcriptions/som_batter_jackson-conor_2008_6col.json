@@ -1,0 +1,142 @@
+{
+  "cardId": "batter_jackson-conor_2008",
+  "sourceUrl": "https://www.strat-o-matic.com/wp-json/wp/v2/media/7389",
+  "sourceImage": "https://strat-site-files.s3.amazonaws.com/wp-content/uploads/2018/06/20205054/individual_team_card.jpg",
+  "cardType": "batter",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Conor Jackson",
+    "bats": "R",
+    "throws": null,
+    "team": "Arizona",
+    "year": 2008,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "1b",
+        "rating": 4,
+        "error": "e10"
+      },
+      {
+        "pos": "lf",
+        "rating": 4,
+        "error": "e7",
+        "arm": "0"
+      }
+    ],
+    "stealing": "C",
+    "stealingDetail": "*4/- (19-6)",
+    "bunting": "D",
+    "hitAndRun": "B",
+    "running": "1-12",
+    "power": {
+      "vsL": "N",
+      "vsR": "N"
+    },
+    "notes": "Header reads: 'R | CONOR JACKSON   stealing-(C)   *4/- (19-6)   bunting-D   hit & run-B   running 1-12' with fielding sub-line '1b-4 e10/ lf-4(0) e7'. Leading 'R' = bats right. Banners: '24% AGAINST LEFT-HAND PITCHERS   Power-N' and '76% AGAINST RIGHT-HAND PITCHERS   Power-N'. The advanced side prints no year or team, and the source photo carries no caption: the year is inferred (see transcription notes); team Arizona, his only team 2005-2009."
+  },
+  "grids": [
+    {
+      "vs": "LHP",
+      "percent": 24,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]},
+          {"roll": 3, "raw": "gb (3b) B", "outcomes": [{"range": null, "result": "gb (3b) B"}]},
+          {"roll": 4, "raw": "Ω 4-gb (ss) B", "markers": ["omega"], "outcomes": [{"range": null, "result": "gb (ss) B"}]},
+          {"roll": 5, "raw": "SI* 1-8 / gb (3b) B 9-20", "outcomes": [{"range": [1, 8], "result": "SI*"}, {"range": [9, 20], "result": "gb (3b) B"}]},
+          {"roll": 6, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "gb (1b) C", "markers": ["underline:C"], "outcomes": [{"range": null, "result": "gb (1b) C"}]},
+          {"roll": 11, "raw": "gb (p) B", "outcomes": [{"range": null, "result": "gb (p) B"}]},
+          {"roll": 12, "raw": "fly (lf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (lf) B?"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "gb (ss) A+", "outcomes": [{"range": null, "result": "gb (ss) A+"}]},
+          {"roll": 3, "raw": "△ 3-SINGLE (rf) / SI* 1-8 / lo (ss) 9-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "SINGLE (rf)"}, {"range": [1, 8], "result": "SI*"}, {"range": [9, 20], "result": "lo (ss)"}]},
+          {"roll": 4, "raw": "HR 1-7 / DO 8-20", "outcomes": [{"range": [1, 7], "result": "HR"}, {"range": [8, 20], "result": "DO"}]},
+          {"roll": 5, "raw": "TR 1-5 / DO 6-20", "outcomes": [{"range": [1, 5], "result": "TR"}, {"range": [6, 20], "result": "DO"}]},
+          {"roll": 6, "raw": "DO** 1-19 / SI** 20", "outcomes": [{"range": [1, 19], "result": "DO**"}, {"range": [20, 20], "result": "SI**"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "fly (rf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "▼ 11-SINGLE (rf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE (rf)"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 4, "raw": "gb (2b) C", "markers": ["underline:C"], "outcomes": [{"range": null, "result": "gb (2b) C"}]},
+          {"roll": 5, "raw": "fly (rf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 6, "raw": "gb (ss) A+", "outcomes": [{"range": null, "result": "gb (ss) A+"}]},
+          {"roll": 7, "raw": "fly (cf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (cf) B?"}]},
+          {"roll": 8, "raw": "gb (ss) A", "outcomes": [{"range": null, "result": "gb (ss) A"}]},
+          {"roll": 9, "raw": "gb (ss) A", "outcomes": [{"range": null, "result": "gb (ss) A"}]},
+          {"roll": 10, "raw": "▼ 10-gb (p) B", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "gb (p) B"}]},
+          {"roll": 11, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]},
+          {"roll": 12, "raw": "lo (3b) max", "outcomes": [{"range": null, "result": "lo (3b) max"}]}
+        ] }
+      ]
+    },
+    {
+      "vs": "RHP",
+      "percent": 76,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "fly (cf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (cf) B?"}]},
+          {"roll": 3, "raw": "gb (3b) A", "outcomes": [{"range": null, "result": "gb (3b) A"}]},
+          {"roll": 4, "raw": "gb (3b) B", "outcomes": [{"range": null, "result": "gb (3b) B"}]},
+          {"roll": 5, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 6, "raw": "SINGLE (rf)", "outcomes": [{"range": null, "result": "SINGLE (rf)"}]},
+          {"roll": 7, "raw": "SI* 1-4 / gb (3b) B 5-20", "outcomes": [{"range": [1, 4], "result": "SI*"}, {"range": [5, 20], "result": "gb (3b) B"}]},
+          {"roll": 8, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 9, "raw": "gb (ss) A", "outcomes": [{"range": null, "result": "gb (ss) A"}]},
+          {"roll": 10, "raw": "gb (3b) B", "outcomes": [{"range": null, "result": "gb (3b) B"}]},
+          {"roll": 11, "raw": "gb (1b) C", "markers": ["underline:C"], "outcomes": [{"range": null, "result": "gb (1b) C"}]},
+          {"roll": 12, "raw": "gb (ss) A+", "outcomes": [{"range": null, "result": "gb (ss) A+"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "gb (3b) B", "outcomes": [{"range": null, "result": "gb (3b) B"}]},
+          {"roll": 3, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 4, "raw": "HR 1-7 / DO 8-20", "outcomes": [{"range": [1, 7], "result": "HR"}, {"range": [8, 20], "result": "DO"}]},
+          {"roll": 5, "raw": "TR 1-9 / SI** 10-20", "outcomes": [{"range": [1, 9], "result": "TR"}, {"range": [10, 20], "result": "SI**"}]},
+          {"roll": 6, "raw": "DO** 1-7 / SI** 8-20", "outcomes": [{"range": [1, 7], "result": "DO**"}, {"range": [8, 20], "result": "SI**"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "fly (cf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (cf) B?"}]},
+          {"roll": 9, "raw": "gb (ss) A", "outcomes": [{"range": null, "result": "gb (ss) A"}]},
+          {"roll": 10, "raw": "Ω 10-fly (rf) B?", "markers": ["omega", "questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 11, "raw": "▼ 11-SINGLE (lf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE (lf)"}]},
+          {"roll": 12, "raw": "◆ 12-HR 1-10 / fly (lf) B 11-20", "markers": ["diamond"], "outcomes": [{"range": [1, 10], "result": "HR"}, {"range": [11, 20], "result": "fly (lf) B"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "lo (3b) max", "outcomes": [{"range": null, "result": "lo (3b) max"}]},
+          {"roll": 3, "raw": "△ 3-SINGLE (cf) / SI* 1-8 / lo (ss) 9-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "SINGLE (cf)"}, {"range": [1, 8], "result": "SI*"}, {"range": [9, 20], "result": "lo (ss)"}]},
+          {"roll": 4, "raw": "▼ 4-gb (p) B", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "gb (p) B"}]},
+          {"roll": 5, "raw": "gb (2b) C", "markers": ["underline:C"], "outcomes": [{"range": null, "result": "gb (2b) C"}]},
+          {"roll": 6, "raw": "gb (ss) A+", "outcomes": [{"range": null, "result": "gb (ss) A+"}]},
+          {"roll": 7, "raw": "fly (lf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (lf) B?"}]},
+          {"roll": 8, "raw": "gb (ss) A", "outcomes": [{"range": null, "result": "gb (ss) A"}]},
+          {"roll": 9, "raw": "gb (p) B", "outcomes": [{"range": null, "result": "gb (p) B"}]},
+          {"roll": 10, "raw": "gb (3b) B", "outcomes": [{"range": null, "result": "gb (3b) B"}]},
+          {"roll": 11, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]},
+          {"roll": 12, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "From a Strat-O-Matic product photo in its WordPress media library (media item 7389, 'individual_team_card', 2592x1952; sourceUrl is the item's public REST record, sourceImage the file): four advanced cards fanned on a table. Conor Jackson's card lies on top, completely uncovered, about 1220 px wide, slightly rotated and in focus; every cell is sharp at native resolution. The other three cards (J.J. Hardy, C.J. Wilson, John Lackey) are partly covered and were not transcribed. Read twice: (1) from a native-resolution crop of the whole card, (2) from 1.8x crops of each platoon grid; no differences. Markers: diamond ◆, downTriangle ▼, upTriangle △ (LHP col2 roll3 and RHP col3 roll3, each printing 'SINGLE (..)' on the roll line and an italic 'SI* / lo (ss)' d20 split on the two lines directly beneath; binding unambiguous), omega Ω, '?' as questionMark, underlined class letters as 'underline:C'. Two splits print the class letter run into the range ('gb (3b) B9-20', 'gb (3b) B5-20'); raw inserts the space. 'plus injury' prints on its own line under HBP (LHP col1 roll2, RHP col3 roll12). YEAR IS INFERRED, not printed: the card fits Jackson's 2008 season (6 triples, 10 SB, 9 HBP: the card prints triples on both grids, a C steal rating and 3 HBP chances per grid, i.e. 2 x 9/612 PA x 108 = 3.2) and fits it closely (largest benchmark error .0075, triple rate exact), while 2007 (1B .029, BB .019, HR .011) and 2006 (SO .034) do not; the photo's other cards (C.J. Wilson as a reliever with a closer rating, Lackey a starter, Hardy at shortstop) fit the same season."
+  }
+}

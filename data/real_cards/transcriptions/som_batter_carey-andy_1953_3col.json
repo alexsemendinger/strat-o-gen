@@ -1,0 +1,83 @@
+{
+  "cardId": "batter_carey-andy_1953",
+  "sourceImage": "som_batter_carey-andy_1953_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Andy Carey",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 1953,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "3b", "rating": 2, "error": null },
+      { "pos": "2b", "rating": 4, "error": null },
+      { "pos": "ss", "rating": 4, "error": null }
+    ],
+    "stealing": "C",
+    "running": "1-14",
+    "notes": "Header reads: 'ANDY CAREY   3rd base-2   2nd base-4   shortstop-4   stealing-C   running 1-14' and 'NEW YORK (AL)'. Stat box titled '1953 BATTING RECORD'."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 5, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 6, "raw": "HOMERUN 1-2 / DOUBLE 3-20", "outcomes": [ { "range": [1,2], "result": "HOMERUN" }, { "range": [3,20], "result": "DOUBLE" } ] },
+          { "roll": 7, "raw": "DOUBLE** 1-9 / SINGLE** 10-20", "outcomes": [ { "range": [1,9], "result": "DOUBLE**" }, { "range": [10,20], "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 11, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 12, "raw": "flyball (cf)A", "outcomes": [ { "range": null, "result": "flyball (cf)A" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "flyball (cf)B plus injury", "outcomes": [ { "range": null, "result": "flyball (cf)B plus injury" } ] },
+          { "roll": 3, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 4, "raw": "groundball (3b)B", "outcomes": [ { "range": null, "result": "groundball (3b)B" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 7, "raw": "groundball (3b)B", "outcomes": [ { "range": null, "result": "groundball (3b)B" } ] },
+          { "roll": 8, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "groundball (3b)B", "outcomes": [ { "range": null, "result": "groundball (3b)B" } ] },
+          { "roll": 11, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 12, "raw": "lineout (2b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (2b) into as many outs as possible" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 3, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 4, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 5, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 6, "raw": "SINGLE* 1-18 / lineout (3b) 19-20", "outcomes": [ { "range": [1,18], "result": "SINGLE*" }, { "range": [19,20], "result": "lineout (3b)" } ] },
+          { "roll": 7, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 11, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 12, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1953,
+    "stats": { "AVG": ".321", "AB": 81, "2B": 5, "3B": 0, "HR": 4, "RBI": 8, "BB": 9, "SO": 12, "SB": 2, "CS": 1, "SLG%": ".531", "ON BASE%": ".389" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted (sips --rotate 270) copy of the rotated_cw original, plus full-res crops of each column and the stat box. Col 2 roll 12 prints a verbose instruction-style result ('lineout (2b) into as many outs as possible') — captured verbatim. Fielder/class letters print tight against the paren with no space (e.g. '(ss)A', '(cf)B') — preserved verbatim."
+  }
+}

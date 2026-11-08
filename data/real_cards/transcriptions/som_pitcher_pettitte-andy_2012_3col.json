@@ -1,0 +1,79 @@
+{
+  "cardId": "pitcher_pettitte-andy_2012",
+  "sourceImage": "som_pitcher_pettitte-andy_2012_3col.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Andy Pettitte",
+    "throws": null,
+    "bats": null,
+    "team": "New York (AL)",
+    "year": 2012,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "type": "starter" },
+    "pitcherFielding": "pitcher-3",
+    "battingNumber": "# 2",
+    "notes": "Header reads: 'ANDY PETTITTE   pitcher-3   batting # 2   starter' and 'PITCHING CARD   NEW YORK (AL)'. 'pitcher-3' is the pitcher's fielding rating; 'batting # 2' is the batting/bunting designation; 'starter' is the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "groundball (p) B", "outcomes": [ { "range": null, "result": "groundball (p) B" } ] },
+          { "roll": 3, "raw": "FLYBALL (rf) X", "outcomes": [ { "range": null, "result": "FLYBALL (rf) X" } ] },
+          { "roll": 4, "raw": "flyball (rf) C", "outcomes": [ { "range": null, "result": "flyball (rf) C" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "GROUND-BALL (2b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (2b) X" } ] },
+          { "roll": 8, "raw": "TRIPLE 1 / SINGLE** 2-20", "outcomes": [ { "range": [1,1], "result": "TRIPLE" }, { "range": [2,20], "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-13 / flyball (rf) B 14-20", "outcomes": [ { "range": [1,13], "result": "HOMERUN" }, { "range": [14,20], "result": "flyball (rf) B" } ] },
+          { "roll": 10, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "groundball (1b) C", "outcomes": [ { "range": null, "result": "groundball (1b) C" } ] },
+          { "roll": 3, "raw": "GROUND-BALL (ss) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (ss) X" } ] },
+          { "roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 8, "raw": "GROUND-BALL (ss) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (ss) X" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "GROUND-BALL (3b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (3b) X" } ] },
+          { "roll": 11, "raw": "GROUND-BALL (p) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (p) X" } ] },
+          { "roll": 12, "raw": "groundball (1b) C", "outcomes": [ { "range": null, "result": "groundball (1b) C" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "groundball (2b) C", "outcomes": [ { "range": null, "result": "groundball (2b) C" } ] },
+          { "roll": 3, "raw": "GROUND-BALL (1b) X", "outcomes": [ { "range": null, "result": "GROUND-BALL (1b) X" } ] },
+          { "roll": 4, "raw": "FLYBALL (cf) X", "outcomes": [ { "range": null, "result": "FLYBALL (cf) X" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-4 / lineout (ss) 5-20", "outcomes": [ { "range": [1,4], "result": "SINGLE*" }, { "range": [5,20], "result": "lineout (ss)" } ] },
+          { "roll": 8, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 9, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 10, "raw": "groundball (2b) C", "outcomes": [ { "range": null, "result": "groundball (2b) C" } ] },
+          { "roll": 11, "raw": "FLYBALL (lf) X", "outcomes": [ { "range": null, "result": "FLYBALL (lf) X" } ] },
+          { "roll": 12, "raw": "groundball (p) B", "outcomes": [ { "range": null, "result": "groundball (p) B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2012,
+    "stats": { "W": 5, "L": 4, "ERA": "2.87", "STARTS": 12, "SAVES": 0, "IP": 75, "HITS ALLOWED": 65, "BB": 21, "SO": 69, "HOMERUNS ALLOWED": 8 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic side, read from a copy uprighted from the rotated_cw original, then full-res half-crops and a stat-box crop. Header: 'ANDY PETTITTE  pitcher-3  batting # 2  starter' / 'PITCHING CARD  NEW YORK (AL)'. Full-word vocabulary (groundball/GROUND-BALL, flyball/FLYBALL, CATCHER'S CARD X, HOMERUN/TRIPLE/SINGLE)."
+  }
+}

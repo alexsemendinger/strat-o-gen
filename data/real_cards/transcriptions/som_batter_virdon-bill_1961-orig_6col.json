@@ -1,0 +1,126 @@
+{
+  "cardId": "batter_virdon-bill_1961-orig",
+  "sourceImage": "https://web.archive.org/web/20260107002947im_/https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiF50OBZU2vRLrJg-vCKyTIaFHyAGcYKvBEa5-jT1m2KJtbB5k4zXG8buAQdad6Wy4NSAf1UNVWhWEbwlFZSR17xHmFsk5P2xOGeg-mhk4PD-9jlJXn0DMkpxUbZ3qz_p_Qo8HNP4Qkno2F/s1600/61+Strat+Back.jpg",
+  "sourceUrl": "https://web.archive.org/web/20260512180529/https://thoughtsandsox.blogspot.com/2019/05/",
+  "cardType": "batter",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Bill Virdon",
+    "bats": "L",
+    "throws": null,
+    "team": null,
+    "year": null,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "cf", "rating": 1, "error": "e7", "arm": "-2" } ],
+    "stealing": "D",
+    "bunting": "B",
+    "hitAndRun": "B",
+    "running": "1-15",
+    "power": { "vsL": "W", "vsR": "N" },
+    "notes": "Header reads: 'L | BILL VIRDON   cf-1(-2) e7   stealing- D   bunting- B   hit & run- B   running 1-15'. Leading 'L' = bats left. Banners: '31% AGAINST LEFT-HAND PITCHER   Power- W' and '69% AGAINST RIGHT-HAND PITCHER   Power- N'. Classic-typeface advanced format (no situation glyphs, no stealing detail): the back of the classic-typeface 1961 card (batter_virdon-bill_1961-orig). The advanced side carries no year/team."
+  },
+  "grids": [
+    {
+      "vs": "LHP",
+      "percent": 31,
+      "power": "W",
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "gb (1b) B", "outcomes": [ { "range": null, "result": "gb (1b) B" } ] },
+          { "roll": 3, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 4, "raw": "gb (1b) B", "outcomes": [ { "range": null, "result": "gb (1b) B" } ] },
+          { "roll": 5, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 6, "raw": "lineout (ss)", "outcomes": [ { "range": null, "result": "lineout (ss)" } ] },
+          { "roll": 7, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 8, "raw": "SI* 1-12 / lo(2b) 13-20", "outcomes": [ { "range": [1,12], "result": "SI*" }, { "range": [13,20], "result": "lo(2b)" } ] },
+          { "roll": 9, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 10, "raw": "gb (p) B", "outcomes": [ { "range": null, "result": "gb (p) B" } ] },
+          { "roll": 11, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 12, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 3, "raw": "TR 1-13 / DO 14-20", "outcomes": [ { "range": [1,13], "result": "TR" }, { "range": [14,20], "result": "DO" } ] },
+          { "roll": 4, "raw": "DOUBLE(cf)", "outcomes": [ { "range": null, "result": "DOUBLE(cf)" } ] },
+          { "roll": 5, "raw": "fly (rf) B?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (rf) B?" } ] },
+          { "roll": 6, "raw": "gb (2b) A+", "outcomes": [ { "range": null, "result": "gb (2b) A+" } ] },
+          { "roll": 7, "raw": "fly (cf) B?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (cf) B?" } ] },
+          { "roll": 8, "raw": "fly (rf) B?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (rf) B?" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 11, "raw": "gb (3b) B", "outcomes": [ { "range": null, "result": "gb (3b) B" } ] },
+          { "roll": 12, "raw": "strikeout plus injury", "outcomes": [ { "range": null, "result": "strikeout plus injury" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "lo(2b) max", "outcomes": [ { "range": null, "result": "lo(2b) max" } ] },
+          { "roll": 3, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 4, "raw": "gb (2b) A", "outcomes": [ { "range": null, "result": "gb (2b) A" } ] },
+          { "roll": 5, "raw": "gb (3b) B", "outcomes": [ { "range": null, "result": "gb (3b) B" } ] },
+          { "roll": 6, "raw": "gb (1b) B", "outcomes": [ { "range": null, "result": "gb (1b) B" } ] },
+          { "roll": 7, "raw": "SINGLE (rf)", "outcomes": [ { "range": null, "result": "SINGLE (rf)" } ] },
+          { "roll": 8, "raw": "SINGLE (cf)", "outcomes": [ { "range": null, "result": "SINGLE (cf)" } ] },
+          { "roll": 9, "raw": "DO** 1 / SI** 2-20", "outcomes": [ { "range": [1,1], "result": "DO**" }, { "range": [2,20], "result": "SI**" } ] },
+          { "roll": 10, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 11, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 12, "raw": "gb (ss) A+", "outcomes": [ { "range": null, "result": "gb (ss) A+" } ] }
+        ] }
+      ]
+    },
+    {
+      "vs": "RHP",
+      "percent": 69,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] },
+          { "roll": 3, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 4, "raw": "gb (p) B", "outcomes": [ { "range": null, "result": "gb (p) B" } ] },
+          { "roll": 5, "raw": "gb (ss) B", "outcomes": [ { "range": null, "result": "gb (ss) B" } ] },
+          { "roll": 6, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 7, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 8, "raw": "SI* 1-6 / lo(2b) 7-20", "outcomes": [ { "range": [1,6], "result": "SI*" }, { "range": [7,20], "result": "lo(2b)" } ] },
+          { "roll": 9, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 10, "raw": "lineout (3b)", "outcomes": [ { "range": null, "result": "lineout (3b)" } ] },
+          { "roll": 11, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 12, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "HR 1-18 / DO 19-20", "outcomes": [ { "range": [1,18], "result": "HR" }, { "range": [19,20], "result": "DO" } ] },
+          { "roll": 3, "raw": "TR 1-17 / DO 18-20", "outcomes": [ { "range": [1,17], "result": "TR" }, { "range": [18,20], "result": "DO" } ] },
+          { "roll": 4, "raw": "DO** 1-12 / SI** 13-20", "outcomes": [ { "range": [1,12], "result": "DO**" }, { "range": [13,20], "result": "SI**" } ] },
+          { "roll": 5, "raw": "gb (3b) B", "outcomes": [ { "range": null, "result": "gb (3b) B" } ] },
+          { "roll": 6, "raw": "gb (2b) A+", "outcomes": [ { "range": null, "result": "gb (2b) A+" } ] },
+          { "roll": 7, "raw": "fly (cf) B?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (cf) B?" } ] },
+          { "roll": 8, "raw": "fly (rf) B?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (rf) B?" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "fly (rf) B?", "markers": ["questionMark"], "outcomes": [ { "range": null, "result": "fly (rf) B?" } ] },
+          { "roll": 11, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 12, "raw": "lo(2b) max", "outcomes": [ { "range": null, "result": "lo(2b) max" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "fly (rf) B plus injury", "outcomes": [ { "range": null, "result": "fly (rf) B plus injury" } ] },
+          { "roll": 3, "raw": "gb (3b) B", "outcomes": [ { "range": null, "result": "gb (3b) B" } ] },
+          { "roll": 4, "raw": "gb (2b) A", "outcomes": [ { "range": null, "result": "gb (2b) A" } ] },
+          { "roll": 5, "raw": "gb (1b) B", "outcomes": [ { "range": null, "result": "gb (1b) B" } ] },
+          { "roll": 6, "raw": "gb (1b) B", "outcomes": [ { "range": null, "result": "gb (1b) B" } ] },
+          { "roll": 7, "raw": "SINGLE (lf)", "outcomes": [ { "range": null, "result": "SINGLE (lf)" } ] },
+          { "roll": 8, "raw": "SINGLE (rf)", "outcomes": [ { "range": null, "result": "SINGLE (rf)" } ] },
+          { "roll": 9, "raw": "SINGLE (cf)", "outcomes": [ { "range": null, "result": "SINGLE (cf)" } ] },
+          { "roll": 10, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 11, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 12, "raw": "gb (ss) A+", "outcomes": [ { "range": null, "result": "gb (ss) A+" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Advanced side of the classic-typeface 1961 printing, named '-orig' to pair with that basic card (the modern 1961 back is batter_virdon-bill_1961). The 972x1600 back scan shows two copies of this classic back (green ink at the top, blue ink in the middle) above the modern back; transcribed from 1.9x half-card crops of the green copy, then independently re-read from the blue copy, which agrees cell for cell. Source: a 2019 collector's post of his Bill Virdon Strat-O-Matic cards (Wayback capture). It differs from the modern 1961 back in e-rating (e7 vs e6), shares (31/69 on both) and the whole grid arrangement. '?' after fly balls (printed 'B ?') captured as questionMark. Hit locations print with no space ('DOUBLE(cf)'), kept verbatim. 'plus injury' on LHP col2 r12 and RHP col3 r2."
+  }
+}

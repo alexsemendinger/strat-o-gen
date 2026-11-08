@@ -1,0 +1,81 @@
+{
+  "cardId": "batter_silvera-charlie_1949",
+  "sourceImage": "som_batter_silvera-charlie_1949_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Charlie Silvera",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 1949,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "c", "rating": 3, "error": null }
+    ],
+    "stealing": "D",
+    "running": "1-8",
+    "notes": "Header reads: 'CHARLIE SILVERA   catcher-3   stealing-D   running 1-8' and 'NEW YORK (AL)'. Stat box titled '1949 BATTING RECORD'."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 3, "raw": "lineout (3b) plus injury", "outcomes": [ { "range": null, "result": "lineout (3b) plus injury" } ] },
+          { "roll": 4, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "SINGLE* 1-9 / lineout (3b) 10-20", "outcomes": [ { "range": [1,9], "result": "SINGLE*" }, { "range": [10,20], "result": "lineout (3b)" } ] },
+          { "roll": 9, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 10, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 11, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 12, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 3, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 4, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 5, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 8, "raw": "SINGLE*", "outcomes": [ { "range": null, "result": "SINGLE*" } ] },
+          { "roll": 9, "raw": "groundball (ss)A++", "outcomes": [ { "range": null, "result": "groundball (ss)A++" } ] },
+          { "roll": 10, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 11, "raw": "SINGLE**", "outcomes": [ { "range": null, "result": "SINGLE**" } ] },
+          { "roll": 12, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "lineout (ss) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (ss) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 4, "raw": "groundball (p)A", "outcomes": [ { "range": null, "result": "groundball (p)A" } ] },
+          { "roll": 5, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 6, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 7, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 8, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 9, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 10, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 11, "raw": "groundball (2b)A", "outcomes": [ { "range": null, "result": "groundball (2b)A" } ] },
+          { "roll": 12, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1949,
+    "stats": { "AVG": ".315", "AB": 130, "2B": 2, "3B": 0, "HR": 0, "RBI": 13, "BB": 18, "SO": 5, "SB": 2, "CS": 1, "SLG%": ".331", "ON BASE%": ".403" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy (sips --rotate 270 then 180) of the rotated_ccw original, plus full-res crops of each column and the stat box. Col 3 roll 2 prints a verbose instruction-style result ('lineout (ss) into as many outs as possible') — captured verbatim. Col 1 roll 3 prints 'lineout (3b) plus injury'. Fielder/class letters print tight against the paren with no space (e.g. '(ss)A', '(3b)A') — preserved verbatim."
+  }
+}

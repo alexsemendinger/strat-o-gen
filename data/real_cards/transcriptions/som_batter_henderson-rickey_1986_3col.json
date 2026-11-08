@@ -1,0 +1,82 @@
+{
+  "cardId": "batter_henderson-rickey_1986",
+  "sourceImage": "som_batter_henderson-rickey_1986_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Rickey Henderson",
+    "bats": null,
+    "throws": null,
+    "team": "New York Yankees",
+    "year": 1986,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "centerfield", "rating": 1, "error": null },
+      { "pos": "leftfield", "rating": 1, "error": null }
+    ],
+    "stealing": "AA",
+    "running": "1-17",
+    "notes": "Header reads: 'RICKEY HENDERSON   centerfield-1   leftfield-1   stealing-AA   running 1-17' and 'NEW YORK YANKEES'. Two fielding positions are listed (centerfield-1 and leftfield-1). A handwritten '2' appears in the left margin near the header (not a printed rating)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "lineout (3b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (3b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (2b) B", "outcomes": [ { "range": null, "result": "groundball (2b) B" } ] },
+          { "roll": 4, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "groundball (3b) A", "outcomes": [ { "range": null, "result": "groundball (3b) A" } ] },
+          { "roll": 7, "raw": "groundball (3b) B", "outcomes": [ { "range": null, "result": "groundball (3b) B" } ] },
+          { "roll": 8, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 9, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 10, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 11, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 12, "raw": "popout (3b) plus injury", "outcomes": [ { "range": null, "result": "popout (3b) plus injury" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "foulout (c)", "outcomes": [ { "range": null, "result": "foulout (c)" } ] },
+          { "roll": 3, "raw": "groundball (ss) A++", "outcomes": [ { "range": null, "result": "groundball (ss) A++" } ] },
+          { "roll": 4, "raw": "groundball (p) B", "outcomes": [ { "range": null, "result": "groundball (p) B" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "flyball (lf) B", "outcomes": [ { "range": null, "result": "flyball (lf) B" } ] },
+          { "roll": 7, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 8, "raw": "TRIPLE 1-3 / SINGLE** 4-20", "outcomes": [ { "range": [1,3], "result": "TRIPLE" }, { "range": [4,20], "result": "SINGLE**" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-15 / DOUBLE 16-20", "outcomes": [ { "range": [1,15], "result": "HOMERUN" }, { "range": [16,20], "result": "DOUBLE" } ] },
+          { "roll": 10, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 11, "raw": "groundball (ss) A++", "outcomes": [ { "range": null, "result": "groundball (ss) A++" } ] },
+          { "roll": 12, "raw": "flyball (lf) B", "outcomes": [ { "range": null, "result": "flyball (lf) B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 3, "raw": "groundball (ss) A++", "outcomes": [ { "range": null, "result": "groundball (ss) A++" } ] },
+          { "roll": 4, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "SINGLE* 1-15 / lineout (2b) 16-20", "outcomes": [ { "range": [1,15], "result": "SINGLE*" }, { "range": [16,20], "result": "lineout (2b)" } ] },
+          { "roll": 9, "raw": "DOUBLE** 1-3 / SINGLE** 4-20", "outcomes": [ { "range": [1,3], "result": "DOUBLE**" }, { "range": [4,20], "result": "SINGLE**" } ] },
+          { "roll": 10, "raw": "DOUBLE", "outcomes": [ { "range": null, "result": "DOUBLE" } ] },
+          { "roll": 11, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 12, "raw": "groundball (3b) A", "outcomes": [ { "range": null, "result": "groundball (3b) A" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1986,
+    "stats": { "AT BATS": 608, "DOUBLES": 31, "TRIPLES": 5, "HOMERUNS": 28, "AVERAGE": ".263", "WALKS": 89, "STRIKEOUTS": 81 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy (sips rotate 270 then 180) of the rotated_cw original, plus full-res column/header/stat crops. A diagonal shadow crosses the lower-right but all column-3 and stat-box text was legible. This 1986-style basic side spells out stat labels (AT BATS, DOUBLES, TRIPLES, HOMERUNS, AVERAGE, WALKS, STRIKEOUTS) rather than the abbreviated 1921-style box; captured verbatim. Splits: col2 rolls 8 & 9, col3 rolls 8 & 9. Class letters print with a leading space (e.g. '(3b) A', '(ss) A++') — preserved verbatim."
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "cardId": "batter_williams-ted_1941",
+  "sourceUrl": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf",
+  "sourceImage": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf#page=4",
+  "cardType": "batter",
+  "side": "3col",
+  "official": false,
+  "player": {
+    "name": "Ted Williams",
+    "bats": null,
+    "throws": null,
+    "team": "Boston (AL)",
+    "year": 1941,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "lf",
+        "rating": 3,
+        "error": null
+      },
+      {
+        "pos": "rf",
+        "rating": 3,
+        "error": null
+      }
+    ],
+    "stealing": "D",
+    "running": "1-13",
+    "notes": "Header reads: 'TED WILLIAMS   leftfield-3   stealing-D' / 'rightfield-3   running 1-13' and 'BOSTON (AL)'."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 6, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 7, "raw": "DOUBLE** 1-18 / SINGLE** 19-20", "outcomes": [{"range": [1, 18], "result": "DOUBLE**"}, {"range": [19, 20], "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 9, "raw": "flyball(rf)B", "outcomes": [{"range": null, "result": "flyball(rf)B"}]},
+          {"roll": 10, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 11, "raw": "HOMERUN 1 / DOUBLE 2-20", "outcomes": [{"range": [1, 1], "result": "HOMERUN"}, {"range": [2, 20], "result": "DOUBLE"}]},
+          {"roll": 12, "raw": "flyball(cf)B plus injury", "outcomes": [{"range": null, "result": "flyball(cf)B plus injury"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "lineout(1b) into as many outs as possible", "outcomes": [{"range": null, "result": "lineout(1b) into as many outs as possible"}]},
+          {"roll": 3, "raw": "flyball(cf)B", "outcomes": [{"range": null, "result": "flyball(cf)B"}]},
+          {"roll": 4, "raw": "flyball(rf)B", "outcomes": [{"range": null, "result": "flyball(rf)B"}]},
+          {"roll": 5, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 6, "raw": "groundball (p)A", "outcomes": [{"range": null, "result": "groundball (p)A"}]},
+          {"roll": 7, "raw": "groundball (2b)A++", "outcomes": [{"range": null, "result": "groundball (2b)A++"}]},
+          {"roll": 8, "raw": "groundball (ss)A", "outcomes": [{"range": null, "result": "groundball (ss)A"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "flyball(cf)A", "outcomes": [{"range": null, "result": "flyball(cf)A"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "SINGLE* 1-17 / lineout(2b) 18-20", "outcomes": [{"range": [1, 17], "result": "SINGLE*"}, {"range": [18, 20], "result": "lineout(2b)"}]},
+          {"roll": 5, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 6, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1941,
+    "stats": {
+      "AVG": ".406",
+      "AB": 456,
+      "2B": 33,
+      "3B": 3,
+      "HR": 37,
+      "RBI": 120,
+      "BB": 145,
+      "SO": 27,
+      "SB": 2,
+      "CS": 4,
+      "SLG%": ".735",
+      "ON BASE%": ".551"
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "FACSIMILE, flagged unofficial for that reason: printed in STRAT FAN issue 16 (December 1992, 'The Magazine for and by Strat-O-Matic fans', (c) Game Time Publishing Co.), page 6, in the article '1941: A Momentous SOM...' on the newly released 1941 season cards (Strat-O-Matic's Steve Barkan: 'It is probably the most incredible card we've ever produced'; 'SOM had to give him a basic card that hits .599'). The PDF is hosted in Strat-O-Matic's own Digital Museum (sourceUrl; PDF page 4 holds a 300-dpi grayscale scan, 2608x4236, in which the card is about 760 px wide and razor sharp). The content is believed to be the official 1941 card, but the facsimile was typeset for the magazine (typesetting slips elsewhere on these pages: 'plus inury' on DiMaggio's card, '6-DOUBLE(cf' and '12SINGLE(rf)' on the advanced sides), so it is not marked official. Read twice: (1) from a native-resolution crop of the whole card, (2) from fresh 1.4x crops of the grid; no differences. The stat box label prints 'S0' (zero) for SO. Printed line vs Lahman: 456 AB, 33 2B, 3 3B, 37 HR, 27 SO agree; the card prints 145 BB where Lahman has 147 (the older official walk total). Validator CHECK (kept; transcription double-checked, a property of the card): BB .0219 and BA .0151 (bars .020 / .015); HR .0026, SO .0015. The card already gives 37 of 108 chances to walks (implied .221 per PA) against his actual .243 (147 BB in Lahman; 145 printed). Strat-O-Matic leaves intentional walks off batter cards, and the tester subtracts IBB, but Lahman has no IBB for 1941, so all of his walks count as unintentional; the same shortfall appears on the separately typeset advanced side."
+  }
+}

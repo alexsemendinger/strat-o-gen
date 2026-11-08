@@ -1,0 +1,137 @@
+{
+  "cardId": "batter_dimaggio-joe_1941",
+  "sourceUrl": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf",
+  "sourceImage": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf#page=5",
+  "cardType": "batter",
+  "side": "6col",
+  "official": false,
+  "player": {
+    "name": "Joe DiMaggio",
+    "bats": "R",
+    "throws": null,
+    "team": null,
+    "year": null,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "cf",
+        "rating": 1,
+        "error": "e10",
+        "arm": "-4"
+      }
+    ],
+    "stealing": "D",
+    "stealingDetail": "5/- (13-6)",
+    "bunting": "D",
+    "hitAndRun": "B",
+    "running": "1-16",
+    "power": {
+      "vsL": "N",
+      "vsR": "N"
+    },
+    "notes": "Header reads: 'R | JOE DIMAGGIO   stealing-(D)   5/- (13-6)   bunting-D   hit & run-B   running 1-16' with fielding sub-line 'cf-1(-4) e10'. Leading 'R' = bats right. Banners: '30% AGAINST LEFT-HAND PITCHERS   Power-N' and '70% AGAINST RIGHT-HAND PITCHER   Power-N' (sic, 'PITCHER'). The advanced side carries no year/team (those are on the basic side; cardId links the two)."
+  },
+  "grids": [
+    {
+      "vs": "LHP",
+      "percent": 30,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "◆ 2-HR 1-15 / fly(lf)B 16-20", "markers": ["diamond"], "outcomes": [{"range": [1, 15], "result": "HR"}, {"range": [16, 20], "result": "fly(lf)B"}]},
+          {"roll": 3, "raw": "◆ 3-fly(lf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly(lf) B?"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HR 1-18 / TR 19-20", "outcomes": [{"range": [1, 18], "result": "HR"}, {"range": [19, 20], "result": "TR"}]},
+          {"roll": 6, "raw": "TR 1-12 / DO 13-20", "outcomes": [{"range": [1, 12], "result": "TR"}, {"range": [13, 20], "result": "DO"}]},
+          {"roll": 7, "raw": "DOUBLE(lf)", "outcomes": [{"range": null, "result": "DOUBLE(lf)"}]},
+          {"roll": 8, "raw": "DO** 1-2 / SI** 3-20", "outcomes": [{"range": [1, 2], "result": "DO**"}, {"range": [3, 20], "result": "SI**"}]},
+          {"roll": 9, "raw": "gb(3b)B", "outcomes": [{"range": null, "result": "gb(3b)B"}]},
+          {"roll": 10, "raw": "◆ 10-HOMERUN", "markers": ["diamond"], "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 11, "raw": "◆ 11-fly(lf)B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly(lf)B?"}]},
+          {"roll": 12, "raw": "lo(3b)max", "outcomes": [{"range": null, "result": "lo(3b)max"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "gb(ss)B+", "outcomes": [{"range": null, "result": "gb(ss)B+"}]},
+          {"roll": 3, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]},
+          {"roll": 4, "raw": "△ 4-fly(rf)B? / SI* 1-6 / lo(ss) 7-20", "markers": ["upTriangle", "questionMark"], "outcomes": [{"range": null, "result": "fly(rf)B?"}, {"range": [1, 6], "result": "SI*"}, {"range": [7, 20], "result": "lo(ss)"}]},
+          {"roll": 5, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 6, "raw": "gb(ss)A+", "outcomes": [{"range": null, "result": "gb(ss)A+"}]},
+          {"roll": 7, "raw": "gb(2b)C", "outcomes": [{"range": null, "result": "gb(2b)C"}]},
+          {"roll": 8, "raw": "fly(cf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(cf)B?"}]},
+          {"roll": 9, "raw": "gb(p)B", "outcomes": [{"range": null, "result": "gb(p)B"}]},
+          {"roll": 10, "raw": "▼ 10-fly(lf)B?", "markers": ["downTriangle", "questionMark"], "outcomes": [{"range": null, "result": "fly(lf)B?"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "fly(cf)A plus injury", "outcomes": [{"range": null, "result": "fly(cf)A plus injury"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "Ω 2-SINGLE(rf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE(rf)"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 5, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 6, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "SI* 1-5 / lo(3b) 6-20", "outcomes": [{"range": [1, 5], "result": "SI*"}, {"range": [6, 20], "result": "lo(3b)"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 10, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 11, "raw": "▼ 11-SINGLE(cf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE(cf)"}]},
+          {"roll": 12, "raw": "Ω 12-SINGLE(rf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE(rf)"}]}
+        ] }
+      ]
+    },
+    {
+      "vs": "RHP",
+      "percent": 70,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "◆ 2-HR 1-15 / fly(rf)B 16-20", "markers": ["diamond"], "outcomes": [{"range": [1, 15], "result": "HR"}, {"range": [16, 20], "result": "fly(rf)B"}]},
+          {"roll": 3, "raw": "◆ 3-fly(rf)B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly(rf)B?"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HR 1-9 / TR 10-20", "outcomes": [{"range": [1, 9], "result": "HR"}, {"range": [10, 20], "result": "TR"}]},
+          {"roll": 6, "raw": "DOUBLE(cf", "outcomes": [{"range": null, "result": "DOUBLE(cf)"}]},
+          {"roll": 7, "raw": "DO** 1-6 / SI** 7-20", "outcomes": [{"range": [1, 6], "result": "DO**"}, {"range": [7, 20], "result": "SI**"}]},
+          {"roll": 8, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 9, "raw": "gb(2b)C", "outcomes": [{"range": null, "result": "gb(2b)C"}]},
+          {"roll": 10, "raw": "◆ 10-HOMERUN", "markers": ["diamond"], "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 11, "raw": "◆ 11-fly(rf)B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly(rf)B?"}]},
+          {"roll": 12, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]},
+          {"roll": 3, "raw": "gb(ss)B", "outcomes": [{"range": null, "result": "gb(ss)B"}]},
+          {"roll": 4, "raw": "foulout(c)", "outcomes": [{"range": null, "result": "foulout(c)"}]},
+          {"roll": 5, "raw": "fly(lf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(lf)B?"}]},
+          {"roll": 6, "raw": "popout(ss)", "outcomes": [{"range": null, "result": "popout(ss)"}]},
+          {"roll": 7, "raw": "gb(ss)A+", "outcomes": [{"range": null, "result": "gb(ss)A+"}]},
+          {"roll": 8, "raw": "gb(3b)B", "outcomes": [{"range": null, "result": "gb(3b)B"}]},
+          {"roll": 9, "raw": "fly(cf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(cf)B?"}]},
+          {"roll": 10, "raw": "▼ 10-gb(2b)B", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "gb(2b)B"}]},
+          {"roll": 11, "raw": "△ 11-gb(ss)B / SI* 1-9 / lo(ss) 10-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "gb(ss)B"}, {"range": [1, 9], "result": "SI*"}, {"range": [10, 20], "result": "lo(ss)"}]},
+          {"roll": 12, "raw": "fly(cf)A", "outcomes": [{"range": null, "result": "fly(cf)A"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "Ω 2-SINGLE(cf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE(cf)"}]},
+          {"roll": 3, "raw": "gb(1b)C", "outcomes": [{"range": null, "result": "gb(1b)C"}]},
+          {"roll": 4, "raw": "fly(cf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(cf)B?"}]},
+          {"roll": 5, "raw": "TR 1 / DO 2-20", "outcomes": [{"range": [1, 1], "result": "TR"}, {"range": [2, 20], "result": "DO"}]},
+          {"roll": 6, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "gb(p)B", "outcomes": [{"range": null, "result": "gb(p)B"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "SI* 1-10 / lo(3b) 11-20", "outcomes": [{"range": [1, 10], "result": "SI*"}, {"range": [11, 20], "result": "lo(3b)"}]},
+          {"roll": 11, "raw": "▼ 11-SINGLE(rf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE(rf)"}]},
+          {"roll": 12, "raw": "Ω 12SINGLE(rf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE(rf)"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "FACSIMILE, flagged unofficial for that reason: printed in STRAT FAN issue 16 (December 1992, (c) Game Time Publishing Co.), page 7 ('... Oldtimers Card Season'), under the 1941 article; the PDF is hosted in Strat-O-Matic's own Digital Museum (sourceUrl; PDF page 5 holds a 300-dpi grayscale scan, 2625x4246, in which the card is about 1550 px wide and sharp). The content is believed to be the official 1941 advanced card, but it was typeset for the magazine: RHP col1 roll6 prints '6-DOUBLE(cf' with the closing parenthesis cut off by the column edge (outcome 'DOUBLE(cf)'), and RHP col3 roll12 prints 'Ω 12SINGLE(rf)' with no hyphen (outcome 'SINGLE(rf)'); raw keeps both verbatim. Read twice: (1) from a crop of the whole card, (2) from fresh 1.6x crops of each platoon grid; no differences. Markers: diamond ◆, downTriangle ▼, upTriangle △ (LHP col2 roll4 and RHP col2 roll11, each with an italic 'SI* / lo(ss)' d20 split on the two lines directly beneath, before the next roll; binding unambiguous), omega Ω, '?' as questionMark. Underlines on class letters cannot be distinguished in this facsimile, so none are recorded. 'plus injury' prints on its own line under LHP col2 roll12 (fly(cf)A) and RHP col2 roll2 (HBP). HBP: LHP col2 roll3; RHP col1 roll12 and col2 roll2 (2 chances each grid). Validator CHECK (kept; transcription double-checked, a property of the card): combined-advanced BB .0184 and SO .0251 (side-by-side as tests/test_platoon scores it: BB .0191, SO .0251); HR, 2B, 3B within .002 and BA .0110. Neither grid prints a strikeout, and the 1941 AL average pitcher card alone implies .046 SO per PA against his actual .021, so SO cannot fit; the walk shortfall matches the basic side's and is consistent with intentional walks, which Strat-O-Matic leaves off cards but Lahman does not record for 1941. The RHP grid prints no max-effort lineout (its 2 and 12 rolls hold HBP and Ω singles; LHP col1 roll12 has 'lo(3b)max'), like the official Bonds 2001 RHP grid; tests/test_transcriptions.py::test_max_effort_lineouts_keep_their_tail assumes exactly one per batter grid."
+  }
+}

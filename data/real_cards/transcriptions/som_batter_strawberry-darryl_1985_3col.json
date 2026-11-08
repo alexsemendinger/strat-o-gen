@@ -1,0 +1,82 @@
+{
+  "cardId": "batter_strawberry-darryl_1985",
+  "sourceImage": "som_batter_strawberry-darryl_1985_3col.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Darryl Strawberry",
+    "bats": null,
+    "throws": null,
+    "team": "New York Mets",
+    "year": 1985,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      { "pos": "rightfield", "rating": 2, "error": null },
+      { "pos": "centerfield", "rating": 3, "error": null }
+    ],
+    "stealing": "A",
+    "running": "1-17",
+    "notes": "Header reads: 'DARRYL STRAWBERRY   rightfield-2   centerfield-3   stealing-A   running 1-17' and 'NEW YORK METS'. Basic side; no bats indicator printed here."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 3, "raw": "groundball (1b) A", "outcomes": [ { "range": null, "result": "groundball (1b) A" } ] },
+          { "roll": 4, "raw": "groundball (p) A", "outcomes": [ { "range": null, "result": "groundball (p) A" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 8, "raw": "HOMERUN", "outcomes": [ { "range": null, "result": "HOMERUN" } ] },
+          { "roll": 9, "raw": "HOMERUN 1-4 / flyball (rf) B 5-20", "outcomes": [ { "range": [1,4], "result": "HOMERUN" }, { "range": [5,20], "result": "flyball (rf) B" } ] },
+          { "roll": 10, "raw": "TRIPLE 1-7 / DOUBLE 8-20", "outcomes": [ { "range": [1,7], "result": "TRIPLE" }, { "range": [8,20], "result": "DOUBLE" } ] },
+          { "roll": 11, "raw": "groundball (ss) A plus injury", "outcomes": [ { "range": null, "result": "groundball (ss) A plus injury" } ] },
+          { "roll": 12, "raw": "flyball (rf) A", "outcomes": [ { "range": null, "result": "flyball (rf) A" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 3, "raw": "groundball (ss) A", "outcomes": [ { "range": null, "result": "groundball (ss) A" } ] },
+          { "roll": 4, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 5, "raw": "SINGLE* 1-6 / lineout (2b) 7-20", "outcomes": [ { "range": [1,6], "result": "SINGLE*" }, { "range": [7,20], "result": "lineout (2b)" } ] },
+          { "roll": 6, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 7, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 8, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 9, "raw": "DOUBLE** 1-2 / SINGLE** 3-20", "outcomes": [ { "range": [1,2], "result": "DOUBLE**" }, { "range": [3,20], "result": "SINGLE**" } ] },
+          { "roll": 10, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 11, "raw": "groundball (2b) A", "outcomes": [ { "range": null, "result": "groundball (2b) A" } ] },
+          { "roll": 12, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "lineout (2b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (2b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 4, "raw": "groundball (2b) A++", "outcomes": [ { "range": null, "result": "groundball (2b) A++" } ] },
+          { "roll": 5, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 6, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "flyball (cf) B", "outcomes": [ { "range": null, "result": "flyball (cf) B" } ] },
+          { "roll": 11, "raw": "flyball (rf) B", "outcomes": [ { "range": null, "result": "flyball (rf) B" } ] },
+          { "roll": 12, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1985,
+    "stats": { "AT BATS": 393, "DOUBLES": 15, "TRIPLES": 4, "HOMERUNS": 29, "AVERAGE": ".277", "WALKS": 73, "STRIKEOUTS": 96 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Read from an uprighted copy (rotate 270) of the rotated-cw original; confirmed via full-res upscaled column crops and a stat-box crop. 1985 vintage uses spelled-out stat labels (AT BATS / DOUBLES / TRIPLES / HOMERUNS / AVERAGE / WALKS / STRIKEOUTS) rather than the modern abbreviations; preserved verbatim. Col3 roll2 prints the verbose instruction-style result ('lineout (2b) into as many outs as possible') captured verbatim. Col1 roll11 prints 'groundball (ss) A plus injury'."
+  }
+}

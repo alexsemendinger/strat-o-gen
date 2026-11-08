@@ -4,7 +4,11 @@ Real Strat-O-Matic cards don't reproduce season stats perfectly (clamped
 categories, d20 granularity, X-chart variance), so "perfect" isn't the
 goal — matching official-card quality is. Both real and generated cards
 are scored by the same exact-expectation tester against the same average
-opposing card, so tester bias cancels out of the comparison.
+opposing card. Generated cards are built by inverting that tester, so a
+misset tester parameter (X hit rate, average cards, HBP/sacrifice
+handling) counts against the real cards only: the comparison guards the
+generator's own losses, and the tester's parameters get their own checks
+against the real cards (see the X-rate test below).
 """
 
 import pytest
@@ -130,3 +134,37 @@ def test_average_cards_reproduce_league_rates():
         assert rates[WALK] == pytest.approx(league["BB_per_PA"], abs=1e-9)
         assert rates[SO] == pytest.approx(league["K_per_PA"], abs=1e-9)
         assert rates["H_per_PA"] == pytest.approx(league["H_per_PA"], abs=1e-9)
+
+
+# --- the tester's own parameters, against the real cards ----------------------
+
+def test_x_single_rate_is_consistent_with_real_pitcher_cards():
+    """X_SINGLE_RATE is a tester parameter the generator inverts, so the
+    generated-vs-real comparison can't see it; check it against the real
+    cards directly. Solving each official pitcher card (basic side, real
+    season) for the X rate that reproduces his hits allowed gave a mean of
+    4.15 per 30 over 15 cards (SE 0.36), which put Bundy's 4.9 2.1 SE high
+    and moved the constant to 4.1 (see simulate.X_SINGLE_RATE). Over 19
+    cards: median 4.01, mean 3.66 (SE 0.45), pulled down by Chapman 2014
+    (-2.0: his card prints no hits and still allows too many). Fails if
+    new cards or scorer changes push the evidence 2 SE away again."""
+    import statistics
+    from stratogen.benchmark import transcription_cases
+    from stratogen.model import DOUBLE, SINGLE, TRIPLE
+    from stratogen.simulate import X_SINGLE_RATE, card_chances, pitcher_effective_pa
+    cards = [(c.card, c.actual_stats, c.league) for c in TRUSTED.values()
+             if c.card.card_type == "pitcher"]
+    cards += [(c.reps["basic"], c.actual_stats, c.league)
+              for c in transcription_cases()
+              if c.card_type == "pitcher" and c.official and "basic" in c.reps]
+    implied = []
+    for card, stats, league in cards:
+        ch = card_chances(card)
+        hits = ch[HR] + ch[TRIPLE] + ch[DOUBLE] + ch[SINGLE]
+        h_rate = stats["H"] / pitcher_effective_pa(stats, league)
+        implied.append(30 * (216 * h_rate - 108 * league["H_per_PA"] - hits)
+                       / ch[XCHANCE])
+    assert len(implied) >= 15
+    mean = statistics.mean(implied)
+    se = statistics.stdev(implied) / len(implied) ** 0.5
+    assert abs(30 * X_SINGLE_RATE - mean) < 2 * se, (mean, se)
