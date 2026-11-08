@@ -1,0 +1,80 @@
+{
+  "cardId": "pitcher_feldman-scott_2009",
+  "sourceImage": "https://web.archive.org/web/20240727054130im_/https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjoymfymj0L6048zJ1D5gi8KsenGcNeJ3tJxEMSAM4SeDBSFV0NBj3kJnwAf5xERgCuQ9j0gu2hJB9FvpHZntHI1-6_IICmomzQ21XsjiB-4zcdwLZFyi6s14SBTGGPbAO-GNOPn5UJ-Ts/s1600/2010+Strat-O-Matic+Feldman.jpg",
+  "sourceUrl": "https://web.archive.org/web/20261015080559/https://rangerscards.blogspot.com/2010/07/",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Scott Feldman",
+    "throws": null,
+    "bats": null,
+    "team": "Texas",
+    "year": 2009,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": { "starter": true, "relief": true },
+    "pitcherFielding": "pitcher-3",
+    "battingNumber": "batting # 1",
+    "notes": "Header reads: 'SCOTT FELDMAN   pitcher-3   batting # 1   starter  relief' and 'PITCHING CARD   TEXAS'. 'starter' is printed underlined (above 'relief'); both role labels appear with no numeric rating. 'pitcher-3' is the pitcher's fielding rating; 'batting # 1' is the batting/bunting designation. Image file is named '2010 Strat-O-Matic' (the 2010 release of the 2009 season)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          { "roll": 2, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 3, "raw": "FLYBALL (lf)X", "outcomes": [ { "range": null, "result": "FLYBALL (lf)X" } ] },
+          { "roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(3b)X" } ] },
+          { "roll": 5, "raw": "groundball (2b)C", "outcomes": [ { "range": null, "result": "groundball (2b)C" } ] },
+          { "roll": 6, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 7, "raw": "SINGLE* 1-16 / lineout (3b) 17-20", "outcomes": [ { "range": [1,16], "result": "SINGLE*" }, { "range": [17,20], "result": "lineout (3b)" } ] },
+          { "roll": 8, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 9, "raw": "flyball (rf)C", "outcomes": [ { "range": null, "result": "flyball (rf)C" } ] },
+          { "roll": 10, "raw": "FLYBALL (cf)X", "outcomes": [ { "range": null, "result": "FLYBALL (cf)X" } ] },
+          { "roll": 11, "raw": "FLYBALL (rf)X", "outcomes": [ { "range": null, "result": "FLYBALL (rf)X" } ] },
+          { "roll": 12, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] }
+        ] },
+        { "col": 5, "cells": [
+          { "roll": 2, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 3, "raw": "groundball (1b)C", "outcomes": [ { "range": null, "result": "groundball (1b)C" } ] },
+          { "roll": 4, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 5, "raw": "popout (ss)", "outcomes": [ { "range": null, "result": "popout (ss)" } ] },
+          { "roll": 6, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "flyball (lf)B", "outcomes": [ { "range": null, "result": "flyball (lf)B" } ] },
+          { "roll": 9, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 10, "raw": "popout (3b)", "outcomes": [ { "range": null, "result": "popout (3b)" } ] },
+          { "roll": 11, "raw": "groundball (p)B", "outcomes": [ { "range": null, "result": "groundball (p)B" } ] },
+          { "roll": 12, "raw": "lineout (ss)", "outcomes": [ { "range": null, "result": "lineout (ss)" } ] }
+        ] },
+        { "col": 6, "cells": [
+          { "roll": 2, "raw": "lineout (1b)", "outcomes": [ { "range": null, "result": "lineout (1b)" } ] },
+          { "roll": 3, "raw": "GROUND-BALL(p)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(p)X" } ] },
+          { "roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [ { "range": null, "result": "CATCHER'S CARD X" } ] },
+          { "roll": 5, "raw": "HOMERUN 1-9 / DOUBLE 10-20", "outcomes": [ { "range": [1,9], "result": "HOMERUN" }, { "range": [10,20], "result": "DOUBLE" } ] },
+          { "roll": 6, "raw": "DOUBLE** 1-7 / SINGLE** 8-20", "outcomes": [ { "range": [1,7], "result": "DOUBLE**" }, { "range": [8,20], "result": "SINGLE**" } ] },
+          { "roll": 7, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 8, "raw": "GROUND-BALL(2b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b)X" } ] },
+          { "roll": 9, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 10, "raw": "GROUND-BALL(ss)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(ss)X" } ] },
+          { "roll": 11, "raw": "GROUND-BALL(1b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(1b)X" } ] },
+          { "roll": 12, "raw": "GROUND-BALL(2b)X", "outcomes": [ { "range": null, "result": "GROUND-BALL(2b)X" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2009,
+    "stats": { "W": 17, "L": 8, "ERA": "4.08", "STARTS": 31, "SAVES": 0, "IP": 190, "HITS ALLOWED": 178, "BB": 65, "SO": 113, "HOMERUNS ALLOWED": 18 }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic side, flatbed scan (864x1488) posted on a Rangers card blog in July 2010, retrieved from its Wayback capture; read from a full-card overview, then a second independent pass over 1.1x half-card crops. Full-word vocabulary; X tokens print as 'GROUND-BALL(..)X' / 'FLYBALL (..)X' / 'CATCHER'S CARD X', kept verbatim."
+  }
+}
