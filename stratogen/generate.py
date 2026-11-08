@@ -698,44 +698,104 @@ def generate_advanced_pitcher_card(
 _CENTER_OUT = (7, 6, 8, 5, 9, 4, 10, 3, 11, 2, 12)
 _EDGE_IN = tuple(reversed(_CENTER_OUT))
 
-# X-chart cells for pitcher cards: full cells summing to exactly 30 chances,
-# spread over all three columns like real cards.
-_X_CELLS = [(4, 7), (4, 9), (5, 6), (5, 10), (5, 12), (6, 8), (6, 5), (6, 3)]
-assert sum(DICE_WEIGHTS[d] for _, d in _X_CELLS) == X_CHANCES_PER_PITCHER_CARD
+# The X-chart block of a real pitcher card: 30 chances on fixed fielders.
+# 32 of the 37 real pitcher grids (basic and advanced sides) carry exactly
+# this budget; the other five are bigger blocks for extreme relievers that
+# contain it. Infielders and the pitcher read GROUNDBALL (pos) X,
+# outfielders FLYBALL (pos) X, the catcher's chances CATCHER'S CARD X.
+X_BUDGET = {"ss": 7, "2b": 6, "3b": 3, "c": 3, "cf": 3, "1b": 2,
+            "lf": 2, "p": 2, "rf": 2}
+_X_OUTFIELD = {"lf", "cf", "rf"}
+
+# The cell layouts (column, dice sum, fielder) of the 16 distinct standard
+# X blocks on the official real cards; a card uses one of them, chosen per
+# player, so its X chances sit where real cards put them.
+_X_TEMPLATES = (
+    ((4, 3, "rf"), (4, 4, "cf"), (4, 6, "2b"), (4, 10, "3b"), (4, 11, "lf"), (4, 12, "2b"),
+     (5, 3, "1b"), (5, 4, "ss"), (5, 5, "ss"), (5, 10, "c"), (5, 11, "p")),   # Colon 2016
+    ((4, 2, "2b"), (4, 3, "1b"), (4, 10, "cf"), (4, 11, "p"), (4, 12, "c"), (5, 3, "ss"),
+     (5, 6, "ss"), (5, 8, "2b"), (5, 10, "3b"), (5, 11, "c"), (6, 3, "rf"), (6, 11, "lf")),  # Kirby 1975
+    ((4, 3, "1b"), (4, 4, "2b"), (4, 9, "ss"), (4, 10, "2b"), (4, 11, "3b"), (5, 2, "3b"),
+     (5, 3, "p"), (5, 4, "c"), (5, 10, "cf"), (5, 11, "rf"), (6, 4, "ss"), (6, 11, "lf")),  # Ryan 1972
+    ((4, 3, "lf"), (4, 7, "2b"), (4, 11, "1b"), (4, 12, "c"), (5, 2, "ss"), (5, 3, "p"),
+     (5, 10, "3b"), (5, 11, "c"), (6, 4, "cf"), (6, 7, "ss"), (6, 11, "rf")),   # Seaver 1969
+    ((4, 4, "3b"), (4, 5, "ss"), (4, 7, "2b"), (4, 10, "ss"), (4, 11, "rf"), (5, 3, "lf"),
+     (5, 4, "c"), (5, 11, "1b"), (6, 3, "p"), (6, 10, "cf")),                   # Bruney 2008
+    ((4, 3, "rf"), (4, 9, "ss"), (4, 10, "ss"), (5, 3, "p"), (5, 4, "c"), (5, 8, "2b"),
+     (5, 10, "3b"), (5, 11, "1b"), (5, 12, "2b"), (6, 2, "lf"), (6, 10, "cf"), (6, 12, "lf")),
+    ((4, 7, "2b"), (5, 3, "p"), (5, 4, "c"), (5, 10, "ss"), (5, 11, "1b"), (6, 3, "lf"),
+     (6, 4, "3b"), (6, 9, "ss"), (6, 10, "cf"), (6, 11, "rf")),                 # Capuano 2014
+    ((4, 4, "cf"), (5, 3, "rf"), (5, 4, "c"), (5, 7, "2b"), (5, 9, "ss"), (5, 10, "ss"),
+     (5, 11, "lf"), (5, 12, "1b"), (6, 3, "p"), (6, 4, "3b"), (6, 12, "1b")),   # Drysdale 1965
+    ((4, 3, "1b"), (4, 4, "cf"), (4, 10, "3b"), (4, 11, "p"), (5, 4, "ss"), (5, 10, "c"),
+     (6, 3, "rf"), (6, 5, "ss"), (6, 7, "2b"), (6, 11, "lf")),                  # Gibson 1994
+    ((4, 3, "p"), (4, 4, "3b"), (4, 12, "1b"), (5, 3, "lf"), (5, 4, "cf"), (5, 10, "c"),
+     (5, 12, "1b"), (6, 3, "rf"), (6, 4, "ss"), (6, 5, "ss"), (6, 7, "2b")),
+    ((4, 5, "ss"), (4, 7, "2b"), (4, 10, "cf"), (4, 11, "rf"), (5, 3, "lf"), (5, 4, "3b"),
+     (5, 10, "ss"), (5, 11, "1b"), (6, 3, "p"), (6, 4, "c")),                   # Mendoza 2001
+    ((4, 3, "rf"), (4, 4, "ss"), (4, 5, "ss"), (5, 3, "p"), (5, 4, "3b"), (5, 12, "1b"),
+     (6, 3, "lf"), (6, 4, "c"), (6, 7, "2b"), (6, 10, "cf"), (6, 12, "1b")),
+    ((4, 3, "1b"), (4, 4, "cf"), (4, 10, "3b"), (4, 11, "p"), (5, 4, "ss"), (5, 5, "ss"),
+     (5, 10, "c"), (6, 3, "rf"), (6, 7, "2b"), (6, 11, "lf")),                  # Monroe 1958
+    ((4, 3, "3b"), (4, 4, "cf"), (4, 12, "p"), (5, 3, "1b"), (5, 4, "c"), (5, 12, "3b"),
+     (6, 3, "lf"), (6, 4, "ss"), (6, 5, "ss"), (6, 7, "2b"), (6, 11, "rf"), (6, 12, "p")),
+    ((4, 3, "rf"), (4, 4, "3b"), (4, 7, "2b"), (4, 10, "ss"), (4, 11, "lf"), (5, 3, "1b"),
+     (5, 4, "c"), (5, 11, "p"), (6, 5, "ss"), (6, 10, "cf")),                   # Perez 1994
+    ((4, 3, "rf"), (4, 7, "2b"), (5, 3, "ss"), (5, 4, "c"), (5, 8, "ss"), (5, 10, "3b"),
+     (5, 11, "p"), (6, 3, "1b"), (6, 4, "cf"), (6, 11, "lf")),                  # Pettitte 2012
+)
+for _template in _X_TEMPLATES:
+    _got: dict[str, int] = {}
+    for _col, _dice, _pos in _template:
+        _got[_pos] = _got.get(_pos, 0) + DICE_WEIGHTS[_dice]
+    assert _got == X_BUDGET, _template
+    assert len({(c, d) for c, d, _p in _template}) == len(_template)
+
+
+def _x_text(pos: str) -> str:
+    if pos == "c":
+        return "CATCHER'S CARD X"
+    kind = "FLYBALL" if pos in _X_OUTFIELD else "GROUNDBALL"
+    return f"{kind} ({pos}) X"
+
+
+def _reduced_cells(template, x_target: int):
+    """The subset of a template's cells holding exactly `x_target` chances
+    whose fielder mix stays closest to the real budget's proportions, or
+    None when no subset adds up (an extreme reliever's shrunken block)."""
+    weights = [DICE_WEIGHTS[d] for _c, d, _p in template]
+    best = None
+    for mask in range(1, 1 << len(template)):
+        if sum(w for i, w in enumerate(weights) if mask >> i & 1) != x_target:
+            continue
+        got: dict[str, int] = {}
+        for i, (_c, d, pos) in enumerate(template):
+            if mask >> i & 1:
+                got[pos] = got.get(pos, 0) + weights[i]
+        cost = sum((got.get(pos, 0) - share * x_target / X_CHANCES_PER_PITCHER_CARD) ** 2
+                   for pos, share in X_BUDGET.items())
+        if best is None or cost < best[0]:
+            best = (cost, [cell for i, cell in enumerate(template) if mask >> i & 1])
+    return best[1] if best else None
 
 
 def _x_blocks(x_target: int, rng: random.Random,
               ) -> list[list[tuple[tuple[int, int], str]]]:
-    """Candidate X blocks holding `x_target` chances (one, for now): the
-    fixed _X_CELLS or, for a block reduced to fit an extreme card, the
-    heaviest cells that sum exactly to the target; one cell is the
-    catcher's card, the rest groundball (60%) or flyball X to a random
-    fielder."""
+    """Candidate X blocks holding `x_target` chances, in the order to try:
+    the real cards' standard layouts (_X_TEMPLATES) shuffled per player,
+    or for a block reduced to fit an extreme card, each layout's closest
+    exact-sum subset."""
     if x_target <= 0:
         return []
-    if x_target == X_CHANCES_PER_PITCHER_CARD:
-        cells = list(_X_CELLS)
-    else:
-        cells, remaining = [], x_target
-        pool = sorted(((col, d) for col in PITCHER_COLUMNS for d in DICE_WEIGHTS),
-                      key=lambda cd: -DICE_WEIGHTS[cd[1]])
-        for cell in pool:
-            if DICE_WEIGHTS[cell[1]] <= remaining:
-                cells.append(cell)
-                remaining -= DICE_WEIGHTS[cell[1]]
-            if remaining == 0:
-                break
-    catcher = rng.choice(cells)
-    block = []
-    for cell in cells:
-        if cell == catcher:
-            block.append((cell, "CATCHER'S CARD X"))
-        elif rng.random() < 0.6:
-            pos = rng.choice(["ss", "3b", "2b", "1b", "p"])
-            block.append((cell, f"GROUNDBALL ({pos}) X"))
-        else:
-            block.append((cell, f"FLYBALL ({rng.choice(['lf', 'cf', 'rf'])}) X"))
-    return [block]
+    templates = list(_X_TEMPLATES)
+    rng.shuffle(templates)
+    blocks = []
+    for template in templates:
+        cells = (list(template) if x_target == X_CHANCES_PER_PITCHER_CARD
+                 else _reduced_cells(template, x_target))
+        if cells:
+            blocks.append([((col, dice), _x_text(pos)) for col, dice, pos in cells])
+    return blocks
 
 
 def _spread_cells(columns: tuple[int, ...], phase: int) -> list[tuple[int, int]]:

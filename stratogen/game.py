@@ -344,7 +344,10 @@ SF_PER_RUN = 0.062
 # chart: the A share of X groundouts is X_DP_SHARE times the league-average
 # batter card's A share (so it follows the era's GIDP rate), with X_DP_SHARE
 # calibrated on training-season GIDP; B and C keep the printed 40/60 split.
-X_DP_SHARE = 0.38
+# Re-fit 0.38 -> 0.30 when generated X blocks took the real cards' standard
+# fielders (20 grounder chances of 30 instead of ~15.75): training GIDP
+# 1.030 -> 0.995 of real, runs 1.003.
+X_DP_SHARE = 0.30
 X_GROUND_B_SHARE = 0.40
 X_FLY_B_SHARE = 0.83
 # League GIDP / double plays turned, 1933-2024 (0.79-0.86 by era): estimates

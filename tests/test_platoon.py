@@ -543,7 +543,10 @@ def test_cli_advanced(capsys, monkeypatch):
 # - cells were capped at two results, as on every real card (verified:
 #   targets and warnings identical; Gwynn and Judge each lost one 0.05-
 #   chance walk sliver from a three-result cell, BB 0.95->0.90 and
-#   27.25->27.20, outs +0.05; Gwynn's out texts reshuffled by quota).
+#   27.25->27.20, outs +0.05; Gwynn's out texts reshuffled by quota);
+# - pitcher X blocks moved to the real cards' standard layouts (verified:
+#   targets, chances and warnings identical; Ryan and Maddux X chances now
+#   ss7/2b6/3b3/c3/cf3/1b2/lf2/p2/rf2 like every real card, outs reshuffled).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
@@ -551,8 +554,8 @@ _BASIC_GOLDEN = [
     ("gwynnto01", 1995, "batter", "9b5b48f3b24033d0"),
     ("cobbty01", 1911, "batter", "d9c65c4e98c7636d"),
     ("judgeaa01", 2024, "batter", "6919231f9d1bbcc9"),
-    ("ryanno01", 1974, "pitcher", "d4f287e1be21fe60"),
-    ("maddugr01", 1995, "pitcher", "a48eedad8177d0fb"),
+    ("ryanno01", 1974, "pitcher", "1fb45591de4574d0"),
+    ("maddugr01", 1995, "pitcher", "034690b60e79113b"),
     ("chapmar01", 2014, "pitcher", "f89b52cd37847c7d"),
 ]
 

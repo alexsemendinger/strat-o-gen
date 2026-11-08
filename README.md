@@ -129,7 +129,12 @@ from the Pitching table stands in). Pitcher cards additionally carry the
 standard 30-chance X-chart block (defense-dependent results, yielding
 X_SINGLE_RATE = 4.9 singles per 30 with average defense), shrunk
 automatically for extreme modern relievers whose strikeouts don't fit or
-who allowed fewer hits than the block's own singles. 2B/3B allowed aren't
+who allowed fewer hits than the block's own singles. The block uses the
+real cards' standard fielders — 30 chances split ss 7 / 2b 6 / 3b 3 /
+c 3 / cf 3 / 1b 2 / lf 2 / p 2 / rf 2, as 32 of the 37 real pitcher grids
+print it (the other five are bigger relief blocks containing it) — laid
+out like one of the 16 distinct real layouts; a shrunken block keeps the
+closest exact-sum share of each fielder. 2B/3B allowed aren't
 recorded, so a pitcher's non-HR hits follow the league's 1B/2B/3B mix,
 with the X singles taken out of his singles.
 
@@ -317,11 +322,6 @@ Other simplifications:
   grids carry it, as the real advanced cards do. A hit-by-pitch magnet's
   basic card warns how far his on-base % will run low (Ron Hunt 1971:
   .402 → .322 in play).
-- X-chart fielders on generated pitcher cards are random (60% grounders);
-  every real pitcher card spreads its 30 X chances ss 7 / 2b 6 / 3b 3 /
-  c 3 / cf 3 / 1b 2 / lf 2 / p 2 / rf 2. Switching to the real budget
-  raises X groundballs about a quarter, which the game engine's
-  double-play calibration has to absorb first.
 - Errors/X-chart resolution assumes league-average defense.
 
 ## Game dynamics are tested too
