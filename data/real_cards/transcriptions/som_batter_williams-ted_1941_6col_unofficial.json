@@ -1,0 +1,142 @@
+{
+  "cardId": "batter_williams-ted_1941",
+  "sourceUrl": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf",
+  "sourceImage": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf#page=5",
+  "cardType": "batter",
+  "side": "6col",
+  "official": false,
+  "player": {
+    "name": "Ted Williams",
+    "bats": "L",
+    "throws": null,
+    "team": null,
+    "year": null,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "lf",
+        "rating": 3,
+        "error": "e13",
+        "arm": "-1"
+      },
+      {
+        "pos": "rf",
+        "rating": 3,
+        "error": "e13"
+      }
+    ],
+    "stealing": "D",
+    "stealingDetail": "6/8 (13-3)",
+    "bunting": "D",
+    "hitAndRun": "B",
+    "running": "1-13",
+    "power": {
+      "vsL": "N",
+      "vsR": "N"
+    },
+    "notes": "Header reads: 'L | TED WILLIAMS   stealing-(D)   6/8 (13-3)   bunting-D   hit & run-B   running 1-13' with fielding sub-line 'lf-3(-1) e13/rf-3 e13'. Leading 'L' = bats left. Banners: '19% AGAINST LEFT-HAND PITCHERS   Power-N' and '81% AGAINST RIGHT-HAND PITCHER   Power-N' (sic, 'PITCHER'). The advanced side carries no year/team (those are on the basic side; cardId links the two)."
+  },
+  "grids": [
+    {
+      "vs": "LHP",
+      "percent": 19,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "▼ 3-SINGLE(rf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE(rf)"}]},
+          {"roll": 4, "raw": "HR 1-11 / DO 12-20", "outcomes": [{"range": [1, 11], "result": "HR"}, {"range": [12, 20], "result": "DO"}]},
+          {"roll": 5, "raw": "TR 1-4 / DO 5-20", "outcomes": [{"range": [1, 4], "result": "TR"}, {"range": [5, 20], "result": "DO"}]},
+          {"roll": 6, "raw": "DO** 1-10 / SI** 11-20", "outcomes": [{"range": [1, 10], "result": "DO**"}, {"range": [11, 20], "result": "SI**"}]},
+          {"roll": 7, "raw": "Ω 7-SINGLE(cf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE(cf)"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "gb(2b)C", "outcomes": [{"range": null, "result": "gb(2b)C"}]},
+          {"roll": 10, "raw": "Ω 10-SINGLE*", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 11, "raw": "◆ 11-HR 1-12 / fly(rf)B 13-20", "markers": ["diamond"], "outcomes": [{"range": [1, 12], "result": "HR"}, {"range": [13, 20], "result": "fly(rf)B"}]},
+          {"roll": 12, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "△ 2-strikeout / SI* 1-12 / lo(2b) 13-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "strikeout"}, {"range": [1, 12], "result": "SI*"}, {"range": [13, 20], "result": "lo(2b)"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "▼ 4-fly(lf)B?", "markers": ["downTriangle", "questionMark"], "outcomes": [{"range": null, "result": "fly(lf)B?"}]},
+          {"roll": 5, "raw": "gb(1b)A", "outcomes": [{"range": null, "result": "gb(1b)A"}]},
+          {"roll": 6, "raw": "gb(2b)A+", "outcomes": [{"range": null, "result": "gb(2b)A+"}]},
+          {"roll": 7, "raw": "fly(cf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(cf)B?"}]},
+          {"roll": 8, "raw": "fly(rf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(rf)B?"}]},
+          {"roll": 9, "raw": "gb(p)A", "outcomes": [{"range": null, "result": "gb(p)A"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 5, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 6, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "SI* 1-13 / gb(1b)B 14-20", "outcomes": [{"range": [1, 13], "result": "SI*"}, {"range": [14, 20], "result": "gb(1b)B"}]},
+          {"roll": 9, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 10, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 11, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 12, "raw": "SINGLE* plus injury", "outcomes": [{"range": null, "result": "SINGLE* plus injury"}]}
+        ] }
+      ]
+    },
+    {
+      "vs": "RHP",
+      "percent": 81,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 6, "raw": "HR 1-7 / DO 8-20", "outcomes": [{"range": [1, 7], "result": "HR"}, {"range": [8, 20], "result": "DO"}]},
+          {"roll": 7, "raw": "DO** 1-12 / SI** 13-20", "outcomes": [{"range": [1, 12], "result": "DO**"}, {"range": [13, 20], "result": "SI**"}]},
+          {"roll": 8, "raw": "◆ 8-HR 1-19 / fly(lf)B 20", "markers": ["diamond"], "outcomes": [{"range": [1, 19], "result": "HR"}, {"range": [20, 20], "result": "fly(lf)B"}]},
+          {"roll": 9, "raw": "gb(ss)A", "outcomes": [{"range": null, "result": "gb(ss)A"}]},
+          {"roll": 10, "raw": "◆ 10-fly(lf)B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly(lf)B?"}]},
+          {"roll": 11, "raw": "▼ 11-SINGLE(lf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE(lf)"}]},
+          {"roll": 12, "raw": "▼ 12-strikeout", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "strikeout"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "▼ 3-fly(lf)B?", "markers": ["downTriangle", "questionMark"], "outcomes": [{"range": null, "result": "fly(lf)B?"}]},
+          {"roll": 4, "raw": "△ 4-gb(2b)C / SI* 1-2 / lo(2b) 3-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "gb(2b)C"}, {"range": [1, 2], "result": "SI*"}, {"range": [3, 20], "result": "lo(2b)"}]},
+          {"roll": 5, "raw": "fly(rf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(rf)B?"}]},
+          {"roll": 6, "raw": "gb(2b)A+", "outcomes": [{"range": null, "result": "gb(2b)A+"}]},
+          {"roll": 7, "raw": "fly(cf)B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly(cf)B?"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 5, "raw": "Ω 5-SINGLE(rf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE(rf)"}]},
+          {"roll": 6, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "Ω 10-SINGLE(lf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE(lf)"}]},
+          {"roll": 11, "raw": "SI* 1-14 / gb(p)B 15-20", "outcomes": [{"range": [1, 14], "result": "SI*"}, {"range": [15, 20], "result": "gb(p)B"}]},
+          {"roll": 12, "raw": "fly(cf)A", "outcomes": [{"range": null, "result": "fly(cf)A"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "FACSIMILE, flagged unofficial for that reason: printed in STRAT FAN issue 16 (December 1992, (c) Game Time Publishing Co.), page 7 ('... Oldtimers Card Season'), under the 1941 article; the PDF is hosted in Strat-O-Matic's own Digital Museum (sourceUrl; PDF page 5 holds a 300-dpi grayscale scan, 2625x4246, in which the card is about 1550 px wide and sharp). The content is believed to be the official 1941 advanced card, but the facsimile was typeset for the magazine (slips on the companion DiMaggio card: '6-DOUBLE(cf', '12SINGLE(rf)'; both banners read 'PITCHER'). Read twice: (1) from a crop of the whole card, (2) from fresh 1.6x crops of each platoon grid; no differences. Markers: diamond ◆, downTriangle ▼, upTriangle △ (LHP col2 roll2 '△2-strikeout' and RHP col2 roll4 '△4-gb(2b)C', each with an italic 'SI* / lo(2b)' d20 split on the two lines directly beneath, before the next roll; binding unambiguous), omega Ω, '?' as questionMark. Underlines on class letters cannot be distinguished in this facsimile, so none are recorded. 'plus injury' prints on its own line under LHP col3 roll12 (SINGLE*) and RHP col3 roll2 (HBP). HBP: LHP col1 roll12, RHP col3 roll2 (1 chance each grid). Validator CHECK (kept; transcription double-checked, a property of the card): combined-advanced BB .0294 (side-by-side as tests/test_platoon scores it: .0275), every other category within .0061 (BA .0048, HR .0003, SO .0061). The walk shortfall matches the basic side's and is consistent with intentional walks, which Strat-O-Matic leaves off cards but Lahman does not record for 1941 (IBB missing, so all 147 walks count as unintentional)."
+  }
+}
