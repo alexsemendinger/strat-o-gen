@@ -123,12 +123,14 @@ Six cards are flagged `"official": false` (filename `_unofficial`):
 
 ## Inventory
 
+Regenerate with `python3 tools/real_cards_inventory.py`.
+
 | Card | Type | Sides | Source |
 |---|---|---|---|
 | Joe Adcock 1957 | batter | advanced | SOM announcement: wsbg-final-gene-abood-world-champion |
 | Jose Bautista 2015 | batter | advanced | SOM announcement: simulation-goose-gossage-takes-todays-stars |
 | Andrew Benintendi 2022 | batter | basic + advanced | photo provided 2026-06-17 |
-| Barry Bonds 2001 | batter | advanced | SOM 'Talk Show' column, 2003 (Wayback) |
+| Barry Bonds 2001 | batter | advanced | SOM 'Talk Show' column, 10/2003 (Wayback) |
 | Andy Carey 1953 | batter | basic + advanced | photo provided 2026-06-17 |
 | Yoenis Cespedes 2015 | batter | advanced | SOM announcement: simulation-goose-gossage-takes-todays-stars |
 | Earle Combs 1930 | batter | basic + advanced | photo provided 2026-06-17 |
@@ -193,7 +195,7 @@ Six cards are flagged `"official": false` (filename `_unofficial`):
 | Melido Perez 1994 | pitcher | basic + advanced | photo provided 2026-06-17 |
 | Andy Pettitte 2012 | pitcher | basic + advanced | photo provided 2026-06-17 |
 | Addison Reed 2017 | pitcher | basic | SOM announcement: 2017-baseball-card-corrections |
-| Bob Shawkey unofficial (unofficial) | pitcher | advanced | photo provided 2026-06-17 |
+| Bob Shawkey 1917 (unofficial) | pitcher | advanced | photo provided 2026-06-17 |
 | Kevin Slowey 2009 | pitcher | basic | SOM announcement: 2009-and-1977-baseball-corrections |
 | Jack Warhop 1914 (unofficial) | pitcher | advanced | photo provided 2026-06-17 |
 | Oscar Zamora 1975 | pitcher | basic + advanced | cary333 blog (Wayback) |

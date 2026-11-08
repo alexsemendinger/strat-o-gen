@@ -88,6 +88,12 @@ def test_loads_all_cards():
 
 
 def test_unofficial_cards_flagged():
+    """"official": false marks them; the file name says so too, the cardId
+    doesn't (both sides of a card share one cardId)."""
+    for path in JSON_FILES:
+        d = _load_json(path)
+        assert not d["cardId"].endswith("_unofficial"), path.name
+        assert path.stem.endswith("_unofficial") == (d.get("official") is False), path.name
     unofficial = {cid for cid, c in CARDS.items() if not c.official}
     assert unofficial == {
         "pitcher_orth-al_1906", "pitcher_shawkey-bob_1917",

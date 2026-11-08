@@ -182,13 +182,8 @@ class Transcription:
 
 def _load_side(path: Path) -> Side:
     d = json.loads(path.read_text(encoding="utf-8"))
-    # A couple of files embed the "_unofficial" flag in cardId; strip it so
-    # IDs are consistent and the two sides still join.
-    card_id = d["cardId"]
-    if card_id.endswith("_unofficial"):
-        card_id = card_id[: -len("_unofficial")]
     return Side(
-        card_id=card_id,
+        card_id=d["cardId"],
         card_type=d["cardType"],
         side=d["side"],
         official=d.get("official", True),
