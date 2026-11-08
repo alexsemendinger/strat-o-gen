@@ -315,12 +315,15 @@ Other simplifications:
   samples. Pitchers' range is chances per nine innings, so relievers and
   starters share one scale. Every position played is listed, as on real
   cards. Agreement with every range rating printed on the real cards:
-  basic sides (14 fixtures + 19 JSON cards) 28/53 exact, 50/53 within ±1;
-  advanced sides 16/34 exact, 31/34 within ±1; pitchers 8/10 exact
-  (leave-one-out 6/10), all within ±1. Box-score stats can't see range a
-  fielder never reaches or scouting judgment (Judge's rf-1, LeMahieu's
-  2b-1), and a widened corpus didn't support re-fitting the position
-  players' weights (no variant beat the current one leave-one-out).
+  basic sides (14 fixtures + the dated JSON cards) 37/80 exact, 69/80
+  within ±1; advanced sides 23/62 exact, 50/62 within ±1; pitchers 10/17
+  exact (leave-one-out 10/17), 15/17 within ±1. Box-score stats can't see
+  range a fielder never reaches or scouting judgment (Judge's rf-1,
+  LeMahieu's 2b-1, Virdon's cf-1 in nine of eleven seasons, read as
+  average here), nor why some relievers print 4 on average box scores
+  (Mingori 1973, Reed 2017). Re-fitting the position players' weights or
+  the pitchers' threshold on the larger corpus didn't beat the current
+  fit (per player, and leave-one-out for pitchers).
   Before 1954 the fielding data has no AL/NL corner-outfield split: the
   bundled Appearances table names the spots a player actually played
   (games in left, center and right), and each spot is rated on his
@@ -456,27 +459,29 @@ excluded). Entry points: `advanced_batter_ratings` /
 `advanced_batter_header_lines` and `advanced_pitcher_ratings` /
 `advanced_pitcher_header_lines`, producing lines like `cf-1(+2) e7`,
 `c-3(0) e1, T-1-7(pb-4)`, `bunting-D`, `hit & run-C`, `pitcher-2 e15`,
-`starter(6) relief(3)/N`, `hold -4`, `wp-18`, `bk-4`. Not yet wired into
-card generation. Agreement below is with the official cards and is
+`starter(6) relief(3)/N`, `hold -4`, `wp-18`, `bk-4`; the app prints them
+on the advanced side (`stratogen/service.py`). Agreement below is with the
+19 official cards they were fitted on, and "held out" with the 19
+advanced sides transcribed since (`test_held_out_cards_agreement`);
 enforced by `tests/test_advanced_ratings.py`; "LOO" = leave-one-out.
 
 | Rating | Basis | Agreement |
 |---|---|---|
-| Error `eN` (fielders) | Errors per full game × season length (154/162): an absolute rate, not peer-relative. Cameo positions pool two prior seasons, then are floored at 2× the league rate; catchers net out 0.055 throwing errors per steal attempt | 11/19 exact, 16/19 within 1, all within 3 |
-| Error `eN` (pitchers) | Errors per 9 IP × season length | 7/7 exact (unofficial 4/4 within 1) |
-| Outfield arm `(±N)` | Assists vs expectation, standardized among the season's regular outfielders (lower = stronger) | 2/6 exact, 4/6 within 1 (LOO 1/6, 4/6) |
-| Catcher arm `c-N(±N)` | Caught-stealing % vs league (assists when steals weren't recorded) | 1/2 exact, 2/2 within 1 |
-| Catcher `T-1-N` | 7 + 2 × arm — **not grounded**, meaning unconfirmed | 1/2 exact |
+| Error `eN` (fielders) | Errors per full game × season length (154/162): an absolute rate, not peer-relative. Cameo positions pool two prior seasons, then are floored at 2× the league rate; catchers net out 0.055 throwing errors per steal attempt | 11/19 exact, 16/19 within 1, all within 3; held out 10/19, 16/19 (Ramos 2010, a 21-game catcher with no errors, prints e8) |
+| Error `eN` (pitchers) | Errors per 9 IP × season length | 7/7 exact (unofficial 4/4 within 1); held out 3/4, 4/4 within 1 |
+| Outfield arm `(±N)` | Assists vs expectation, standardized among the season's regular outfielders (lower = stronger) | 2/6 exact, 4/6 within 1 (LOO 1/6, 4/6); held out 1/17, 9/17 — reputation arms that deterred runners (Harper −4, Cespedes −5) read as average |
+| Catcher arm `c-N(±N)` | Caught-stealing % vs league (assists when steals weren't recorded) | 1/2 exact, 2/2 within 1; held out: Ramos 2010 prints −1, ours +1 |
+| Catcher `T-1-N` | 7 + 2 × arm — **not grounded**, meaning unconfirmed | 1/2 exact; Ramos 2010 prints T-1-12 with arm −1, so the formula is wrong |
 | Passed balls `pb-N` | Passed balls per season ÷ 4 | 2/2 exact |
-| Bunting A-D | Sacrifice hits vs league expectation (+3 pseudo-bunts) | 12/12 exact (LOO 9/12, 12/12 within 1) |
-| Hit & run A-D | Strikeout rate vs league (contact) | 12/12 exact (LOO 11/12, 12/12 within 1); A cut unfitted |
-| Pitcher `wp-N` | Wild pitches per 216 IP | 6/7 exact, 7/7 within 1 |
-| Pitcher `bk-N` | Balks per 300 IP | 6/7 exact, 7/7 within 1 |
-| Pitcher `hold ±N` | **No Lahman basis** (no steals are charged to pitchers): handedness prior, LHP −3 / RHP 0 | 3/7 exact, 4/7 within 1 (LOO 2/7, 4/7) |
-| Pitcher bunting | Own sacrifice bunts vs pitchers' league rate; no plate appearances → C | 7/7 exact |
-| `starter(N)` | Estimated innings per start, shrunk toward a spot-starter prior | 5/5 exact (LOO 3/5, 5/5 within 1) |
-| `relief(N)` | Innings per relief outing; pitchers who also start get ⌈starter/2⌉ | 5/5 exact |
-| `relief(N)/X` suffix | Inferred closer rating: N without saves, else ⌊1.7 ln SV⌋ — **weakly grounded** | 5/5 exact (one card constrains it) |
+| Bunting A-D | Sacrifice hits vs league expectation (+3 pseudo-bunts) | 12/12 exact (LOO 9/12, 12/12 within 1); held out 11/19, 18/19 within 1 |
+| Hit & run A-D | Strikeout rate vs league (contact) | 12/12 exact (LOO 11/12, 12/12 within 1); held out 14/19, 19/19 within 1; A cut unfitted |
+| Pitcher `wp-N` | Wild pitches per 216 IP | 6/7 exact, 7/7 within 1; held out 4/4 |
+| Pitcher `bk-N` | Balks per 300 IP | 6/7 exact, 7/7 within 1; held out 4/4 |
+| Pitcher `hold ±N` | **No Lahman basis** (no steals are charged to pitchers): handedness prior, LHP −3 / RHP 0 | 3/7 exact, 4/7 within 1 (LOO 2/7, 4/7); held out 1/4 (Choate 2014, a lefty, prints +5) |
+| Pitcher bunting | Own sacrifice bunts vs pitchers' league rate; no plate appearances → C | 7/7 exact; held out 3/4 |
+| `starter(N)` | Estimated innings per start, shrunk toward a spot-starter prior | 5/5 exact (LOO 3/5, 5/5 within 1); held out 0/2: Drysdale 1965 prints 8, Cuellar 1971 9, ours 7 (workhorses with 20+ complete games outrun innings per start) |
+| `relief(N)` | Innings per relief outing; pitchers who also start get ⌈starter/2⌉ | 5/5 exact; held out 2/4, 4/4 within 1 (Drysdale's 2 relief games print no rating, ours 4) |
+| `relief(N)/X` suffix | Inferred closer rating: N without saves, else ⌊1.7 ln SV⌋ — **weakly grounded** | 5/5 exact (one card constrains it); held out 2/3, 3/3 within 1 (Gossage 1982's 30 saves print 6, ours 5) |
 
 Range (1-5), stealing and running come from `fielding.py` and
 `ratings.py` (see *Known limitations* for their agreement on every real

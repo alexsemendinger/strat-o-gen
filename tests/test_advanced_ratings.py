@@ -601,3 +601,81 @@ def test_season_games():
     assert ar.season_games(1961, "NL") == 154
     assert ar.season_games(1994, "AL") == 162
     assert math.isclose(ar.season_games(1880), 154)
+
+
+# --- held out: every advanced side transcribed after the fit ---------------
+
+def _newer_cards():
+    """Official dated advanced sides outside the fit set (PLAYERS), with
+    their printed ratings; original printings superseded by a modern one
+    are left out (the 1960s originals rated by the rules of their day)."""
+    from stratogen.benchmark import transcription_cases
+    cases = {c.card_id: c for c in transcription_cases() if c.official}
+    return [(c, json.loads(c.transcription.advanced.path.read_text(
+                encoding="utf-8"))["ratings"])
+            for cid, c in sorted(cases.items())
+            if cid not in PLAYERS and c.transcription.advanced
+            and not (cid.endswith("-orig") and cid.removesuffix("-orig") in cases)]
+
+
+def _held_out_rows():
+    rows = {k: [] for k in ("error", "arm", "bunting", "hit_run",
+                            "p_error", "wp", "bk", "p_bunting")}
+    for case, r in _newer_cards():
+        pid, year = case.actual_stats["player_id"], case.actual_stats["year"]
+        if case.card_type == "batter":
+            stats = db.batting_season(pid, year)
+            outfield_seen = False
+            for f in r.get("fielding") or []:
+                pos = f["pos"].upper()
+                outfield = pos in ("LF", "CF", "RF")
+                if not (outfield and outfield_seen):  # one e/arm per outfield
+                    if f.get("error"):
+                        rows["error"].append(
+                            (ar.error_rating(db, pid, year, pos), _num(f["error"])))
+                    if outfield and f.get("arm") is not None:
+                        rows["arm"].append((ar.outfield_arm(db, pid, year), int(f["arm"])))
+                outfield_seen = outfield_seen or outfield
+            rows["bunting"].append((ar.bunting_rating(db, stats), r["bunting"]))
+            rows["hit_run"].append((ar.hit_and_run_rating(db, stats), r["hitAndRun"]))
+        else:
+            got = ar.advanced_pitcher_ratings(db, pid, year)
+            for key, field, mine in (("p_error", "errorRating", "error"),
+                                     ("wp", "wildPitch", "wp"), ("bk", "balk", "bk")):
+                if r.get(field):
+                    rows[key].append((got[mine], _num(r[field], signed=False)))
+            if r.get("bunting"):
+                rows["p_bunting"].append((got["bunting"], r["bunting"][-1]))
+    return rows
+
+
+def test_held_out_cards_agreement():
+    """The tables above are the fit set (19 cards). Every official advanced
+    side transcribed since is held out; on the first 19 of them: fielders'
+    error eN 10/19 exact, 16/19 within one (Ramos 2010, a 21-game catcher
+    with no errors, prints e8: the card regresses small samples); bunting
+    11/19 and hit & run 14/19 exact, all but one within one (Virdon's
+    bunting prints B where his sacrifices read C/D); outfield arm 1/17
+    exact, 9/17 within one (arms that deterred runners, Harper -4 and
+    Cespedes -5, read as average; Virdon's -2 is a decade-long reputation);
+    pitchers' wild pitches and balks 4/4, error 3/4 exact and 4/4 within
+    one, bunting 3/4. Bounded at those shares (the set grows with the
+    corpus)."""
+    rows = _held_out_rows()
+
+    def share(key, tol=0):
+        got = rows[key]
+        if key in ("bunting", "hit_run", "p_bunting"):
+            hits = sum(_letter_gap(g, t) <= tol for g, t in got)
+        else:
+            hits = sum(g is not None and abs(g - t) <= tol for g, t in got)
+        return hits / len(got)
+
+    assert len(rows["error"]) >= 19 and len(rows["arm"]) >= 17
+    assert len(rows["bunting"]) >= 19 and len(rows["wp"]) >= 4
+    assert share("error") >= 0.50 and share("error", 1) >= 0.80
+    assert share("bunting") >= 0.55 and share("bunting", 1) >= 0.90
+    assert share("hit_run") >= 0.70 and share("hit_run", 1) >= 0.90
+    assert share("arm", 1) >= 0.50
+    assert share("wp") >= 0.75 and share("bk") >= 0.75
+    assert share("p_error", 1) >= 0.75 and share("p_bunting") >= 0.75

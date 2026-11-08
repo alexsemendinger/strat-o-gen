@@ -53,28 +53,18 @@ KNOWN_OUTLIERS = [("kirbycl01", 1975, "P", 2)]
 
 TRANSCRIPTIONS = (Path(__file__).resolve().parent.parent
                   / "data" / "real_cards" / "transcriptions")
-# JSON card stem -> Lahman season (official, dated cards only)
-JSON_CARDS = {
-    "batter_benintendi-andrew_2022": ("beninan01", 2022),
-    "batter_carey-andy_1953": ("careyan01", 1953),
-    "batter_combs-earle_1930": ("combsea01", 1930),
-    "batter_henderson-rickey_1986": ("henderi01", 1986),
-    "batter_judge-aaron_2024": ("judgeaa01", 2024),
-    "batter_lemahieu-dj_2021": ("lemahdj01", 2021),
-    "batter_linz-phil_1963": ("linzph01", 1963),
-    "batter_pipp-wally_1921": ("pippwa01", 1921),
-    "batter_posada-jorge_2003": ("posadjo01", 2003),
-    "batter_rizzuto-phil_1949": ("rizzuph01", 1949),
-    "batter_silvera-charlie_1949": ("silvech01", 1949),
-    "batter_strawberry-darryl_1985": ("strawda01", 1985),
-    "pitcher_bruney-brian_2008": ("brunebr01", 2008),
-    "pitcher_capuano-chris_2014": ("capuach01", 2014),
-    "pitcher_gibson-paul_1994": ("gibsopa01", 1994),
-    "pitcher_mendoza-ramiro_2001": ("mendora01", 2001),
-    "pitcher_monroe-zach_1958": ("monroza01", 1958),
-    "pitcher_perez-melido_1994": ("perezme01", 1994),
-    "pitcher_pettitte-andy_2012": ("pettian01", 2012),
-}
+def _json_cards() -> dict[str, tuple[str, int]]:
+    """JSON card stem -> Lahman season, for every official dated card (an
+    original printing that a modern printing of the same season supersedes
+    is left out: the 1960s originals rated by the rules of their day)."""
+    from stratogen.benchmark import transcription_cases
+    cases = {c.card_id: c for c in transcription_cases() if c.official}
+    return {cid: (c.actual_stats["player_id"], c.actual_stats["year"])
+            for cid, c in cases.items()
+            if not (cid.endswith("-orig") and cid.removesuffix("-orig") in cases)}
+
+
+JSON_CARDS = _json_cards()
 _POS = {"leftfield": "LF", "lf": "LF", "centerfield": "CF", "cf": "CF",
         "rightfield": "RF", "rf": "RF", "catcher": "C", "c": "C",
         "1st base": "1B", "1b": "1B", "2nd base": "2B", "2b": "2B",
@@ -85,8 +75,10 @@ def _json_truth(side: str) -> list[tuple[str, int, str, int]]:
     """Every range rating on one side ('3col' basic / '6col' advanced)."""
     out = []
     for stem, (pid, year) in JSON_CARDS.items():
-        ratings = json.loads((TRANSCRIPTIONS / f"som_{stem}_{side}.json")
-                             .read_text(encoding="utf-8"))["ratings"]
+        path = TRANSCRIPTIONS / f"som_{stem}_{side}.json"
+        if not path.exists():
+            continue
+        ratings = json.loads(path.read_text(encoding="utf-8"))["ratings"]
         for f in ratings.get("fielding") or []:
             out.append((pid, year, _POS[f["pos"].lower()], int(f["rating"])))
         if (ratings.get("pitcherFielding") or "").startswith("pitcher-"):
@@ -116,7 +108,7 @@ def _check_ids():
 
 def test_ground_truth_ids_resolve():
     _check_ids()
-    assert len(JSON_TRUTH) == 34 and len(JSON_ADVANCED_TRUTH) == 34
+    assert len(JSON_TRUTH) >= 61 and len(JSON_ADVANCED_TRUTH) >= 62   # grows
 
 
 @pytest.mark.parametrize("pid,year,pos,official", GROUND_TRUTH)
@@ -136,20 +128,29 @@ def test_calibration_quality_overall():
 # Agreement on every printed rating (README "Known limitations"). Before the
 # league-aware pools and innings-based pitcher range: fixtures 10/19 exact
 # (19 within one), JSON basic sides 12/34 (28), advanced sides 10/34 (28),
-# pitchers 3/10 (10). Off by two: Carey 3B (2 vs 4: a 40-game rookie
-# season), Judge RF (1 vs 3: a reputation rating, he played CF in 2024),
-# LeMahieu 2B (1 vs 3: Gold Glove-calibre, box scores show average range).
+# pitchers 3/10 (10); on the first 19 JSON cards the current fit scored
+# 18/34 (31) and 16/34 (31). Off by two: Carey 3B (2 vs 4: a 40-game
+# rookie season), Judge RF (1 vs 3: a reputation rating, he played CF in
+# 2024), LeMahieu 2B (1 vs 3: Gold Glove-calibre, box scores show average
+# range), Virdon CF (printed 1 in nine of eleven seasons, a Gold Glove
+# glove the range factor reads as average), Adcock 1B and Conor Jackson
+# LF (printed 4), relievers printed 4 on average box scores (Mingori
+# 1973, Reed 2017). Re-fitting the outfield weights or the pitchers'
+# shift on the larger corpus didn't beat the current fit per player.
 def test_json_card_agreement():
-    assert _agreement(JSON_TRUTH) >= (18, 31)
-    assert _agreement(JSON_ADVANCED_TRUTH) >= (16, 31)
-    assert _agreement(ALL_BASIC) >= (28, 50)            # of 53
+    assert _agreement(JSON_TRUTH) >= (27, 50)            # of 61
+    assert _agreement(JSON_ADVANCED_TRUTH) >= (23, 50)   # of 62
+    assert _agreement(ALL_BASIC) >= (37, 69)             # of 80
 
 
 def test_pitcher_agreement_and_leave_one_out(monkeypatch):
     """Pitchers: range per nine innings, one fitted parameter (the 0.4
-    threshold shift). In-sample 8/10 exact; leave-one-out (shift refitted
-    on the other nine from -0.8..+0.4) 6/10 exact; always within one."""
-    assert _agreement(PITCHER_TRUTH) >= (8, 10)
+    threshold shift, fitted on the first 10 cards: 8/10 exact, 6/10
+    leave-one-out). On the 17 basic-side pitcher ratings now: 10/17 exact,
+    15/17 within one; leave-one-out (shift refitted on the other 16 from
+    -0.8..+0.4) 10/17 exact, 15/17 within one: -0.4 is still the best
+    shift. Mingori 1973 and Reed 2017 (relievers printed 4) miss by two."""
+    assert _agreement(PITCHER_TRUTH) >= (10, 15)
     shifts = [s / 10 for s in range(-8, 5)]
 
     def thresholds(shift):
@@ -170,7 +171,7 @@ def test_pitcher_agreement_and_leave_one_out(monkeypatch):
         best = max(shifts, key=fit)
         exact += preds[best][i] == official
         within += abs(preds[best][i] - official) <= 1
-    assert (exact, within) >= (6, 10)
+    assert (exact, within) >= (10, 15)
 
 
 def test_known_outlier_documented():
