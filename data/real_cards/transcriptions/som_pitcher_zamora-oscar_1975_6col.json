@@ -115,6 +115,6 @@
   "transcription": {
     "confidence": "high",
     "uncertainCells": [],
-    "notes": "Advanced side, flatbed scan (1050x603) from the same 2015 blog post as the basic side (Wayback capture); read from 1.8x half-card crops, then a second independent pass over 2.2x per-column crops. X tokens print as 'GB (..) X' / 'FLY (..) X' / 'CATCH-X'; trailing bullets (●) captured as markers. LHB col4 roll9 prints 'fly(rf)B' with no spaces, kept verbatim."
+    "notes": "Advanced side, flatbed scan (1050x603) from the same 2015 blog post as the basic side (Wayback capture); read from 1.8x half-card crops, then a second independent pass over 2.2x per-column crops. X tokens print as 'GB (..) X' / 'FLY (..) X' / 'CATCH-X'; trailing bullets (●) captured as markers. LHB col4 roll9 prints 'fly(rf)B' with no spaces, kept verbatim. The grids carry a steep platoon split in home runs (18.4 N-HR chances vs LHB, 6.4 vs RHB; 17 HR in 71 IP in 1975), re-checked against the scan: the share-weighted grids fit Lahman (validator HR error .002), but the per-grid side-by-side scorer in tests/test_platoon.py, which reads N-HR as singles for Power-W batters, puts the HR error at .019, over its .01 sanity bar for pitchers. This is the card as printed, not a transcription error."
   }
 }
