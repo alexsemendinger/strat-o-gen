@@ -328,15 +328,28 @@ def render_card(card: Card) -> str:
     display = {"BA": "AVG", "SLG": "SLG%", "OBP": "ONBASE%", "H": "HITS ALLOWED",
                "GS": "STARTS", "SV": "SAVES", "IP": "IP", "ERA": "ERA"}
     for key, value in card.stats.items():
-        label = display.get(key, key)
-        if value is None:
-            text = "-"
-        elif isinstance(value, float) and value < 1:
-            text = f"{value:.3f}".lstrip("0")
-        else:
-            text = f"{value}"
-        out.append(f"{label:<17} {text}")
+        out.append(f"{display.get(key, key):<17} {_record_text(key, value)}")
     return "\n".join(out) + "\n"
+
+
+def _record_text(key: str, value) -> str:
+    """One season-record value, formatted by its column (as printed cards
+    do): AVG/SLG/OBP '.317', ERA two decimals ('0.61', '2.10'), IP in
+    baseball notation ('273.1' = 273 1/3), counts as integers, '-' for a
+    stat the season didn't record. parse_card reads each form back."""
+    if value is None:
+        return "-"
+    if key in ("BA", "SLG", "OBP") and isinstance(value, (int, float)):
+        text = f"{value:.3f}"
+        return text[1:] if text.startswith("0.") else text
+    if key == "ERA" and isinstance(value, float):
+        return f"{value:.2f}"
+    if key == "IP" and isinstance(value, float) and not isinstance(value, InningsPitched):
+        outs = round(value * 3)
+        return f"{outs // 3}.{outs % 3}" if outs % 3 else str(outs // 3)
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return f"{value}"
 
 
 def _cell_lines(splits: list[Split]) -> list[str]:

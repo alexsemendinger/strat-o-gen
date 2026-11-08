@@ -352,6 +352,17 @@ def pitcher_batters_faced(actual_stats: dict) -> float:
     return pitcher_effective_pa(actual_stats)
 
 
+UNRECORDED = "not recorded"
+
+
+def _actual(actual_stats: dict, key: str, value: float) -> str:
+    """A season count, or 'not recorded' when the season didn't keep it
+    (the card then uses the league rate, so there's nothing to compare)."""
+    if key in (actual_stats.get("missing") or ()):
+        return UNRECORDED
+    return _count(value)
+
+
 def _pitcher_rows(actual_stats: dict, implied: dict) -> list[tuple[str, str, str]]:
     actual = actual_pitching_rates(actual_stats)
     tbf = pitcher_batters_faced(actual_stats)
@@ -360,8 +371,10 @@ def _pitcher_rows(actual_stats: dict, implied: dict) -> list[tuple[str, str, str
          _count(implied["H_per_PA"] * tbf)),
         ("Walks (non-intentional)", _count(actual[WALK] * tbf),
          _count(implied[WALK] * tbf)),
-        ("Strikeouts", _count(actual[SO] * tbf), _count(implied[SO] * tbf)),
-        ("Home runs allowed", _count(actual[HR] * tbf), _count(implied[HR] * tbf)),
+        ("Strikeouts", _actual(actual_stats, "SO", actual[SO] * tbf),
+         _count(implied[SO] * tbf)),
+        ("Home runs allowed", _actual(actual_stats, "HR", actual[HR] * tbf),
+         _count(implied[HR] * tbf)),
     ]
 
 
@@ -384,10 +397,11 @@ def _batter_rows(actual_stats: dict, implied: dict, *, hbp: bool,
         ("Home runs", _count(actual[HR] * pa), _count(implied[HR] * pa)),
         ("Walks (non-intentional)", _count(actual[WALK] * pa),
          _count(implied[WALK] * pa)),
-        ("Strikeouts", _count(actual[SO] * pa), _count(implied[SO] * pa)),
+        ("Strikeouts", _actual(actual_stats, "SO", actual[SO] * pa),
+         _count(implied[SO] * pa)),
     ]
     if hbp or actual[HBP] > 0 or implied.get(HBP, 0) > 0:
-        rows.append(("Hit by pitch", _count(actual[HBP] * pa),
+        rows.append(("Hit by pitch", _actual(actual_stats, "HBP", actual[HBP] * pa),
                      _count(implied.get(HBP, 0.0) * pa)))
     return rows
 

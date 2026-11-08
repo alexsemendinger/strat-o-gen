@@ -22,23 +22,11 @@ from stratogen import service
 from stratogen.card_text import render_advanced_card, render_card
 from stratogen.card_json import advanced_card_to_json
 from stratogen.lahman import default_db
-from stratogen.render import stat_line
-
-_RECORD_LABELS = {"HITS": "HITS ALLOWED"}   # as card_text.render_card prints it
 
 
 def text_card(cs: service.CardSet) -> str:
-    """The plain-text card, with the season record formatted by column
-    (ERA 2.28, AVG .356, IP 273.1) instead of render_card's by-value
-    formatting."""
-    text = render_card(cs.basic)
-    head, sep, _record = text.partition(" RECORD\n")
-    if not sep:
-        return text
-    lines = [head + sep.rstrip("\n")]
-    for label, value in stat_line(cs.basic, cs.stats):
-        lines.append(f"{_RECORD_LABELS.get(label, label):<17} {value}")
-    return "\n".join(lines) + "\n"
+    """The plain-text card (season record formatted by column)."""
+    return render_card(cs.basic)
 
 
 def _write(path: str, content: str, what: str) -> bool:

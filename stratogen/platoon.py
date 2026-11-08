@@ -377,12 +377,16 @@ def league_context(league: dict, db=None) -> PlatoonContext:
     (with a warning) when the database has no handedness for it."""
     from .lahman import default_db
     db = db or default_db()
-    key = (league.get("year"), league.get("league"))
+    # A traded player's blended baseline (LahmanDB.season_league) is its own
+    # context: its rates differ from the primary league's.
+    blend = league.get("blend")
+    key = (league.get("year"), league.get("league"),
+           tuple(sorted(blend.items())) if blend else None)
     with _CACHE_LOCK:
         cached = _CACHE.get(db, {}).get(key)
     if cached is not None:
         return cached
-    year, lg = key
+    year, lg, _blend = key
     try:
         hands = db.league_handedness(year, lg)
         lines = db.league_batter_lines(year, lg)

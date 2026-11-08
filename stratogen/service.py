@@ -341,7 +341,7 @@ def _build(db, player_id: str, year: int, kind: str) -> CardSet:
     try:
         if kind == "pitcher":
             stats = db.pitching_season(player_id, year)
-            league = db.league_batting(year, stats["league"])
+            league = db.season_league(stats)
             fielding = rate_position(db, player_id, year, "P") or 3
             basic, warn_b = generate_pitcher_card(stats, league, fielding_rating=fielding)
             advanced, warn_a = generate_advanced_pitcher_card(
@@ -352,7 +352,7 @@ def _build(db, player_id: str, year: int, kind: str) -> CardSet:
             denominator = pitcher_batters_faced(stats)
         else:
             stats = db.batting_season(player_id, year)
-            league = db.league_batting(year, stats["league"])
+            league = db.season_league(stats)
             positions = position_ratings(db, player_id, year)
             basic, warn_b = generate_batter_card(stats, league, position_ratings=positions)
             advanced, warn_a = generate_advanced_batter_card(

@@ -349,12 +349,27 @@ def _port_free(port: int) -> bool:
     return True
 
 
+def _candidate_ports(port: int) -> list[int]:
+    """The ports a launch may use, in order: the requested one and the next
+    19 (a busy port moves the app up, never onto someone else's port)."""
+    return [port] + list(range(port + 1, port + 20))
+
+
+def _running_port(port: int) -> int | None:
+    """The port an already-running copy of this app answers on, if any —
+    including one that had to move up because the default port was busy."""
+    for candidate in _candidate_ports(port):
+        if _ours(candidate, timeout=0.5):
+            return candidate
+    return None
+
+
 def _make_server(port: int):
     """Bind the first free port from `port` on (port 0 = any) and return
     (server, port). Never shares a port with another program."""
     from werkzeug import serving
     serving.BaseWSGIServer.allow_reuse_address = os.name != "nt"
-    candidates = [port] + [p for p in range(port + 1, port + 20)] + [0]
+    candidates = _candidate_ports(port) + [0]
     for candidate in candidates:
         if candidate and not _port_free(candidate):
             continue
@@ -384,10 +399,13 @@ def main(argv: list[str] | None = None) -> int:
                         help="don't open a browser window")
     args = parser.parse_args(argv)
 
-    if _ours(args.port):
-        url = f"http://localhost:{args.port}/"
-        print(f"The Card Maker is already running at {url} - opening it in your browser.")
-        if not args.no_browser:
+    running = _running_port(args.port)
+    if running is not None:
+        url = f"http://localhost:{running}/"
+        if args.no_browser:
+            print(f"The Card Maker is already running at {url}")
+        else:
+            print(f"The Card Maker is already running at {url} - opening it in your browser.")
             webbrowser.open(url)
         return 0
 

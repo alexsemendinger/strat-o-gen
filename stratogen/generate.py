@@ -120,6 +120,19 @@ def _deviation(player_rate: float, league_rate: float) -> tuple[float, float]:
 
 # --- chance targets ---------------------------------------------------------
 
+def impute_unrecorded(rates: dict, stats: dict, league_rates: dict) -> dict:
+    """Rates with an unrecorded strikeout count replaced by the league
+    rate. A season whose batters' (or a pitcher's) strikeouts weren't kept
+    (most Negro-league and some 19th-century lines) stores SO as 0 or a
+    partial count; reading that as a real rate would print a card that
+    never strikes out. The league rate is the neutral assumption, and the
+    card's warnings say so (_missing_data_warnings)."""
+    if "SO" in (stats.get("missing") or ()) and SO in league_rates:
+        rates = dict(rates)
+        rates[SO] = league_rates[SO]
+    return rates
+
+
 def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     warnings = []
     pa = effective_pa(stats)
@@ -140,6 +153,7 @@ def batter_chance_targets(stats: dict, league: dict) -> tuple[dict, list[str]]:
     }
     league_rate = _batting_league_rates(league)
     league_rate.pop(HBP)
+    rate = impute_unrecorded(rate, stats, league_rate)
     rate = _shrink(rate, league_rate, pa)
     return (batter_targets_from_rates(rate, league_rate, warnings,
                                       pa=max(pa, _SHRINK_PA)), warnings)
@@ -255,6 +269,7 @@ def _pitching_rates(stats: dict, league: dict,
         rates[HR] = lg[HR]
         warnings.append("home runs allowed not recorded this season: the card "
                         "assumes the league rate")
+    rates = impute_unrecorded(rates, stats, lg)
     rates = _shrink(rates, lg, tbf_eff)
     return rates[WALK], rates[SO], rates[HR], rates["H"]
 
@@ -564,7 +579,9 @@ def generate_advanced_batter_card(
         warnings.append("batting hand unknown: treated as right-handed")
         hand = "R"
 
-    rates = _shrink(actual_batting_rates(stats), _batting_league_rates(league), pa)
+    league_rates = _batting_league_rates(league)
+    rates = _shrink(impute_unrecorded(actual_batting_rates(stats), stats,
+                                      league_rates), league_rates, pa)
     s_lhp = platoon.printed_share(platoon.batter_lhp_share(hand, pa, ctx))
     shares = {"L": s_lhp, "R": 1.0 - s_lhp}
     # Pitcher grids carry no HBP, so the batter's grids carry all of his:
@@ -597,7 +614,7 @@ def generate_advanced_batter_card(
     name = stats.get("name", "UNKNOWN").upper()
     display = _batting_display_stats(stats)
     header = ratings.batter_header_lines(stats, position_ratings or [])
-    profile = hit_profile(stats)
+    profile = hit_profile(stats, catcher=_is_catcher(position_ratings))
     sides = []
     for p in platoon.HANDS:
         card = layout_card(
@@ -768,7 +785,8 @@ SINGLE_STAR_SHARE = 0.19
 DOUBLE_2STAR_SHARE = 0.39
 
 
-def hit_profile(stats: dict, pa: float | None = None) -> dict:
+def hit_profile(stats: dict, pa: float | None = None, *,
+                catcher: bool = False) -> dict:
     """How this player's hits and outs should read, beyond raw frequencies.
 
     In play, ** means runners automatically advance two bases, * pins them
@@ -786,7 +804,7 @@ def hit_profile(stats: dict, pa: float | None = None) -> dict:
     gidp = stats.get("GIDP", 0) or 0
     gidp_missing = "GIDP" in (stats.get("missing") or []) or (
         gidp == 0 and "GIDP" not in stats)
-    speed = ratings.running_rating(stats)  # 8 (slow) .. 17 (fast)
+    speed = ratings.running_rating(stats, catcher=catcher)  # 8 .. 17
     return {
         "single_2star": SINGLE_2STAR_SHARE,
         "single_star": SINGLE_STAR_SHARE,
@@ -1285,8 +1303,10 @@ def _batting_display_stats(stats: dict) -> dict:
     h = hits_from_stats(stats)
     ab = stats.get("AB", 0)
     out = {"BA": round(h / ab, 3) if ab else 0.0, "AB": ab}
+    missing = set(stats.get("missing") or ())
     for key in ("2B", "3B", "HR", "RBI", "BB", "SO", "SB", "CS"):
-        out[key] = stats.get(key, 0)
+        # an unrecorded count prints '-', not a misleading 0
+        out[key] = None if key in missing else stats.get(key, 0)
     tb = (h - stats.get("2B", 0) - stats.get("3B", 0) - stats.get("HR", 0)
           + 2 * stats.get("2B", 0) + 3 * stats.get("3B", 0) + 4 * stats.get("HR", 0))
     obp_den = ab + stats.get("BB", 0) + stats.get("HBP", 0) + stats.get("SF", 0)
@@ -1298,9 +1318,10 @@ def _batting_display_stats(stats: dict) -> dict:
 
 def _pitching_display_stats(stats: dict) -> dict:
     out = {}
+    missing = set(stats.get("missing") or ())
     for key in ("W", "L", "ERA", "GS", "SV", "IP", "H", "BB", "SO", "HR"):
         if key in stats:
-            out[key] = stats[key]
+            out[key] = None if key in missing else stats[key]
     return out
 
 
@@ -1330,13 +1351,30 @@ def _missing_data_warnings(stats: dict, card_type: str = "batter",
     missing = set(stats.get("missing") or [])
     fields |= missing
     fields &= _RELEVANT[card_type]
+    # An unrecorded strikeout count is replaced by the league rate
+    # (impute_unrecorded), not zero; a league-only SO gap with the
+    # player's own count recorded needs no note (the league's K rate then
+    # comes from its pitchers' totals, which the league note explains).
+    imputed_so = "SO" in fields and "SO" in missing
+    fields.discard("SO")
     warnings = list(passthrough)
+    year = stats.get("year") or (league or {}).get("year")
+    when = f"in {year}" if year else "this season"
     if fields:
         names = ", ".join(f"{_FIELD_NAMES[f]} ({f})"
                           for f in sorted(fields, key=list(_FIELD_NAMES).index))
-        year = stats.get("year") or (league or {}).get("year")
-        when = f"in {year}" if year else "this season"
         warnings.append(f"not recorded {when}: {names}; the card treats them as 0")
+    if imputed_so:
+        # one line instead of the league note plus this one
+        league_note = next((w for w in warnings
+                            if w.startswith("batter strikeouts weren't recorded")), None)
+        if league_note:
+            warnings.remove(league_note)
+            source = " (taken from its pitchers' totals)"
+        else:
+            source = ""
+        warnings.append(f"strikeouts (SO) weren't recorded for this player "
+                        f"{when}: the card uses the league strikeout rate{source}")
     if card_type == "batter" and "CS" in missing and (stats.get("SB") or 0) > 0:
         warnings.append(
             "caught-stealing not tracked this season: stealing rating "
@@ -1360,9 +1398,14 @@ def generate_batter_card(stats: dict, league: dict,
         year=stats.get("year"), team=stats.get("team"),
         stats=_batting_display_stats(stats),
         header_lines=ratings.batter_header_lines(stats, position_ratings or []),
-        profile=hit_profile(stats),
+        profile=hit_profile(stats, catcher=_is_catcher(position_ratings)),
     )
     return card, warnings
+
+
+def _is_catcher(position_ratings) -> bool:
+    """Primary position C (the header's running rating uses the same test)."""
+    return bool(position_ratings) and position_ratings[0][0] == "C"
 
 
 def generate_pitcher_card(stats: dict, league: dict,

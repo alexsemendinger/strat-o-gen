@@ -87,7 +87,7 @@ def benchmark_cases(db: LahmanDB | None = None) -> list[BenchmarkCase]:
                     f"{stats.get(key)} — wrong player match or bad card data?")
         cases.append(BenchmarkCase(
             stem=stem, card=card, actual_stats=stats,
-            league=db.league_batting(stats["year"], stats["league"])))
+            league=db.season_league(stats)))
     return cases
 
 
@@ -146,7 +146,7 @@ def transcription_cases(db: LahmanDB | None = None) -> list[TranscriptionCase]:
             continue
         cases.append(TranscriptionCase(
             card_id=card_id, transcription=card, actual_stats=stats,
-            league=db.league_batting(stats["year"], stats["league"]),
+            league=db.season_league(stats),
             reps=reps, official=card.official))
     return cases
 
