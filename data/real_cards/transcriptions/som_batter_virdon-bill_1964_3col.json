@@ -1,0 +1,80 @@
+{
+  "cardId": "batter_virdon-bill_1964",
+  "sourceImage": "https://web.archive.org/web/20260107002948im_/https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhJBBwTBKaUpPvJ01FMG0KfKrSMvAtupK6uFaD1ERU4rSp3G3cx9hi-9xn_p60Wb9CzTNlF6c1Al1B5x1rGEnYJBO5uBN7KUd1lEo_fiPjsf282t30V3OrGhcbSqrpp6TdwSeRHqvmWd9_F/s1600/64+Strat.jpg",
+  "sourceUrl": "https://web.archive.org/web/20260512180529/https://thoughtsandsox.blogspot.com/2019/05/",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Bill Virdon",
+    "bats": null,
+    "throws": null,
+    "team": "Pittsburgh",
+    "year": 1964,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [ { "pos": "cf", "rating": 1, "error": null } ],
+    "stealing": "E",
+    "running": "1-14",
+    "notes": "Header reads: 'BILL VIRDON   centerfield-1   stealing-E   running 1-14' and 'PITTSBURGH'. This is the modern-typeface printing (the right-hand card in the scan); the same scan also shows the original 1960s typewriter-style 1964 card ('stealing-D running-1-14 centerfield-1', 'PITTSBURGH PIRATES'), whose grid differs and is not transcribed here."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          { "roll": 2, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 3, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 4, "raw": "groundball (1b)A", "outcomes": [ { "range": null, "result": "groundball (1b)A" } ] },
+          { "roll": 5, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 6, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 7, "raw": "groundball (1b)A", "outcomes": [ { "range": null, "result": "groundball (1b)A" } ] },
+          { "roll": 8, "raw": "lineout (1b)", "outcomes": [ { "range": null, "result": "lineout (1b)" } ] },
+          { "roll": 9, "raw": "flyball (cf)B", "outcomes": [ { "range": null, "result": "flyball (cf)B" } ] },
+          { "roll": 10, "raw": "groundball (p)A", "outcomes": [ { "range": null, "result": "groundball (p)A" } ] },
+          { "roll": 11, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 12, "raw": "foulout (c) plus injury", "outcomes": [ { "range": null, "result": "foulout (c) plus injury" } ] }
+        ] },
+        { "col": 2, "cells": [
+          { "roll": 2, "raw": "groundball (3b)A", "outcomes": [ { "range": null, "result": "groundball (3b)A" } ] },
+          { "roll": 3, "raw": "groundball (2b)A", "outcomes": [ { "range": null, "result": "groundball (2b)A" } ] },
+          { "roll": 4, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 5, "raw": "flyball (rf)B", "outcomes": [ { "range": null, "result": "flyball (rf)B" } ] },
+          { "roll": 6, "raw": "groundball (3b)B", "outcomes": [ { "range": null, "result": "groundball (3b)B" } ] },
+          { "roll": 7, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] },
+          { "roll": 8, "raw": "groundball (ss)A", "outcomes": [ { "range": null, "result": "groundball (ss)A" } ] },
+          { "roll": 9, "raw": "strikeout", "outcomes": [ { "range": null, "result": "strikeout" } ] },
+          { "roll": 10, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 11, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] },
+          { "roll": 12, "raw": "groundball (2b)A++", "outcomes": [ { "range": null, "result": "groundball (2b)A++" } ] }
+        ] },
+        { "col": 3, "cells": [
+          { "roll": 2, "raw": "lineout (2b) into as many outs as possible", "outcomes": [ { "range": null, "result": "lineout (2b) into as many outs as possible" } ] },
+          { "roll": 3, "raw": "WALK", "outcomes": [ { "range": null, "result": "WALK" } ] },
+          { "roll": 4, "raw": "popout (1b)", "outcomes": [ { "range": null, "result": "popout (1b)" } ] },
+          { "roll": 5, "raw": "DOUBLE** 1 / SINGLE** 2-20", "outcomes": [ { "range": [1,1], "result": "DOUBLE**" }, { "range": [2,20], "result": "SINGLE**" } ] },
+          { "roll": 6, "raw": "lineout (2b)", "outcomes": [ { "range": null, "result": "lineout (2b)" } ] },
+          { "roll": 7, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 8, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 9, "raw": "TRIPLE 1-2 / SINGLE** 3-20", "outcomes": [ { "range": [1,2], "result": "TRIPLE" }, { "range": [3,20], "result": "SINGLE**" } ] },
+          { "roll": 10, "raw": "SINGLE", "outcomes": [ { "range": null, "result": "SINGLE" } ] },
+          { "roll": 11, "raw": "SINGLE* 1-8 / lineout (1b) 9-20", "outcomes": [ { "range": [1,8], "result": "SINGLE*" }, { "range": [9,20], "result": "lineout (1b)" } ] },
+          { "roll": 12, "raw": "popout (2b)", "outcomes": [ { "range": null, "result": "popout (2b)" } ] }
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1964,
+    "stats": { "AVG": ".243", "AB": 473, "2B": 11, "3B": 3, "HR": 3, "RBI": 27, "BB": 30, "SO": 48, "SB": 1, "CS": 5, "SLG%": ".298", "ON BASE%": ".288" }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Basic side, right-hand card of a 1600x1406 flatbed scan (original and modern 1964 cards side by side) from a 2019 collector's post of his Bill Virdon Strat-O-Matic cards, retrieved from its Wayback capture; read from a contact-sheet overview, then a second independent pass over full-resolution half-card crops. Col1 roll12 prints 'plus injury' under 'foulout (c)'; col3 roll2 'lineout (2b) into as many outs as possible' captured verbatim. The card prints no HOMERUN result (3 HR in 1964)."
+  }
+}
