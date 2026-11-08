@@ -95,13 +95,15 @@ and prints the address in its window.
 
 Player data lives in `data/lahman/` (the Lahman database). When a new
 season's database is released (every January at
-https://sabr.org/lahman-database/), download the CSV version and replace
-the matching files - `Batting`, `Pitching`, `People`, `Teams` and
-`Fielding` - keeping the `.csv.gz` names (compress each `.csv` with gzip;
-see the README's *Updating for a new season*). `FieldingOFsplit` isn't in
-the CSV release; without an updated copy the new season's outfielders get
-generic "outfield" ratings instead of LF/CF/RF. The app's latest year
-updates by itself from the data.
+https://sabr.org/lahman-database/), download the CSV version and copy
+`Batting.csv`, `Pitching.csv`, `People.csv`, `Teams.csv`, `Fielding.csv`
+and `Appearances.csv` into `data/lahman/`. Plain `.csv` files are fine -
+no need to compress them; when a `.csv` and an older `.csv.gz` of the same
+table are both there, the newer file is used. `FieldingOFsplit` isn't in
+the CSV release; without an updated copy the new season's outfielders are
+still listed at the spots they played (from Appearances) but rated on
+their combined outfield line. The app's latest year updates by itself
+from the data.
 
 ---
 

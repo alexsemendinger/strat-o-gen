@@ -222,11 +222,13 @@ def test_position_players_pitching_cameo_not_listed():
     assert [p for p, _r, _g in position_ratings(db, "ohtansh01", 2023)] == ["P"]
 
 
-def test_pre_split_outfield_falls_back_to_combined_outfield():
-    ratings = position_ratings(db, "duffyhu01", 1890)
-    assert any(pos == "OF" for pos, _, _ in ratings)
-    # MLB corners aren't split before 1954: a corner is rated on the
-    # combined line (Combs 1930's card: lf-2 rf-2 cf-3)
+def test_pre_split_outfield_named_from_appearances():
+    # MLB fielding lines aren't split by outfield spot before 1954, but
+    # Appearances counts games by spot, so the header names the corners
+    # (Combs 1930's card: lf-2 rf-2 cf-3) ...
+    assert {p for p, _r, _g in position_ratings(db, "combsea01", 1930)} == {
+        "LF", "CF", "RF"}
+    # ... and each corner is rated on the combined outfield line
     of = rate_position(db, "combsea01", 1930, "OF")
     assert rate_position(db, "combsea01", 1930, "LF") == of
     assert rate_position(db, "combsea01", 1930, "CF") == of

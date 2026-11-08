@@ -111,10 +111,12 @@ def test_positions():
     # AL/NL outfield corners are split out from 1954 (FieldingOFsplit)
     pos = db.positions("mayswi01", 1965)
     assert pos[0][0] == "CF"
-    # before that only the combined OF exists for MLB
-    assert [p for p, _g in db.positions("ruthba01", 1927)][0] == "OF"
-    pos_1875 = db.positions("orourji01", 1875)
-    assert any(p == "OF" for p, _ in pos_1875)
+    # before that the corners come from Appearances (games by spot), so
+    # Ruth 1927 reads right field first, then left
+    assert db.positions("ruthba01", 1927) == [("RF", 94), ("LF", 56)]
+    # Appearances reaches back to the 1870s too
+    pos_1875 = dict(db.positions("orourji01", 1875))
+    assert pos_1875["CF"] == 44 and "OF" not in pos_1875
 
 
 # --- handedness (platoon matchup frequencies) ---------------------------------

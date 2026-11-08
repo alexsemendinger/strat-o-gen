@@ -289,9 +289,11 @@ Other simplifications:
   fielder never reaches or scouting judgment (Judge's rf-1, LeMahieu's
   2b-1), and a widened corpus didn't support re-fitting the position
   players' weights (no variant beat the current one leave-one-out).
-  Before 1954 the data has no AL/NL corner-outfield split: corners are
-  rated on the combined outfield line, and headers print `outfield-N`
-  unless an `Appearances.csv` is added to `data/lahman/`.
+  Before 1954 the fielding data has no AL/NL corner-outfield split: the
+  bundled Appearances table names the spots a player actually played
+  (games in left, center and right), and each spot is rated on his
+  combined outfield line, so a pre-1954 outfielder carries the same
+  rating at every spot he played.
 - Baserunning symbols: the `*`/`**` shares are the real cards' means for
   every batter (SINGLE** .33, SINGLE* .19, DOUBLE** .39); isolated power,
   which used to set them, anti-correlates with the real cards' shares.
@@ -492,13 +494,14 @@ was actually built.
 
 Download the new CSV release from https://sabr.org/lahman-database/ (every
 January) and copy `Batting.csv`, `Pitching.csv`, `People.csv`,
-`Teams.csv` and `Fielding.csv` into `data/lahman/` — plain `.csv` files
-work; no need to gzip (when both `X.csv` and `X.csv.gz` exist the newer
-one is read). Optionally add `Appearances.csv` too: it names the corner
+`Teams.csv`, `Fielding.csv` and `Appearances.csv` into `data/lahman/` —
+plain `.csv` files work; no need to gzip (when both `X.csv` and
+`X.csv.gz` exist the newer one is read). Appearances names the corner
 outfield spots for seasons without split fielding (before 1954).
 `FieldingOFsplit.csv` isn't in the CSV release; export it from the Access
 (.mdb) release with mdbtools (`mdb-export lahman.mdb FieldingOFsplit`) —
-without it the new season's outfielders are rated as generic `outfield`.
+without it the new season's outfielders are still listed at the spots
+they played (from Appearances) but rated on their combined outfield line.
 The app's year bound updates automatically from the data.
 
 ## Credits
