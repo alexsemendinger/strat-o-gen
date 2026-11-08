@@ -524,7 +524,11 @@
       el('button', { type: 'button', class: 'secondary', onclick: () => printSides(d, 'both'), text: 'Print both sides' }),
       el('a', { class: 'button secondary', href: d.downloads.html, download: '', text: 'Save card' }),
       el('a', { class: 'button secondary', href: d.downloads.json, download: '', text: 'Save card data' }));
-    const tip = el('p', { class: 'note print-tip', text: 'Prints at real card size (2.6 inches wide) — keep the print scale at 100%.' });
+    const tip = el('p', { class: 'note print-tip' });
+    const TIP = {
+      basic: 'Prints at real card size (2.6 inches wide) — keep the print scale at 100%.',
+      advanced: 'Prints at real card size (the advanced side is 5.2 inches wide) — keep the print scale at 100%.',
+    };
 
     function showSide(side, focus) {
       state.side = side;
@@ -541,6 +545,7 @@
       }
       const stage = el('div', { class: 'card-stage' });
       stage.append(cardFragment(side === 'advanced' ? d.advanced_html : d.card_html));
+      tip.textContent = TIP[side];
       content.push(stage, actions, tip,
         el('h3', { text: `How well does the ${side} side match ${d.year}?` }),
         el('p', { class: 'note', text: d.honesty_notes[side] }),
@@ -572,6 +577,8 @@
     // window.print() blocks until the dialog closes in current browsers;
     // the print area stays harmlessly hidden if afterprint never comes.
     window.addEventListener('afterprint', restore);
+    // scale any card that would print taller than a real card (4.1in)
+    if (window.somFitCards) window.somFitCards(root);
     window.print();
   }
 

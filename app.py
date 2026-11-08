@@ -41,7 +41,7 @@ except ModuleNotFoundError:
 
 from stratogen import service
 from stratogen.lahman import default_db
-from stratogen.render import CARD_CSS, SHEET_CSS
+from stratogen.render import CARD_CSS, FIT_JS, SHEET_CSS
 
 BASE_DIR = Path(__file__).resolve().parent
 APP_ID = "strat-o-gen"
@@ -176,6 +176,11 @@ def index():
 @app.route("/card.css")
 def card_css():
     return Response(CARD_CSS + SHEET_CSS, mimetype="text/css")
+
+
+@app.route("/card-fit.js")
+def card_fit_js():
+    return Response(FIT_JS, mimetype="text/javascript")
 
 
 @app.route("/api/health")

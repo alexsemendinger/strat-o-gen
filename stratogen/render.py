@@ -83,13 +83,51 @@ CARD_CSS = """
   .som-advanced .som-adv-grid:last-child { border-bottom:none; }
 }
 @media print {
-  .som-card { font-size:6.7pt; width:2.6in; min-height:4.1in; max-width:none;
-    margin:0; box-shadow:none; break-inside:avoid; page-break-inside:avoid;
-    line-height:1.13; }
+  .som-card { font-size:calc(6.7pt * var(--som-fit, 1)); width:2.6in;
+    min-height:4.1in; max-width:none; margin:0; box-shadow:none;
+    break-inside:avoid; page-break-inside:avoid; line-height:1.13; }
   .som-roll { margin:0.18em 0; }
   .som-column { padding:0.4em 0.4em; }
   .som-advanced { width:5.2in; }
 }
+/* An off-screen copy of the print layout (no minimum height), where
+   FIT_JS measures each card and sets --som-fit so it prints at the real
+   4.1in height instead of growing past it. */
+.som-measure { position:absolute; left:-10000px; top:0; visibility:hidden; }
+.som-measure .som-card { font-size:calc(6.7pt * var(--som-fit, 1)); width:2.6in;
+  min-height:0; max-width:none; margin:0; box-shadow:none; line-height:1.13; }
+.som-measure .som-roll { margin:0.18em 0; }
+.som-measure .som-column { padding:0.4em 0.4em; }
+.som-measure .som-advanced { width:5.2in; }
+"""
+
+# Fit each card to the real 4.1in height when it's printed: a card whose
+# entries wrap a lot (a six-position utility man, long out texts) would
+# otherwise print taller than a real card. Each card is copied into an
+# off-screen .som-measure box laid out at print size, and its type scaled
+# down just enough to fit, never below MIN_FIT (6.7pt * 0.82 = 5.5pt).
+FIT_JS = """
+window.somFitCards = function (root) {
+  var MIN_FIT = 0.82, TARGET = 4.1 * 96 - 1;
+  var probe = document.createElement('div');
+  probe.className = 'som-measure';
+  document.body.appendChild(probe);
+  var cards = (root || document).querySelectorAll('.som-card');
+  for (var i = 0; i < cards.length; i++) {
+    var card = cards[i], copy = card.cloneNode(true), fit = 1;
+    copy.style.removeProperty('--som-fit');
+    probe.replaceChildren(copy);
+    for (var step = 0; step < 8; step++) {
+      copy.style.setProperty('--som-fit', String(fit));
+      var height = copy.getBoundingClientRect().height;
+      if (height <= TARGET || fit <= MIN_FIT) break;
+      fit = Math.max(MIN_FIT, fit * Math.max(0.9, TARGET / height) - 0.005);
+    }
+    if (fit < 1) card.style.setProperty('--som-fit', fit.toFixed(3));
+    else card.style.removeProperty('--som-fit');
+  }
+  probe.remove();
+};
 """
 
 # Printed sheets: whole pages of cards at true size, cut lines = card edges.
@@ -107,7 +145,8 @@ SHEET_CSS = """
 @media screen {
   .sheet-page { --som-size:calc(2.6in / 28); background:#fff; width:7.7in; max-width:100%;
     margin:0 auto 0.3in; padding:0.3in 0; box-shadow:0 1px 6px rgba(0,0,0,0.25); }
-  .sheet-page .som-card { width:2.6in; min-height:4.1in; }
+  .sheet-page .som-card { width:2.6in; min-height:4.1in;
+    font-size:calc(var(--som-size) * var(--som-fit, 1)); }
   .sheet-page .som-advanced { width:5.2in; }
 }
 @media print {
@@ -256,6 +295,20 @@ def _display_name(card) -> str:
     return " ".join(w.capitalize() for w in (card.name or "").split()) or "Card"
 
 
+def _header_rows(card: Card) -> list[str]:
+    """The basic side's rating lines as printed: a batter's positions run
+    together on one wrapping line (a six-position utility man would
+    otherwise stack six lines and push the card past its real 4.1-inch
+    height), then stealing and running on their own lines."""
+    lines = list(card.header_lines)
+    if card.card_type != "batter":
+        return lines
+    split = next((i for i, line in enumerate(lines)
+                  if line.startswith(("stealing", "running"))), len(lines))
+    positions, rest = lines[:split], lines[split:]
+    return ([", ".join(positions)] if positions else []) + rest
+
+
 def card_to_html(card: Card, *, team: str | None = None,
                  season_stats: dict | None = None) -> str:
     """The basic side as an HTML fragment (style it with CARD_CSS).
@@ -269,7 +322,7 @@ def card_to_html(card: Card, *, team: str | None = None,
              f'aria-label="{html.escape(label.replace("  ", " "))}">']
     parts.append('<div class="som-header">')
     parts.append(f'<div class="som-player-name">{html.escape(card.name)}</div>')
-    for line in card.header_lines:
+    for line in _header_rows(card):
         parts.append(f'<div class="som-ratings">{html.escape(line)}</div>')
     parts.append("</div>")
     team_text = html.escape(team if team is not None else (card.team or ""))
@@ -476,4 +529,7 @@ def document_html(title: str, body: str) -> str:
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
             f"<title>{html.escape(title)}</title>"
             f"<style>{CARD_CSS}{SHEET_CSS}{DOC_CSS}</style></head>"
-            f"<body><main class=\"doc\">{body}</main></body></html>\n")
+            f"<body><main class=\"doc\">{body}</main>"
+            f"<script>{FIT_JS}\nsomFitCards(document);"
+            "window.addEventListener('beforeprint', function () "
+            "{ somFitCards(document); });</script></body></html>\n")

@@ -306,3 +306,24 @@ def test_team_download_sheet(client):
     assert resp.data.count(b'class="sheet-page sheet-basic"') == 6   # 23 cards, 4/page
     assert b'class="sheet-page sheet-advanced"' not in resp.data
     assert client.get("/download/team?year=1927&team=NYA&sides=x").status_code == 400
+
+
+def test_print_fit_script_is_served_and_embedded(client):
+    """Cards are fitted to the real 4.1in height when printed: the app
+    serves the fit script and saved documents embed it."""
+    resp = client.get("/card-fit.js")
+    assert resp.status_code == 200 and b"somFitCards" in resp.data
+    assert b"card-fit.js" in client.get("/").data
+    doc = client.get("/download/card?player_id=linzph01&year=1963&kind=batter"
+                     "&format=html&sides=basic")
+    assert doc.status_code == 200
+    assert b"somFitCards(document)" in doc.data
+    assert b"var(--som-fit, 1)" in doc.data
+
+
+def test_basic_header_runs_positions_together(client):
+    """A utility man's positions share one wrapping line on the card
+    (six stacked lines would push it past real card height)."""
+    data = client.post("/api/generate", json={
+        "player_id": "linzph01", "year": 1963, "kind": "batter"}).get_json()
+    assert "shortstop-3, 3rd base-3, 2nd base-3" in data["card_html"]
