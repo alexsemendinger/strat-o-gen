@@ -65,6 +65,15 @@ size", not "Fit to page").
 To see what's going on, double-click **`start_windows.bat`** instead of the
 .vbs file: it shows the window with any messages.
 
+### Double-clicking the .vbs file does nothing, or opens Notepad
+Windows is phasing out VBScript, the language the quiet launcher is
+written in; on some PCs it may be turned off, or Windows may block a
+downloaded script. Double-click **`start_windows.bat`** instead - it does
+the same job, with its window visible (minimize it; close it to stop the
+app). To make that your everyday shortcut, right-click
+`start_windows.bat`, choose **Send to > Desktop (create shortcut)**, and
+use the new desktop icon.
+
 ### "Python was not found"
 Install Python (Step 1). With the classic installer, make sure **"Add
 python.exe to PATH"** is ticked. Then restart the computer and try again.

@@ -62,8 +62,8 @@ def test_advanced_json_and_html(capsys, tmp_path):
     rc, out, _ = run(capsys, "Aaron Judge", "2024", "--advanced",
                      "--json", str(js), "--html", str(page))
     assert rc == 0 and "vs LHP" in out and "Hit by pitch" in out
-    assert json.loads(js.read_text())["side"] == "6col"
-    html = page.read_text()
+    assert json.loads(js.read_text(encoding="utf-8"))["side"] == "6col"
+    html = page.read_text(encoding="utf-8")
     assert "<title>Aaron Judge 2024 batter card</title>" in html and "som-advanced" in html
 
 
@@ -76,7 +76,7 @@ def test_team_sheet(capsys, tmp_path):
     path = tmp_path / "nya.html"
     rc, out, _ = run(capsys, "--team", "NYA", "--year", "1927", "--html", str(path))
     assert rc == 0 and "Babe Ruth" in out and "Left out" in out
-    html = path.read_text()
+    html = path.read_text(encoding="utf-8")
     assert html.count('class="sheet-page sheet-basic"') == 6
     assert html.count('class="sheet-page sheet-advanced"') == 12
 

@@ -48,6 +48,6 @@ for b in blocks:
         cells[-1]["parts"].append((res, rng))
     cols.append(cells)
 
-json.dump(cols, open(sys.argv[2], "w"), indent=1)
+json.dump(cols, open(sys.argv[2], "w", encoding="utf-8"), indent=1)
 for i, c in enumerate(cols):
     print("col", i + 1, [(x["glyph"] + str(x["roll"]), x["parts"], x["injury"]) for x in c])

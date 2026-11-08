@@ -128,7 +128,20 @@ def _team(db, args) -> int:
     return 0 if _write(path, service.team_document(ts, args.sides), "Printable team sheet") else 1
 
 
+def _safe_console() -> None:
+    """Never crash on a console that can't show a character: output
+    redirected on Windows is cp1252, and some names or the en dash in a
+    career span may not fit a narrower code page. Such characters print
+    as '?' instead of raising UnicodeEncodeError."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")
+        except (AttributeError, ValueError):   # e.g. a test's capture object
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
+    _safe_console()
     parser = argparse.ArgumentParser(description="Generate a Strat-O-Matic card or team set")
     parser.add_argument("name", nargs="?", help="player name, e.g. 'Babe Ruth'")
     parser.add_argument("year", nargs="?", type=int, help="season year, e.g. 1927")

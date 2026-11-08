@@ -33,7 +33,7 @@ for l in lines[i:]:
     else:
         cols[-1][-1]["toks"].append(l)
 
-parsed = json.load(open(sys.argv[2]))
+parsed = json.load(open(sys.argv[2], encoding="utf-8"))
 assert len(cols) == 6 == len(parsed), (len(cols), len(parsed))
 diffs = 0
 for c, (a, b) in enumerate(zip(cols, parsed), 1):
