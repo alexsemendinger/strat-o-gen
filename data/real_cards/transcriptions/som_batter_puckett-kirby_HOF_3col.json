@@ -1,0 +1,104 @@
+{
+  "cardId": "batter_puckett-kirby_HOF",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/limited-supply-hall-fame-products/",
+  "sourceImage": "https://s3.amazonaws.com/som.com/Baseball+HOF+2014+Cards.JPG",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Kirby Puckett",
+    "bats": null,
+    "throws": null,
+    "team": null,
+    "year": null,
+    "cardNumber": null,
+    "specialDesignation": "SOM Hall of Famer"
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "cf",
+        "rating": 1,
+        "error": null
+      },
+      {
+        "pos": "rf",
+        "rating": 2,
+        "error": null
+      }
+    ],
+    "stealing": "C",
+    "running": "1-16",
+    "notes": "Header reads: 'KIRBY PUCKETT   centerfield-1   stealing-C' / 'rightfield-2   running 1-16' and 'SOM Hall of Famer' (no year/team printed)."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "lineout (ss) into as many outs as possible", "outcomes": [{"range": null, "result": "lineout (ss) into as many outs as possible"}]},
+          {"roll": 3, "raw": "groundball (3b)A", "outcomes": [{"range": null, "result": "groundball (3b)A"}]},
+          {"roll": 4, "raw": "popout (2b)", "outcomes": [{"range": null, "result": "popout (2b)"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "groundball (ss)A", "outcomes": [{"range": null, "result": "groundball (ss)A"}]},
+          {"roll": 7, "raw": "flyball (lf)B", "outcomes": [{"range": null, "result": "flyball (lf)B"}]},
+          {"roll": 8, "raw": "groundball (3b)A", "outcomes": [{"range": null, "result": "groundball (3b)A"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "lineout (ss)", "outcomes": [{"range": null, "result": "lineout (ss)"}]},
+          {"roll": 11, "raw": "groundball (p)A", "outcomes": [{"range": null, "result": "groundball (p)A"}]},
+          {"roll": 12, "raw": "flyball (rf)B", "outcomes": [{"range": null, "result": "flyball (rf)B"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "groundball (ss)A++", "outcomes": [{"range": null, "result": "groundball (ss)A++"}]},
+          {"roll": 3, "raw": "groundball (2b)B", "outcomes": [{"range": null, "result": "groundball (2b)B"}]},
+          {"roll": 4, "raw": "groundball (ss)A", "outcomes": [{"range": null, "result": "groundball (ss)A"}]},
+          {"roll": 5, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 6, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 7, "raw": "SINGLE* 1-14 / lineout (3b) 15-20", "outcomes": [{"range": [1, 14], "result": "SINGLE*"}, {"range": [15, 20], "result": "lineout (3b)"}]},
+          {"roll": 8, "raw": "groundball (3b)A", "outcomes": [{"range": null, "result": "groundball (3b)A"}]},
+          {"roll": 9, "raw": "flyball (cf)B", "outcomes": [{"range": null, "result": "flyball (cf)B"}]},
+          {"roll": 10, "raw": "groundball (ss)A++", "outcomes": [{"range": null, "result": "groundball (ss)A++"}]},
+          {"roll": 11, "raw": "popout (3b)", "outcomes": [{"range": null, "result": "popout (3b)"}]},
+          {"roll": 12, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "foulout (c) plus injury", "outcomes": [{"range": null, "result": "foulout (c) plus injury"}]},
+          {"roll": 3, "raw": "groundball (ss)A++", "outcomes": [{"range": null, "result": "groundball (ss)A++"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HOMERUN 1-11 / DOUBLE 12-20", "outcomes": [{"range": [1, 11], "result": "HOMERUN"}, {"range": [12, 20], "result": "DOUBLE"}]},
+          {"roll": 6, "raw": "TRIPLE 1-3 / DOUBLE 4-20", "outcomes": [{"range": [1, 3], "result": "TRIPLE"}, {"range": [4, 20], "result": "DOUBLE"}]},
+          {"roll": 7, "raw": "DOUBLE** 1-7 / SINGLE** 8-20", "outcomes": [{"range": [1, 7], "result": "DOUBLE**"}, {"range": [8, 20], "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 11, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": null,
+    "stats": {
+      "AVG": ".332",
+      "AB": 602,
+      "2B": 38,
+      "3B": 4,
+      "HR": 22,
+      "RBI": 103,
+      "BB": 37,
+      "SO": 81,
+      "SB": 11,
+      "CS": 6,
+      "SLG%": ".517",
+      "ON BASE%": ".372"
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "From Strat-O-Matic's own product photo of an uncut sheet of nine Hall of Fame 2014 basic cards in shrink-wrap (1536x2048, sourceImage on its som.com bucket), used in its July 2015 'Limited Supply of Hall of Fame Products' announcement (sourceUrl: 'Hall of Fame 2014 Cards - Includes every HOF player through 2014'). Each card is about 500 px wide; this card sits in a glare-free part of the sheet and every cell, star and d20 range is readable at 2.3-3x. Read twice: (1) from a 2.3-2.4x crop of the whole card, (2) from a fresh 3x crop of the grid; no differences. SOM Hall of Famer composite card: no year or team is printed and the stat line is a composite of the player's best seasons, so like the corpus's Sewell card it has no single Lahman season and is structurally tested only. Split results print each d20 range on its own line; '++' prints as two separated plus signs. The other five cards on the sheet were not transcribed (glare and shrink-wrap reflections over parts of Boggs, Carter, Molitor, Henderson and Rice). Sanity check: scored against its own printed composite line in an assumed league context (1987 NL), the hit, double, triple and home-run chances fit within .006 per PA (walks and strikeouts depend on the HOF set's opposing pitcher pool, as with the Sewell card)."
+  }
+}

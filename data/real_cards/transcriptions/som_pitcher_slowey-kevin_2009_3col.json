@@ -1,0 +1,93 @@
+{
+  "cardId": "pitcher_slowey-kevin_2009",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/2009-and-1977-baseball-corrections/",
+  "sourceImage": "https://strat-site-files.s3.amazonaws.com/sloweycorrect.pdf",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Kevin Slowey",
+    "throws": null,
+    "bats": null,
+    "team": "Minnesota",
+    "year": 2009,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": {
+      "type": "starter"
+    },
+    "pitcherFielding": "pitcher-3",
+    "battingNumber": "batting # 1",
+    "notes": "Header reads: 'KEVIN SLOWEY   pitcher-3   starter' / 'batting # 1' and 'PITCHING CARD   MINNESOTA'. 'pitcher-3' is the pitcher's fielding rating; 'batting # 1' his batting/bunting designation; 'starter' the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "flyball (rf)B", "outcomes": [{"range": null, "result": "flyball (rf)B"}]},
+          {"roll": 3, "raw": "FLYBALL (rf)X", "outcomes": [{"range": null, "result": "FLYBALL (rf)X"}]},
+          {"roll": 4, "raw": "flyball (rf)C", "outcomes": [{"range": null, "result": "flyball (rf)C"}]},
+          {"roll": 5, "raw": "groundball (2b)C", "outcomes": [{"range": null, "result": "groundball (2b)C"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "SINGLE* 1-2 / lineout (1b) 3-20", "outcomes": [{"range": [1, 2], "result": "SINGLE*"}, {"range": [3, 20], "result": "lineout (1b)"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 10, "raw": "flyball (cf)B", "outcomes": [{"range": null, "result": "flyball (cf)B"}]},
+          {"roll": 11, "raw": "TRIPLE 1 / DOUBLE 2-20", "outcomes": [{"range": [1, 1], "result": "TRIPLE"}, {"range": [2, 20], "result": "DOUBLE"}]},
+          {"roll": 12, "raw": "groundball (1b)C", "outcomes": [{"range": null, "result": "groundball (1b)C"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "groundball (1b)C", "outcomes": [{"range": null, "result": "groundball (1b)C"}]},
+          {"roll": 3, "raw": "GROUND-BALL(2b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(2b)X"}]},
+          {"roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [{"range": null, "result": "CATCHER'S CARD X"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 7, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "HOMERUN 1-5 / DOUBLE 6-20", "outcomes": [{"range": [1, 5], "result": "HOMERUN"}, {"range": [6, 20], "result": "DOUBLE"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "GROUND-BALL(ss)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 11, "raw": "GROUND-BALL(p)X", "outcomes": [{"range": null, "result": "GROUND-BALL(p)X"}]},
+          {"roll": 12, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]},
+          {"roll": 3, "raw": "GROUND-BALL(1b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(1b)X"}]},
+          {"roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(3b)X"}]},
+          {"roll": 5, "raw": "GROUND-BALL(2b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(2b)X"}]},
+          {"roll": 6, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 7, "raw": "DOUBLE** 1-10 / SINGLE** 11-20", "outcomes": [{"range": [1, 10], "result": "DOUBLE**"}, {"range": [11, 20], "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "GROUND-BALL(ss)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 10, "raw": "FLYBALL (cf)X", "outcomes": [{"range": null, "result": "FLYBALL (cf)X"}]},
+          {"roll": 11, "raw": "FLYBALL (lf)X", "outcomes": [{"range": null, "result": "FLYBALL (lf)X"}]},
+          {"roll": 12, "raw": "flyball (rf)C", "outcomes": [{"range": null, "result": "flyball (rf)C"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2009,
+    "stats": {
+      "W": 10,
+      "L": 3,
+      "ERA": "4.86",
+      "STARTS": 16,
+      "SAVES": 0,
+      "IP": 91,
+      "HITS ALLOWED": 113,
+      "BB": 15,
+      "SO": 75,
+      "HOMERUNS ALLOWED": 15
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Official Strat-O-Matic correction: the 2009 set's Kevin Slowey (Min) basic side was misprinted; Strat-O-Matic's '2009 and 1977 Baseball Corrections' announcement (sourceUrl) links this corrected card (sourceImage, a one-page PDF holding a 300-dpi 1-bit scan, 1973x2008) and states 'this posted card image is the official correction'. The scan shows a piece of a printed sheet: Slowey's card is complete in the middle; the neighbouring cards (a Minnesota reliever on the left, Glen Perkins on the right, stat boxes of the row above) are cut off and not transcribed. Read twice: (1) from a downscale of the whole scan, (2) from 1.5x per-column and stat-box crops; no differences. Split results print each d20 range on its own line; X chances print without spaces ('GROUND-BALL(2b)X'). The printed line matches Lahman (10-3, 4.86, 16 GS, 90.2 IP shown as 91, 113 H, 15 BB, 75 SO, 15 HR)."
+  }
+}

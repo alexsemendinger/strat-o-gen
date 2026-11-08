@@ -1,0 +1,93 @@
+{
+  "cardId": "pitcher_chapman-aroldis_2014",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/2014-baseball-card-corrections/",
+  "sourceImage": "https://s3.amazonaws.com/strat-patch-downloads/2014ChapmanBasic.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Aroldis Chapman",
+    "throws": null,
+    "bats": null,
+    "team": "Cincinnati",
+    "year": 2014,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": {
+      "type": "relief"
+    },
+    "pitcherFielding": "pitcher-3",
+    "battingNumber": "batting # 1",
+    "notes": "Header reads: 'AROLDIS CHAPMAN   pitcher-3   relief' / 'batting # 1' and 'PITCHING CARD   CINCINNATI'. 'pitcher-3' is the pitcher's fielding rating; 'batting # 1' his batting/bunting designation; 'relief' the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [{"range": null, "result": "CATCHER'S CARD X"}]},
+          {"roll": 5, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 6, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "GROUND-BALL(ss)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 11, "raw": "GROUND-BALL(p)X", "outcomes": [{"range": null, "result": "GROUND-BALL(p)X"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 3, "raw": "GROUND-BALL(1b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(1b)X"}]},
+          {"roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(3b)X"}]},
+          {"roll": 5, "raw": "GROUND-BALL(ss)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "GROUND-BALL(2b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(2b)X"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "FLYBALL (cf)X", "outcomes": [{"range": null, "result": "FLYBALL (cf)X"}]},
+          {"roll": 11, "raw": "FLYBALL (lf)X", "outcomes": [{"range": null, "result": "FLYBALL (lf)X"}]},
+          {"roll": 12, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 3, "raw": "FLYBALL (rf)X", "outcomes": [{"range": null, "result": "FLYBALL (rf)X"}]},
+          {"roll": 4, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 11, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 12, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2014,
+    "stats": {
+      "W": 0,
+      "L": 3,
+      "ERA": "2.00",
+      "STARTS": 0,
+      "SAVES": 36,
+      "IP": 54,
+      "HITS ALLOWED": 21,
+      "BB": 24,
+      "SO": 106,
+      "HOMERUNS ALLOWED": 1
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Official Strat-O-Matic correction: the 2014 set's Aroldis Chapman (Cin) basic side was misprinted, and Strat-O-Matic posted this corrected basic card image on its 2014 Baseball Card Corrections announcement (sourceUrl; image at sourceImage, a 3311x5922 scan). Read twice: (1) from a full-card downscale, (2) from full-resolution per-column crops; no differences. The card prints no hit results at all: every hit comes from the X chances (fielding chart) and the batter's card. X chances print without spaces ('GROUND-BALL(ss)X', wrapped as 'GROUND-' / 'BALL(ss)X'; 'FLYBALL' / '(cf)X'); raw keeps that, outcomes need no change (the normalizer reads both). Validator CHECK (kept, genuine card limitation): SO error .143 and hits .032. Chapman struck out 52% of the batters he faced in 2014 (106 of 202 TBF; Lahman agrees with every printed stat), more than a 108-chance pitcher card can express when half of all plate appearances read the batter's card. Strat-O-Matic maxed the card out instead: 60 strikeout chances (column 6 is all strikeouts except one X chance), 18 walk chances, 30 X chances and no printed hits, which against the league-average batter card implies 38.4% strikeouts (actual 52.7%) and .137 hits per PA (actual .104); walks fit exactly (.119)."
+  }
+}

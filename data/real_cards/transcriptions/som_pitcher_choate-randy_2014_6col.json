@@ -1,0 +1,129 @@
+{
+  "cardId": "pitcher_choate-randy_2014",
+  "sourceUrl": "https://www.strat-o-matic.com/wp-json/wp/v2/media/7386",
+  "sourceImage": "https://strat-site-files.s3.amazonaws.com/wp-content/uploads/2018/06/20205101/cart_sets.jpg",
+  "cardType": "pitcher",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Randy Choate",
+    "throws": "L",
+    "bats": null,
+    "team": "St. Louis",
+    "year": 2014,
+    "cardNumber": "#1WL",
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": {
+      "relief": 1,
+      "starter": null
+    },
+    "pitcherFielding": "pitcher-4",
+    "battingNumber": "#1WL",
+    "hold": "+5",
+    "wildPitch": "wp- 0",
+    "balk": "bk- 0",
+    "bunting": "bunting-C",
+    "errorRating": "e40",
+    "notes": "Header line 1: 'bk- 0   wp- 0   e40   #1WL   pitcher-4 relief(1)/N ●'. Header line 2: 'RANDY CHOATE   throws LEFT   hold +5   bunting-C'. A bullet (●) prints after relief(1)/N. Banners: '59% AGAINST LEFT-HAND BATTERS' and '41% AGAINST RIGHT-HAND BATTERS' (a LOOGY's split). The advanced side prints no year or team; see transcription notes."
+  },
+  "grids": [
+    {
+      "vs": "LHB",
+      "percent": 59,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 3, "raw": "SI* 1 / lo (2b) 2-20", "outcomes": [{"range": [1, 1], "result": "SI*"}, {"range": [2, 20], "result": "lo (2b)"}]},
+          {"roll": 4, "raw": "CATCH-X", "outcomes": [{"range": null, "result": "CATCH-X"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "GB (3b) X", "outcomes": [{"range": null, "result": "GB (3b) X"}]},
+          {"roll": 11, "raw": "GB (1b) X", "outcomes": [{"range": null, "result": "GB (1b) X"}]},
+          {"roll": 12, "raw": "gb (2b) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (2b) A"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "fly (rf) C", "outcomes": [{"range": null, "result": "fly (rf) C"}]},
+          {"roll": 3, "raw": "FLY (lf) X", "outcomes": [{"range": null, "result": "FLY (lf) X"}]},
+          {"roll": 4, "raw": "FLY (cf) X", "outcomes": [{"range": null, "result": "FLY (cf) X"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "GB (2b) X", "outcomes": [{"range": null, "result": "GB (2b) X"}]},
+          {"roll": 9, "raw": "N-HR 1-2 / fly (rf) B 3-20", "outcomes": [{"range": [1, 2], "result": "N-HR"}, {"range": [3, 20], "result": "fly (rf) B"}]},
+          {"roll": 10, "raw": "gb (1b) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (1b) A"}]},
+          {"roll": 11, "raw": "gb (1b) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (1b) A"}]},
+          {"roll": 12, "raw": "GB (2b) X", "outcomes": [{"range": null, "result": "GB (2b) X"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "FLY (rf) X", "outcomes": [{"range": null, "result": "FLY (rf) X"}]},
+          {"roll": 3, "raw": "fly (rf) C", "outcomes": [{"range": null, "result": "fly (rf) C"}]},
+          {"roll": 4, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 5, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "strikeout ●"}]},
+          {"roll": 8, "raw": "gb (2b) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (2b) A"}]},
+          {"roll": 9, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "strikeout ●"}]},
+          {"roll": 10, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 11, "raw": "GB (p) X", "outcomes": [{"range": null, "result": "GB (p) X"}]},
+          {"roll": 12, "raw": "FLY (rf) X", "outcomes": [{"range": null, "result": "FLY (rf) X"}]}
+        ] }
+      ]
+    },
+    {
+      "vs": "RHB",
+      "percent": 41,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "◆ 2-N-HR 1-8 / fly (lf) B 9-20", "markers": ["diamond"], "outcomes": [{"range": [1, 8], "result": "N-HR"}, {"range": [9, 20], "result": "fly (lf) B"}]},
+          {"roll": 3, "raw": "▼ 3-SINGLE (lf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE (lf)"}]},
+          {"roll": 4, "raw": "CATCH-X", "outcomes": [{"range": null, "result": "CATCH-X"}]},
+          {"roll": 5, "raw": "△ 5-gb (ss) A / SI* 1 / lo (ss) 2-20", "markers": ["upTriangle", "underline:A"], "outcomes": [{"range": null, "result": "gb (ss) A"}, {"range": [1, 1], "result": "SI*"}, {"range": [2, 20], "result": "lo (ss)"}]},
+          {"roll": 6, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "SINGLE (cf)", "outcomes": [{"range": null, "result": "SINGLE (cf)"}]},
+          {"roll": 9, "raw": "gb (3b) A ●", "markers": ["underline:A", "bullet"], "outcomes": [{"range": null, "result": "gb (3b) A ●"}]},
+          {"roll": 10, "raw": "GB (3b) X", "outcomes": [{"range": null, "result": "GB (3b) X"}]},
+          {"roll": 11, "raw": "GB (1b) X", "outcomes": [{"range": null, "result": "GB (1b) X"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "SI* 1-2 / gb (3b) B 3-20", "outcomes": [{"range": [1, 2], "result": "SI*"}, {"range": [3, 20], "result": "gb (3b) B"}]},
+          {"roll": 3, "raw": "FLY (lf) X", "outcomes": [{"range": null, "result": "FLY (lf) X"}]},
+          {"roll": 4, "raw": "FLY (cf) X", "outcomes": [{"range": null, "result": "FLY (cf) X"}]},
+          {"roll": 5, "raw": "fly (cf) B ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "fly (cf) B ●"}]},
+          {"roll": 6, "raw": "DO** 1-9 / SI** 10-20", "outcomes": [{"range": [1, 9], "result": "DO**"}, {"range": [10, 20], "result": "SI**"}]},
+          {"roll": 7, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "GB (2b) X", "outcomes": [{"range": null, "result": "GB (2b) X"}]},
+          {"roll": 9, "raw": "N-HR 1-3 / fly (lf) B 4-20", "outcomes": [{"range": [1, 3], "result": "N-HR"}, {"range": [4, 20], "result": "fly (lf) B"}]},
+          {"roll": 10, "raw": "gb (ss) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (ss) A"}]},
+          {"roll": 11, "raw": "fly (rf) B ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "fly (rf) B ●"}]},
+          {"roll": 12, "raw": "GB (2b) X", "outcomes": [{"range": null, "result": "GB (2b) X"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "FLY (rf) X", "outcomes": [{"range": null, "result": "FLY (rf) X"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 5, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 6, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "SINGLE (rf)", "outcomes": [{"range": null, "result": "SINGLE (rf)"}]},
+          {"roll": 8, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "▼ 10-fly (cf) C", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "fly (cf) C"}]},
+          {"roll": 11, "raw": "GB (p) X", "outcomes": [{"range": null, "result": "GB (p) X"}]},
+          {"roll": 12, "raw": "FLY (rf) X", "outcomes": [{"range": null, "result": "FLY (rf) X"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "From a Strat-O-Matic product photo in its WordPress media library (media item 7386, 'cart_sets', 1000x675; sourceUrl is the item's public REST record, sourceImage the file): four 2014 cards on a grey table. Randy Choate's advanced card lies on top, completely uncovered, flat and in focus, about 500 px wide; at 3.6-5.5x every cell, glyph, underline and d20 range is readable. (J.P. Arencibia's advanced card in the same photo was rejected: the Choate card covers the fielder of two of its cells. Alberto Callaspo's and Buddy Carlyle's basic cards are mostly covered.) Read twice: (1) from 3.6x crops of each platoon grid, (2) from fresh 4.5-5.5x crops at different bounds; no differences. YEAR AND TEAM are not printed on the advanced side: the photo is of the 2014 set (Carlyle's visible stat box, 31 IP / 23 H / 5 BB / 28 SO / 2 HR, is his 2014 Mets line; Callaspo's, 40 BB / 50 SO / .290 SLG / .290 OBP, his 2014 Oakland line), and Choate pitched only for St. Louis in 2014. Markers: diamond ◆, downTriangle ▼, upTriangle △ (RHB col4 roll5 '△5-gb (ss) A' with an italic 'SI* 1 / lo (ss) 2-20' split on the two lines directly beneath, before roll 6; binding unambiguous), bullet ● after two strikeouts, a groundball and two flyballs, underlined class letters as 'underline:A'. Home runs print as N-HR. Validator CHECK (kept; transcription verified, a property of the card): combined-advanced errors H/PA .0392 and SO .0167 (side-by-side, as tests/test_platoon scores it: H/PA .0365, SO .0245; HR and BB fit within .0025). Choate was a 36-IP lefty specialist in 2014 (148 batters faced), and the card prints an extreme split: vs LHB 48 strikeout chances and 0.1 singles; vs RHB no strikeouts and 42.85 single chances. Against each matchup's average batter that implies H/PA .133 / SO .345 vs LHB and .352 / .101 vs RHB, more strikeouts and hits than his season totals, and no single LHB share fits both (H/PA wants 76% LHB, SO 49%), so it is not a misprinted percentage. Like Bruney 2008 (34 IP, tolerated for H/PA), tiny platoon samples make the combined rates noisy."
+  }
+}

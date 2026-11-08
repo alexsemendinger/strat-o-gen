@@ -1,0 +1,99 @@
+{
+  "cardId": "batter_dimaggio-joe_1941",
+  "sourceUrl": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf",
+  "sourceImage": "https://strat-digital-museum.s3.amazonaws.com/Strat+Fan/12.92+-+Issue+16.pdf#page=4",
+  "cardType": "batter",
+  "side": "3col",
+  "official": false,
+  "player": {
+    "name": "Joe DiMaggio",
+    "bats": null,
+    "throws": null,
+    "team": "New York (AL)",
+    "year": 1941,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "cf",
+        "rating": 1,
+        "error": null
+      }
+    ],
+    "stealing": "D",
+    "running": "1-16",
+    "notes": "Header reads: 'JOE DIMAGGIO   centerfield-1   stealing-D' / 'running 1-16' and 'NEW YORK (AL)'."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 6, "raw": "HOMERUN 1-8 / DOUBLE 9-20", "outcomes": [{"range": [1, 8], "result": "HOMERUN"}, {"range": [9, 20], "result": "DOUBLE"}]},
+          {"roll": 7, "raw": "TRIPLE 1-9 / DOUBLE 10-20", "outcomes": [{"range": [1, 9], "result": "TRIPLE"}, {"range": [10, 20], "result": "DOUBLE"}]},
+          {"roll": 8, "raw": "DOUBLE** 1-16 / SINGLE** 17-20", "outcomes": [{"range": [1, 16], "result": "DOUBLE**"}, {"range": [17, 20], "result": "SINGLE**"}]},
+          {"roll": 9, "raw": "groundball (ss)A", "outcomes": [{"range": null, "result": "groundball (ss)A"}]},
+          {"roll": 10, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 11, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 12, "raw": "groundball (ss)B plus inury", "outcomes": [{"range": null, "result": "groundball (ss)B plus injury"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "flyball(lf)A", "outcomes": [{"range": null, "result": "flyball(lf)A"}]},
+          {"roll": 3, "raw": "lineout(2b)", "outcomes": [{"range": null, "result": "lineout(2b)"}]},
+          {"roll": 4, "raw": "lineout(3b)", "outcomes": [{"range": null, "result": "lineout(3b)"}]},
+          {"roll": 5, "raw": "groundball (ss)A++", "outcomes": [{"range": null, "result": "groundball (ss)A++"}]},
+          {"roll": 6, "raw": "popout(ss)", "outcomes": [{"range": null, "result": "popout(ss)"}]},
+          {"roll": 7, "raw": "flyball(lf)B", "outcomes": [{"range": null, "result": "flyball(lf)B"}]},
+          {"roll": 8, "raw": "groundball (3b)B", "outcomes": [{"range": null, "result": "groundball (3b)B"}]},
+          {"roll": 9, "raw": "flyball(cf)B", "outcomes": [{"range": null, "result": "flyball(cf)B"}]},
+          {"roll": 10, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]},
+          {"roll": 11, "raw": "groundball (3b)B", "outcomes": [{"range": null, "result": "groundball (3b)B"}]},
+          {"roll": 12, "raw": "flyball(rf)B", "outcomes": [{"range": null, "result": "flyball(rf)B"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "lineout(2b) into as many outs as possible", "outcomes": [{"range": null, "result": "lineout(2b) into as many outs as possible"}]},
+          {"roll": 3, "raw": "groundball (2b)B", "outcomes": [{"range": null, "result": "groundball (2b)B"}]},
+          {"roll": 4, "raw": "groundball (ss)A", "outcomes": [{"range": null, "result": "groundball (ss)A"}]},
+          {"roll": 5, "raw": "SINGLE**", "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 6, "raw": "SINGLE*", "outcomes": [{"range": null, "result": "SINGLE*"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "groundball (3b)B", "outcomes": [{"range": null, "result": "groundball (3b)B"}]},
+          {"roll": 9, "raw": "SINGLE* 1-18 / lineout(3b) 19-20", "outcomes": [{"range": [1, 18], "result": "SINGLE*"}, {"range": [19, 20], "result": "lineout(3b)"}]},
+          {"roll": 10, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 11, "raw": "groundball (ss)A++", "outcomes": [{"range": null, "result": "groundball (ss)A++"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1941,
+    "stats": {
+      "AVG": ".357",
+      "AB": 541,
+      "2B": 43,
+      "3B": 11,
+      "HR": 30,
+      "RBI": 125,
+      "BB": 76,
+      "SO": 13,
+      "SB": 4,
+      "CS": 2,
+      "SLG%": ".643",
+      "ON BASE%": ".440"
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "FACSIMILE, flagged unofficial for that reason: printed in STRAT FAN issue 16 (December 1992, 'The Magazine for and by Strat-O-Matic fans', (c) Game Time Publishing Co.), page 6, in the article '1941: A Momentous SOM...' on the newly released 1941 season cards ('as the card facsimile shown here demonstrates'), with Strat-O-Matic's researcher Steve Barkan quoted. The PDF is hosted in Strat-O-Matic's own Digital Museum (sourceUrl; PDF page 4 holds a 300-dpi grayscale scan, 2608x4236, in which the card is about 740 px wide and razor sharp). The content is believed to be the official 1941 card, but the facsimile was typeset for the magazine and shows typesetting slips (this side prints 'plus inury' for 'plus injury'; the advanced side on the next page has '6-DOUBLE(cf' and '12SINGLE(rf)'), so it is not marked official. Read twice: (1) from a native-resolution crop of the whole card, (2) from fresh 1.4x crops of the grid; no differences. Col 1 roll 12 prints 'groundball (ss)B plus inury': raw keeps the misprint, the outcome reads it as 'plus injury'. Split results print each d20 range on its own line. The printed line matches Lahman exactly (541 AB, 43 2B, 11 3B, 30 HR, 76 BB, 13 SO). Validator CHECK (kept; transcription double-checked, a property of the card): BB .0267 and SO .0251; HR, 2B, 3B within .001 and BA .0123. SO is a hard floor of the two-card model: the card prints no strikeout at all, yet the 1941 AL average pitcher card alone (9.9 SO chances) implies .046 SO per PA against DiMaggio's actual .021 (13 SO). BB: the card's 10 walk chances imply .096 per PA against .122; Strat-O-Matic leaves intentional walks off batter cards, and the tester subtracts IBB, but Lahman has no IBB for 1941, so all 76 walks count as unintentional (the same shortfall appears on the separately typeset advanced side)."
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "cardId": "pitcher_gossage-rich_1982",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/simulation-goose-gossage-takes-todays-stars/",
+  "sourceImage": "https://s3.amazonaws.com/som.com/Goose+Gossage+1982+advanced+card.JPG",
+  "cardType": "pitcher",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Rich Gossage",
+    "throws": "R",
+    "bats": null,
+    "team": "New York (AL)",
+    "year": 1982,
+    "cardNumber": "#1WR",
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": {
+      "relief": 2,
+      "starter": null
+    },
+    "pitcherFielding": "pitcher-4",
+    "battingNumber": "#1WR",
+    "hold": "-1",
+    "wildPitch": "wp- 2",
+    "balk": "bk- 0",
+    "bunting": "bunting-C",
+    "errorRating": "e0",
+    "notes": "Header line 1: 'bk- 0   wp- 2   e0   #1WR   pitcher-4   relief(2)/6 ●'. Header line 2: 'GOOSE GOSSAGE   throws RIGHT   hold -1   bunting-C'. A bullet (●) prints after relief(2)/6. Banners: '42% AGAINST LEFT-HAND BATTERS' and '58% AGAINST RIGHT-HAND BATTERS'. The card prints his nickname, 'GOOSE GOSSAGE'; player.name uses his Lahman name (Rich Gossage) so the card resolves to his season. The advanced side prints no year or team: year 1982 is from Strat-O-Matic's own file name and text ('Goose Gossage 1982 advanced card', 'Gossage's 1982 Strat-O-Matic card'); team from his 1982 season (Yankees, his only 1982 team)."
+  },
+  "grids": [
+    {
+      "vs": "LHB",
+      "percent": 42,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "gb (p) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (p) A"}]},
+          {"roll": 3, "raw": "▼ 3-SINGLE (cf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE (cf)"}]},
+          {"roll": 4, "raw": "CATCH-X", "outcomes": [{"range": null, "result": "CATCH-X"}]},
+          {"roll": 5, "raw": "N-HR 1-2 / DO 3-20", "outcomes": [{"range": [1, 2], "result": "N-HR"}, {"range": [3, 20], "result": "DO"}]},
+          {"roll": 6, "raw": "TR 1-3 / fly (rf) B 4-20", "outcomes": [{"range": [1, 3], "result": "TR"}, {"range": [4, 20], "result": "fly (rf) B"}]},
+          {"roll": 7, "raw": "GB (2b) X", "outcomes": [{"range": null, "result": "GB (2b) X"}]},
+          {"roll": 8, "raw": "SI* 1-6 / lo (2b) 7-20", "outcomes": [{"range": [1, 6], "result": "SI*"}, {"range": [7, 20], "result": "lo (2b)"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "fly (cf) B", "outcomes": [{"range": null, "result": "fly (cf) B"}]},
+          {"roll": 12, "raw": "GB (1b) X", "outcomes": [{"range": null, "result": "GB (1b) X"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "DO 1-12 / fly (rf) B 13-20", "outcomes": [{"range": [1, 12], "result": "DO"}, {"range": [13, 20], "result": "fly (rf) B"}]},
+          {"roll": 3, "raw": "GB (p) X", "outcomes": [{"range": null, "result": "GB (p) X"}]},
+          {"roll": 4, "raw": "GB (3b) X", "outcomes": [{"range": null, "result": "GB (3b) X"}]},
+          {"roll": 5, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "strikeout ●"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "strikeout ●"}]},
+          {"roll": 10, "raw": "▼ 10-fly (rf) C", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "fly (rf) C"}]},
+          {"roll": 11, "raw": "gb (2b) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (2b) A"}]},
+          {"roll": 12, "raw": "GB (1b) X", "outcomes": [{"range": null, "result": "GB (1b) X"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "△ 2-SINGLE (rf) / SI* 1-11 / lo (2b) 12-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "SINGLE (rf)"}, {"range": [1, 11], "result": "SI*"}, {"range": [12, 20], "result": "lo (2b)"}]},
+          {"roll": 3, "raw": "FLY (lf) X", "outcomes": [{"range": null, "result": "FLY (lf) X"}]},
+          {"roll": 4, "raw": "FLY (cf) X", "outcomes": [{"range": null, "result": "FLY (cf) X"}]},
+          {"roll": 5, "raw": "gb (2b) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (2b) A"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 10, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 11, "raw": "FLY (rf) X", "outcomes": [{"range": null, "result": "FLY (rf) X"}]},
+          {"roll": 12, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]}
+        ] }
+      ]
+    },
+    {
+      "vs": "RHB",
+      "percent": 58,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "△ 2-SINGLE (lf) / SI* 1-4 / lo (ss) 5-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "SINGLE (lf)"}, {"range": [1, 4], "result": "SI*"}, {"range": [5, 20], "result": "lo (ss)"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "CATCH-X", "outcomes": [{"range": null, "result": "CATCH-X"}]},
+          {"roll": 5, "raw": "GB (2b) X", "outcomes": [{"range": null, "result": "GB (2b) X"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "▼ 10-gb (3b) A", "markers": ["downTriangle", "underline:A"], "outcomes": [{"range": null, "result": "gb (3b) A"}]},
+          {"roll": 11, "raw": "▼ 11-SINGLE (rf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE (rf)"}]},
+          {"roll": 12, "raw": "GB (1b) X", "outcomes": [{"range": null, "result": "GB (1b) X"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "N-HR 1-4 / fly (lf) B 5-20", "outcomes": [{"range": [1, 4], "result": "N-HR"}, {"range": [5, 20], "result": "fly (lf) B"}]},
+          {"roll": 3, "raw": "GB (p) X", "outcomes": [{"range": null, "result": "GB (p) X"}]},
+          {"roll": 4, "raw": "GB (3b) X", "outcomes": [{"range": null, "result": "GB (3b) X"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "strikeout ●"}]},
+          {"roll": 7, "raw": "strikeout ●", "markers": ["bullet"], "outcomes": [{"range": null, "result": "strikeout ●"}]},
+          {"roll": 8, "raw": "gb (ss) A", "markers": ["underline:A"], "outcomes": [{"range": null, "result": "gb (ss) A"}]},
+          {"roll": 9, "raw": "DO 1-12 / fly (rf) B 13-20", "outcomes": [{"range": [1, 12], "result": "DO"}, {"range": [13, 20], "result": "fly (rf) B"}]},
+          {"roll": 10, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 11, "raw": "GB (2b) X", "outcomes": [{"range": null, "result": "GB (2b) X"}]},
+          {"roll": 12, "raw": "GB (1b) X", "outcomes": [{"range": null, "result": "GB (1b) X"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "◆ 2-N-HR 1-5 / fly (lf) B 6-20", "markers": ["diamond"], "outcomes": [{"range": [1, 5], "result": "N-HR"}, {"range": [6, 20], "result": "fly (lf) B"}]},
+          {"roll": 3, "raw": "FLY (lf) X", "outcomes": [{"range": null, "result": "FLY (lf) X"}]},
+          {"roll": 4, "raw": "FLY (cf) X", "outcomes": [{"range": null, "result": "FLY (cf) X"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 10, "raw": "GB (ss) X", "outcomes": [{"range": null, "result": "GB (ss) X"}]},
+          {"roll": 11, "raw": "FLY (rf) X", "outcomes": [{"range": null, "result": "FLY (rf) X"}]},
+          {"roll": 12, "raw": "TR 1-10 / fly (rf) B 11-20", "outcomes": [{"range": [1, 10], "result": "TR"}, {"range": [11, 20], "result": "fly (rf) B"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Strat-O-Matic's own photo of the card (2048x1519, sourceImage on its som.com bucket), used in its March 2016 'SIMULATION: Goose Gossage takes on today's stars' announcement (sourceUrl). The card lies flat and square to the camera, in focus; every cell is sharp. Read twice: (1) from a 1500px view of the whole photo, (2) from 1.6x full-resolution crops of each platoon grid plus a header strip; no differences. Markers: diamond ◆, downTriangle ▼, upTriangle △ (each △ cell prints its default 'SINGLE (..)' on the roll line and an italic 'SI* / lo' d20 split on the two lines directly beneath, before the next roll; binding unambiguous), bullet ● after four strikeouts, underlined class letters as 'underline:A'. Home runs print as N-HR."
+  }
+}
