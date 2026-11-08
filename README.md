@@ -188,11 +188,13 @@ league-average opponent and compares them to the player's actual season line:
 - Unofficial cards (uncertain provenance, probably genuine) are held to
   the same per-card bars, but left out of the aggregate accuracy guard.
 
-Run the suite:
+Run the suite (with uv, nothing to install first):
 ```bash
-python3 -m pip install pytest
-python3 -m pytest
+uv run --with flask --with pytest python -m pytest
 ```
+or in a virtual environment with Flask and pytest installed:
+`python3 -m pytest`. (On Pythons that refuse a plain `pip install`
+with an "externally managed environment" error, use uv or a venv.)
 
 ## Advanced (platoon) cards
 

@@ -1380,7 +1380,10 @@ def _missing_data_warnings(stats: dict, card_type: str = "batter",
         source = " (taken from its pitchers' totals)" if league_notes else ""
         warnings.append(f"strikeouts (SO) weren't recorded for this player "
                         f"{when}: the card uses the league strikeout rate{source}")
-    if card_type == "batter" and "CS" in missing and (stats.get("SB") or 0) > 0:
+    if card_type == "batter" and "SB" in missing:
+        warnings.append(f"stolen bases weren't recorded {when}: stealing is the "
+                        f"neutral C and running is estimated without steals")
+    elif card_type == "batter" and "CS" in missing and (stats.get("SB") or 0) > 0:
         warnings.append(
             "caught-stealing not tracked this season: stealing rating "
             "estimated from steal volume (capped at A)")
