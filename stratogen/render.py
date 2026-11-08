@@ -89,6 +89,11 @@ CARD_CSS = """
   .som-roll { margin:0.18em 0; }
   .som-column { padding:0.4em 0.4em; }
   .som-advanced { width:5.2in; }
+  /* the advanced banners print light: two solid black bars per card
+     add up over a team sheet of ink-jet paper */
+  .som-adv-banner { background:#e4e4dc; color:#111;
+    border-bottom:0.1em solid #333; }
+  .som-power { color:#6b4f00; }
 }
 /* An off-screen copy of the print layout (no minimum height), where
    FIT_JS measures each card and sets --som-fit so it prints at the real

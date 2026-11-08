@@ -73,9 +73,10 @@ averages come from the bundled [Lahman database](https://sabr.org/lahman-databas
 - **Warnings** in plain English whenever the card can't fully capture the
   season (see *Known limitations* below) or the era's data is incomplete.
 - **Team sets:** every card for a team-season (see *Team sets*).
-- **Printing at real size:** a basic side prints 2.6 in wide (6.7 pt
-  type), the advanced side's two grids side by side at 5.2 in; print the
-  side shown or both; team sheets print 4 basic sides or 2 advanced sides
+- **Printing at real size:** a basic side prints 2.6 × 4.1 in (6.7 pt
+  type, scaled down a little for a card whose entries wrap a lot, so
+  every card comes out the real height), the advanced side's two grids
+  side by side at 5.2 × 4.1 in; print the side shown or both; team sheets print 4 basic sides or 2 advanced sides
   per page (Letter or A4). Keep the browser's print scale at 100%.
 - **Downloads:** "Save card" writes a standalone HTML file (both sides,
   printable, with the warnings and honesty tables); "Save card data"
@@ -244,8 +245,10 @@ grid_chances = (2 × player_rate_in_matchup − league_rate_in_matchup) × 108
   edge rows real cards use; pitcher grids carry none.
 - Lines too extreme for one grid get a narrower split (warned).
   `card_json.advanced_card_to_json` writes the transcriptions' JSON schema;
-  `card_text.render_advanced_card` renders plain text. The advanced header
-  ratings are the basic ones for now (`AdvancedCard.header_lines`).
+  `card_text.render_advanced_card` renders plain text. The web app, CLI and
+  team sets print the advanced-side ratings in the header
+  (`stratogen/advanced_ratings.py`, via `stratogen/service.py`); the bare
+  `generate_advanced_*` functions carry the basic header lines.
 
 `tests/test_platoon.py` holds generated advanced cards to at least the
 basic card's accuracy on the archetypes, and to at least the real advanced
@@ -253,8 +256,8 @@ cards' accuracy on the corpus. Hitters' home runs are exact on every
 generated advanced card; the price is paid by HR-stingy pitchers. Since W
 hitters bring their own homers, no pitcher can allow fewer than
 lg_HR × (1 + w) / 2 per PA (basic floor: lg_HR / 2). In play, Maddux 1995
-gives up 1.6% HR/PA against his real 1.0% (basic card: 1.3%), with a
-warning. PA-weighted over every player in the league, HR error still
+gives up 1.5% HR per batter faced against his real 1.0% (basic card:
+1.3%), with a warning. PA-weighted over every player in the league, HR error still
 falls: 2024 AL 0.0006 → 0.0003 per PA; 1995 NL 0.0009 → 0.0005; 1930 AL
 0.0010 → 0.0007. The exception is dead-ball 1913 AL, 0.0004 → 0.0005. The
 real SOM pitcher cards don't seem to compensate for W hitters at all,
