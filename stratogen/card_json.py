@@ -171,6 +171,9 @@ class Transcription:
     special: str | None
     basic: Side | None = None
     advanced: Side | None = None
+    # Lahman teamID when the card covers one stint of a traded player's
+    # season (player.stint in the JSON), else None (the full season).
+    stint: str | None = None
 
     @property
     def sides(self) -> list[Side]:
@@ -221,6 +224,8 @@ def load_transcriptions(directory: str | Path = TRANSCRIPTIONS_DIR,
         card.official = card.official and side.official
         if side.player.get("year") and card.year is None:
             card.year = side.player["year"]
+        if side.player.get("stint") and card.stint is None:
+            card.stint = side.player["stint"]
         if side.is_basic:
             card.basic = side
         else:

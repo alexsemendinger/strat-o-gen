@@ -134,7 +134,9 @@ def transcription_cases(db: LahmanDB | None = None) -> list[TranscriptionCase]:
                 break
         if pid is None:
             continue
-        stats = getter(pid, card.year)
+        # a card printed for one stint of a traded player's season is
+        # scored against that stint (player.stint = Lahman teamID)
+        stats = getter(pid, card.year, team_id=card.stint) or getter(pid, card.year)
         reps = {}
         bc = basic_card(card)
         if bc is not None:

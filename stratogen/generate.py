@@ -330,16 +330,20 @@ def pitcher_targets_from_rates(rate_bb: float, rate_k: float, rate_hr: float,
     x_hits = x_block * X_SINGLE_RATE
     regular_hits = total_hits - x_hits          # >= 0 by the cap above
     if targets[HR] > regular_hits:
-        trimmed = targets[HR] - regular_hits
-        targets[HR] = regular_hits
-        _warn(warnings, _miss(trimmed / 216, pa, "home runs allowed", "low",
-                              "the card's hit total can't hold them all"))
+        # A homer-prone pitcher's home runs plus the X block's singles can
+        # overflow his hit total. Real cards keep the home runs (Reed 2017's
+        # Boston card: 6.75 HR chances, the full X block, no other hits) and
+        # let the hits run high, so the card does too.
+        excess = targets[HR] - regular_hits
+        _warn(warnings, _miss(excess / 216, pa, "hits allowed", "high",
+                              "his home runs and the X-chart block's singles "
+                              "alone exceed the hits he allowed"))
     # 2B/3B allowed aren't tracked historically, so every non-HR hit the
     # card yields (X-chart singles included) follows the league's 1B/2B/3B
     # mix; the X block only ever yields singles, so its hits come out of
     # the singles share alone (a league-average line reproduces
     # average_pitcher_chances exactly).
-    non_hr = total_hits - targets[HR]
+    non_hr = max(0.0, total_hits - targets[HR])
     lg_non_hr = league["1B_per_PA"] + league["2B_per_PA"] + league["3B_per_PA"]
     targets[SINGLE] = non_hr * (league["1B_per_PA"] / lg_non_hr) - x_hits
     targets[DOUBLE] = non_hr * (league["2B_per_PA"] / lg_non_hr)
@@ -582,7 +586,8 @@ def generate_advanced_batter_card(
     league_rates = _batting_league_rates(league)
     rates = _shrink(impute_unrecorded(actual_batting_rates(stats), stats,
                                       league_rates), league_rates, pa)
-    s_lhp = platoon.printed_share(platoon.batter_lhp_share(hand, pa, ctx))
+    s_lhp = platoon.printed_share(platoon.batter_lhp_share(
+        hand, pa, ctx, stats.get("start_rate")))
     shares = {"L": s_lhp, "R": 1.0 - s_lhp}
     # Pitcher grids carry no HBP, so the batter's grids carry all of his:
     # 2 * rate * 108, whole chances, the same on both grids.
@@ -653,7 +658,8 @@ def generate_advanced_pitcher_card(
         warnings.append("throwing hand unknown: treated as right-handed")
         hand = "R"
 
-    s_lhb = platoon.printed_share(platoon.pitcher_lhb_share(hand, ctx))
+    s_lhb = platoon.printed_share(platoon.pitcher_lhb_share(
+        hand, ctx, platoon.relief_share(stats, ctx.innings_per_start)))
     shares = {"L": s_lhb, "R": 1.0 - s_lhb}
 
     def build(strength):
@@ -834,17 +840,18 @@ _DEFAULT_PROFILE = {"single_2star": 0.30, "single_star": 0.17,
 
 
 # Shares of the */** hit variants: the means of the official basic batter
-# cards in data/real_cards, each player counted once (34 cards of 25
-# players: SINGLE** .321, SINGLE* .187, DOUBLE** .412 of single/double
-# chances; Virdon's eleven seasons would otherwise pull SINGLE* to .167).
+# cards in data/real_cards, each player counted once (37 cards of 27
+# players: SINGLE** .349, SINGLE* .179, DOUBLE** .398 of single/double
+# chances, standard errors .04/.03/.06; Virdon's eleven seasons would
+# otherwise outvote everyone else).
 # Isolated power used to set them, but on the real
 # cards it predicts worse than these constants and with the wrong sign
 # (corr(ISO, share) -0.20 / -0.12 / -0.41; Judge 2024, ISO .379, prints
 # SINGLE** on .11 of his singles), and running speed doesn't predict them
 # either, so every batter gets the real-card mean.
-SINGLE_2STAR_SHARE = 0.32
-SINGLE_STAR_SHARE = 0.19
-DOUBLE_2STAR_SHARE = 0.41
+SINGLE_2STAR_SHARE = 0.35
+SINGLE_STAR_SHARE = 0.18
+DOUBLE_2STAR_SHARE = 0.40
 
 
 def hit_profile(stats: dict, pa: float | None = None, *,

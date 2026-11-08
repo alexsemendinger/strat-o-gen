@@ -1,11 +1,11 @@
 """The JSON-transcribed real cards: loading, vocabulary, structure, stats.
 
-These 25 cards (data/real_cards/transcriptions/) expand the ground-truth
-corpus and guard the import layer (stratogen/card_json.py). Two documented
-real-card compromises are tolerated per card, side and category (xfail);
-every other category of those cards, and every unofficial card, is held
-to the strict bars, per the project's "real cards aren't perfect"
-philosophy.
+These cards (data/real_cards/transcriptions/) expand the ground-truth
+corpus and guard the import layer (stratogen/card_json.py). Documented
+real-card compromises are tolerated per card, side and category (xfail,
+TOLERANCES below); every other category of those cards, and every other
+card, official or not, is held to the strict bars, per the project's
+"real cards aren't perfect" philosophy.
 """
 
 import json
@@ -27,6 +27,11 @@ JSON_FILES = sorted(cj.TRANSCRIPTIONS_DIR.glob("*.json"))
 TOLERANCES = {
     "batter_judge-aaron_2024": {"basic": {"HR", "SO"}, "advanced": {"SO"}},
     "pitcher_bruney-brian_2008": {"advanced": {"H_per_PA"}},
+    "pitcher_chapman-aroldis_2014": {"basic": {"H_per_PA", "SO"}},
+    "pitcher_choate-randy_2014": {"advanced": {"H_per_PA"}},
+    "batter_ramos-wilson_2010": {"advanced": {"BA"}},
+    "batter_dimaggio-joe_1941": {"basic": {"BB", "SO"}, "advanced": {"SO"}},
+    "batter_williams-ted_1941": {"basic": {"BA", "BB"}, "advanced": {"BB"}},
 }
 TOLERANCE_REASONS = {
     "batter_judge-aaron_2024":
@@ -36,6 +41,27 @@ TOLERANCE_REASONS = {
     "pitcher_bruney-brian_2008":
         "34-IP reliever: tiny platoon samples make the combined-advanced "
         "hit rate noisy",
+    "pitcher_chapman-aroldis_2014":
+        "struck out 52% of batters, more than a 108-chance card can express "
+        "when half of all PA read the batter's card: the card maxes out (60 "
+        "strikeouts, 18 walks, 30 X, no printed hits) and still implies 38% "
+        "strikeouts and too many hits",
+    "pitcher_choate-randy_2014":
+        "36-IP lefty specialist with an extreme printed split (48 SO vs LHB, "
+        "0 vs RHB): no single matchup mix fits both hits and strikeouts",
+    "batter_ramos-wilson_2010":
+        "79-AB call-up split between two leagues: the card prints no walks, "
+        "so the average pitcher card's walks lift the implied BB and push "
+        "the implied average off",
+    "batter_dimaggio-joe_1941":
+        "a 13-strikeout season sits below what the average 1941 AL pitcher "
+        "card alone implies (the card prints none); walks run low as if "
+        "intentional walks, which cards leave off and Lahman doesn't record "
+        "for 1941, were removed",
+    "batter_williams-ted_1941":
+        "walks run low as if intentional walks, which cards leave off and "
+        "Lahman doesn't record for 1941, were removed; the average follows "
+        "the walks (fewer walks, more at-bats)",
 }
 
 STRICT_HIT = 0.015      # BA / hits-per-PA
@@ -64,7 +90,9 @@ def test_unofficial_cards_flagged():
     unofficial = {cid for cid, c in CARDS.items() if not c.official}
     assert unofficial == {
         "pitcher_orth-al_1906", "pitcher_shawkey-bob_1917",
-        "pitcher_warhop-jack_1914", "pitcher_zuber-bill_1945"}
+        "pitcher_warhop-jack_1914", "pitcher_zuber-bill_1945",
+        # magazine facsimiles of the official cards (STRAT FAN, 1992)
+        "batter_dimaggio-joe_1941", "batter_williams-ted_1941"}
 
 
 def test_sides_joined_by_card_id():
@@ -139,14 +167,26 @@ def test_unknown_tokens_are_rejected_not_guessed():
             cj.parse_result(token)
 
 
+# Advanced batter grids that print no max-effort lineout (re-checked on the
+# scans; see each file's notes). Every other batter grid prints exactly one.
+NO_MAX_EFFORT_LINEOUT = {
+    ("batter_bonds-barry_2001", "RHP"),
+    ("batter_dimaggio-joe_1941", "RHP"),
+    ("batter_williams-ted_1941", "LHP"),
+    ("batter_williams-ted_1941", "RHP"),
+}
+
+
 def test_max_effort_lineouts_keep_their_tail():
     """`lo (x) max` is the advanced side's spelling of the max-effort
-    lineout: it must import as one, so every batter grid (basic and both
-    platoon grids) carries exactly one, like the 3col long form."""
+    lineout: it must import as one, so every basic batter side carries
+    exactly one, like the 3col long form, and so does every platoon grid
+    but the few real ones that print none."""
     assert cj.parse_result("lo (2b) max") == (
         "lineout (2b) into as many outs as possible", False)
     assert cj.parse_result("lo(3b) max plus injury") == (
         "lineout (3b) into as many outs as possible", True)
+    without = set()
     for cid, card in CARDS.items():
         if card.card_type != "batter":
             continue
@@ -154,7 +194,11 @@ def test_max_effort_lineouts_keep_their_tail():
             for grid in side.grids:
                 gc = cj._grid_card(side, grid, card.name)
                 n = sum("as many outs" in s.text for _c, _d, s in gc.iter_splits())
-                assert n == 1, (cid, side.side, grid.get("vs"))
+                if n == 0 and side.side == "6col":
+                    without.add((cid, grid.get("vs")))
+                else:
+                    assert n == 1, (cid, side.side, grid.get("vs"))
+    assert without == NO_MAX_EFFORT_LINEOUT
 
 
 def test_injury_flag_parsed():
@@ -233,7 +277,7 @@ def test_situational_cells_import_their_default():
             expected = SITUATIONAL_DEFAULT_IN_RAW[key]
         splits = cj._cell_splits(cell)
         assert [(s.lo, s.hi, s.text) for s in splits] == [(1, 20, expected)], key
-    assert seen == 30
+    assert seen >= 49                     # grows with the corpus
     assert default_only_in_raw == set(SITUATIONAL_DEFAULT_IN_RAW)
 
 
@@ -370,6 +414,10 @@ GENERATED_TRADEOFFS = {
     ("batter_silvera-charlie_1949", "1B"):
         "his 2B/3B/HR clamp to 0; the deficit comes out of singles so total "
         "hits stay exact (the real card misses H/PA by .0035)",
+    ("batter_rapp-earl_1952", "1B"):
+        "his 3B/HR clamp to 0; the deficit comes out of singles so total "
+        "hits stay exact (the real card keeps more singles and misses H/PA "
+        "by .0014)",
 }
 
 

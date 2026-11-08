@@ -597,7 +597,7 @@ def hit_and_run_rating(db: LahmanDB, stats: dict) -> str:
 
 _STEAL_DETAIL = re.compile(
     r"^\s*(?P<star>\*)?\s*(?P<a>[\d,\-]*)\s*/\s*(?P<b>[\d,\-]*)\s*"
-    r"\(\s*(?P<n1>\d+)\s*-\s*(?P<n2>\d+)\s*\)\s*$")
+    r"\(\s*(?:(?P<n1>\d+)\s*-\s*(?P<n2>\d+)|(?P<none>-{3}))\s*\)\s*$")
 
 
 def _expand_rolls(text: str) -> list[int]:
@@ -617,7 +617,8 @@ def parse_stealing_detail(text: str) -> dict | None:
     """Parse an advanced-side stealing detail like '*2-4,11/5-10,12 (15-1)'.
 
     Returns {"star": bool, "rolls_a": [...], "rolls_b": [...],
-    "numbers": (n1, n2)} or None if it doesn't parse. Recorded, not
+    "numbers": (n1, n2)} or None if it doesn't parse; an E runner's
+    '-/- (---)' (Adcock 1957, Ramos 2010) has numbers None. Recorded, not
     generated: the leading reading is that the rolls before/after the
     slash are the dice results that give the runner a jump (`-` = none)
     and the parenthesized pair are d20 safe ranges, but the corpus doesn't
@@ -631,7 +632,8 @@ def parse_stealing_detail(text: str) -> dict | None:
         return {"star": bool(m.group("star")),
                 "rolls_a": _expand_rolls(m.group("a")),
                 "rolls_b": _expand_rolls(m.group("b")),
-                "numbers": (int(m.group("n1")), int(m.group("n2")))}
+                "numbers": (None if m.group("none")
+                            else (int(m.group("n1")), int(m.group("n2"))))}
     except ValueError:
         return None
 

@@ -29,8 +29,15 @@ def _truth():
         run = int(next(ln for ln in lines if ln.startswith("running 1-"))[10:])
         rows.append((case.stem, case.actual_stats["player_id"],
                      case.actual_stats["year"], steal, run))
+    modern = {c.card_id for c in transcription_cases()}
     for case in transcription_cases():
         if case.card_type != "batter":
+            continue
+        if (case.card_id.endswith("-orig")
+                and case.card_id.removesuffix("-orig") in modern):
+            # An original printing rated by the rules of its day (Virdon
+            # 1960-orig: stealing B; the modern printing of 1960: C). The
+            # modern printing of the same season is the target.
             continue
         side = case.transcription.basic or case.transcription.advanced
         printed = json.loads(side.path.read_text(encoding="utf-8"))["ratings"]
@@ -54,15 +61,19 @@ def _printed(lines, prefix):
 
 def test_truth_covers_the_corpus():
     order = ["AA", "A", "B", "C", "D", "E"]
-    assert len(TRUTH) >= 37
+    assert len(TRUTH) >= 48
     assert all(steal in order and 1 <= run <= 20 for _c, _p, _y, steal, run in TRUTH)
 
 
 def test_running_agreement():
-    """On the 37 dated batter cards: 19 exact, 32 within one, mean error
-    0.78 (on the first 20: 9, 17, 0.85; leave-one-out 8, 15, 1.00; the
-    old SB/triples heuristic 6, 12, 1.45). Reputation ratings (Mays
-    1965's 1-17 at 34) are the big misses."""
+    """On the 48 dated batter cards: 23 exact, 40 within one, mean error
+    0.90 (on the first 20: 9, 17, 0.85; leave-one-out 8, 15, 1.00; the
+    old SB/triples heuristic 6, 12, 1.45). Refitting on all 41 player-
+    seasons gains in sample (0.87) but loses leave-one-player-out (1.31
+    against the fixed fit's 1.06), so the fit stands. The big misses are
+    reputation ratings (Mays 1965's 1-17 at 34) and slow sluggers the
+    speed score reads as average (Adcock 1957 and Howard 1971 print 1-8,
+    Pipp 1921 1-12 with 17 triples)."""
     got = [(int(_printed(_header(pid, y), "running 1-")), run)
            for _c, pid, y, _s, run in TRUTH]
     n = len(got)
@@ -79,8 +90,9 @@ def test_running_reaches_the_slow_end():
 
 
 def test_stealing_agreement():
-    """35/37 exact, all within one grade (see stealing_rating); Carey 1953
-    (a 2-for-3 cameo printed C) and Linz 1963 (1-for-7 printed D) miss."""
+    """45/48 exact, all within one grade (see stealing_rating): Carey 1953
+    (a 2-for-3 cameo printed C), Linz 1963 (1-for-7 printed D) and Conor
+    Jackson 2008 (10-for-12 printed C) miss."""
     got = [(card, _printed(_header(pid, y), "stealing-"), steal)
            for card, pid, y, steal, _r in TRUTH]
     order = ["AA", "A", "B", "C", "D", "E"]

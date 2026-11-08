@@ -391,13 +391,16 @@ def test_arm_printed_on_first_outfield_spot_only():
 # --- stealing detail ---------------------------------------------------------
 
 def test_every_stealing_detail_parses():
-    details = [r["stealingDetail"] for c in CARDS.values()
+    details = [(r["stealingDetail"], r.get("stealing")) for c in CARDS.values()
                if c.advanced and (r := _ratings(c.card_id)).get("stealingDetail")]
-    assert len(details) >= 9
-    for text in details:
+    assert len(details) >= 19
+    for text, grade in details:
         parsed = ar.parse_stealing_detail(text)
         assert parsed is not None, text
-        assert 1 <= parsed["numbers"][0] <= 20
+        if parsed["numbers"] is None:       # '-/- (---)': can't steal
+            assert grade == "E" and not parsed["rolls_a"] + parsed["rolls_b"]
+        else:
+            assert 1 <= parsed["numbers"][0] <= 20
 
 
 def test_stealing_detail_structure():
@@ -407,7 +410,10 @@ def test_stealing_detail_structure():
     judge = ar.parse_stealing_detail("*3/- (20-6)")
     assert judge == {"star": True, "rolls_a": [3], "rolls_b": [], "numbers": (20, 6)}
     assert ar.parse_stealing_detail("6/- (15-6)")["star"] is False
+    assert ar.parse_stealing_detail("-/- (---)") == {
+        "star": False, "rolls_a": [], "rolls_b": [], "numbers": None}
     assert ar.parse_stealing_detail("garbage") is None
+    assert ar.parse_stealing_detail("5/- (--)") is None
 
 
 # --- monotonicity / sanity ---------------------------------------------------

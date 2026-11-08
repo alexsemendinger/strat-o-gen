@@ -138,17 +138,41 @@ def soften(factors: dict[str, dict[str, float]],
 #   their share moves toward an even split as playing time drops. Mean
 #   absolute error 3.3 points over the 12 official batters (5.7 without
 #   the part-time term; bias -0.6).
+#   Playing time alone can't tell a platoon player from a regular who
+#   missed time, and the larger corpus has three such righties printed
+#   near the league share: Adcock 1957 (broken leg, 228 PA: 19%), Ramos
+#   2010 (call-up, 82 PA: 20%) and Cespedes's 2015 Mets stint (246 PA:
+#   25%). They started 85-95% of the games they played; the platoon
+#   righties started 25-64% (Linz 1963 .63, Silvera 1949 .64, Carey 1953
+#   .25). So the part-time term is scaled by the start rate (Appearances
+#   GS / G_all): in full at or below BENCH_START_RATE, fading to nothing
+#   at STARTER_START_RATE; without GS data (most seasons before 1910, a
+#   fifth of 1910-49) it applies in full as before. Over the 21 official
+#   batters: MAE 4.4 points (5.7 without the gate). The rest is the real
+#   splits' spread among regulars (Bautista 2015 printed 19% against a
+#   league .30; Strawberry 1985 40% against .31).
 # - Pitchers: share vs (effective) LHB = the league's L + switch (for a
-#   right-hander) share of PA times 0.91. One common factor fits better
-#   out of sample than per-hand factors (leave-one-out MAE 4.3 points vs
-#   5.3; 5.3 with no factor). The reliever-heavy sample is likely what
-#   pulls it below 1 (relievers are deployed against same-handed hitters).
-#   In-sample MAE 3.7 points over the 7 official pitchers; the 4
-#   unofficial cards, made without split data, miss by 7.8.
+#   right-hander) share of PA times a factor for the pitcher's hand and
+#   role. Relievers are deployed against same-handed hitters and starters
+#   face lineups stacked against them, so on the 13 official pitchers the
+#   printed/league ratio splits four ways: right-handed starters 1.04
+#   (Drysdale 1965, Perez 1994), right-handed relievers 0.89 (Bruney,
+#   Gossage, Mendoza, Zamora), left-handed starters 0.81 (Cuellar 1971,
+#   Pettitte 2012, Capuano 2014), left-handed relievers 1.30 (Choate 2014
+#   59%, Gibson 1994, Mingori 1973); each the median of its pitchers. A
+#   pitcher's factor mixes the two roles by his share of innings in relief
+#   (relief_share). Leave-one-out MAE 4.3 points against 7.5 for one
+#   common factor (fitted at 0.91 on the first 7, where it beat per-hand
+#   factors, and still used when the role is unknown); in sample 3.0. The
+#   4 unofficial cards, made without split data, miss by 7.8.
 
 PART_TIME_RHB_TARGET = 0.5      # where a pure platoon righty's share heads
 FULL_TIME_PA_PER_GAME = 3.7     # an everyday player's PA per team game
-PITCHER_LHB_FACTOR = 0.91
+BENCH_START_RATE = 0.65         # starts / games at or below: a platoon role
+STARTER_START_RATE = 0.90       # at or above: a regular who missed time
+PITCHER_LHB_FACTORS = {("R", "start"): 1.04, ("R", "relief"): 0.89,
+                       ("L", "start"): 0.81, ("L", "relief"): 1.30}
+PITCHER_LHB_FACTOR = 0.91       # role unknown
 
 
 def printed_share(share: float) -> float:
@@ -156,21 +180,47 @@ def printed_share(share: float) -> float:
     return max(0, min(100, round(share * 100))) / 100.0
 
 
-def batter_lhp_share(bats: str | None, pa: float, ctx: "PlatoonContext") -> float:
-    """Share of a batter's PA against left-handed pitchers (unrounded)."""
+def batter_lhp_share(bats: str | None, pa: float, ctx: "PlatoonContext",
+                     start_rate: float | None = None) -> float:
+    """Share of a batter's PA against left-handed pitchers (unrounded).
+    `start_rate` is games started / games played (None: unknown)."""
     f = ctx.lhp_share
     if batting_hand(bats) == "R" and ctx.full_time_pa > 0:
         part_time = max(0.0, min(1.0, 1.0 - pa / ctx.full_time_pa))
+        if start_rate is not None:
+            part_time *= max(0.0, min(1.0, (STARTER_START_RATE - start_rate)
+                                      / (STARTER_START_RATE - BENCH_START_RATE)))
         f += (PART_TIME_RHB_TARGET - f) * part_time
     return f
 
 
-def pitcher_lhb_share(throws: str | None, ctx: "PlatoonContext") -> float:
+def relief_share(stats: dict, innings_per_start: float) -> float | None:
+    """Share of a pitcher's innings thrown in relief: his starts are
+    credited the league's innings per start (capped at his total). None
+    without innings."""
+    outs = stats.get("IPouts") or 0
+    if outs <= 0:
+        return None
+    ip = outs / 3.0
+    start_ip = min(ip, (stats.get("GS") or 0) * innings_per_start)
+    return 1.0 - start_ip / ip
+
+
+def pitcher_lhb_share(throws: str | None, ctx: "PlatoonContext",
+                      relief: float | None = None) -> float:
     """Share of a pitcher's batters faced who hit left-handed (switch
-    hitters bat left against a right-hander), unrounded."""
+    hitters bat left against a right-hander), unrounded. `relief` is his
+    share of innings in relief (relief_share; None: role unknown)."""
     g = ctx.batter_shares
-    lhb = g["L"] + (g["S"] if throwing_hand(throws) != "L" else 0.0)
-    return max(0.0, min(1.0, PITCHER_LHB_FACTOR * lhb))
+    left = throwing_hand(throws) == "L"
+    lhb = g["L"] + (0.0 if left else g["S"])
+    if relief is None:
+        factor = PITCHER_LHB_FACTOR
+    else:
+        hand = "L" if left else "R"
+        factor = (relief * PITCHER_LHB_FACTORS[(hand, "relief")]
+                  + (1.0 - relief) * PITCHER_LHB_FACTORS[(hand, "start")])
+    return max(0.0, min(1.0, factor * lhb))
 
 
 # --- power rating -----------------------------------------------------------------
@@ -229,6 +279,7 @@ class PlatoonContext:
     rates: dict[tuple[str, str], dict[str, float]]   # (p hand, eff b hand)
     weak_share: dict[tuple[str, str], float]          # Power-W share of PA
     warnings: tuple[str, ...] = ()
+    innings_per_start: float = 6.0       # the league's (relief_share)
 
     def freq(self, pitcher_hand: str, batter_hand: str) -> float:
         """Share of league PA in a matchup (effective batter hand)."""
@@ -284,7 +335,8 @@ _DEFAULT_BATTER_SHARES = {"L": 0.33, "R": 0.57, "S": 0.10}
 
 def build_context(league: dict, handedness: dict | None = None,
                   full_time_pa: float = FULL_TIME_PA_PER_GAME * 162,
-                  batter_lines: list | None = None) -> PlatoonContext:
+                  batter_lines: list | None = None,
+                  innings_per_start: float = 6.0) -> PlatoonContext:
     """Build the platoon context for a league.
 
     `handedness` is LahmanDB.league_handedness() output (None -> typical
@@ -318,7 +370,8 @@ def build_context(league: dict, handedness: dict | None = None,
     ctx = PlatoonContext(
         year=league.get("year"), league=league.get("league"), lhp_share=lhp,
         batter_shares=g, full_time_pa=full_time_pa, league_rates=base,
-        rates={}, weak_share={}, warnings=tuple(warnings))
+        rates={}, weak_share={}, warnings=tuple(warnings),
+        innings_per_start=innings_per_start)
     for p in HANDS:
         for h in HANDS:
             ctx.rates[(p, h)] = {}
@@ -334,10 +387,11 @@ def build_context(league: dict, handedness: dict | None = None,
 
 
 def batter_sides(bats: str | None, pa: float, hr_rate: float,
-                 ctx: PlatoonContext) -> dict[str, tuple[float, float, str]]:
+                 ctx: PlatoonContext, start_rate: float | None = None,
+                 ) -> dict[str, tuple[float, float, str]]:
     """{pitcher hand: (share, side HR rate, power)} for a batter, exactly
     as the advanced generator computes them."""
-    s_l = printed_share(batter_lhp_share(bats, pa, ctx))
+    s_l = printed_share(batter_lhp_share(bats, pa, ctx, start_rate))
     shares = {"L": s_l, "R": 1.0 - s_l}
     factors = {p: {HR: matchup_factor(HR, p, bats)} for p in HANDS}
     side = split_rates({HR: hr_rate}, factors, shares)
@@ -355,11 +409,11 @@ def _weak_shares(ctx: PlatoonContext, batter_lines) -> dict[tuple[str, str], flo
     league)."""
     pa = {(p, h): 0.0 for p in HANDS for h in HANDS}
     weak = dict(pa)
-    for bats, pa_lg, pa_season, hr in batter_lines:
+    for bats, pa_lg, pa_season, hr, start_rate in batter_lines:
         if pa_season <= 0:
             continue
         for p, (share, _r, power) in batter_sides(
-                bats, pa_season, hr / pa_season, ctx).items():
+                bats, pa_season, hr / pa_season, ctx, start_rate).items():
             cell = (p, effective_hand(bats, p))
             pa[cell] += pa_lg * share
             if power == "W":
@@ -396,7 +450,13 @@ def league_context(league: dict, db=None) -> PlatoonContext:
         full_pa = FULL_TIME_PA_PER_GAME * db.league_games_per_team(year, lg)
     except (KeyError, TypeError):
         full_pa = FULL_TIME_PA_PER_GAME * 162
-    ctx = build_context(league, hands, full_time_pa=full_pa, batter_lines=lines)
+    from .advanced_ratings import _league_pitching_lengths
+    try:
+        start_ip = _league_pitching_lengths(db, year, lg)[0]
+    except (KeyError, TypeError):
+        start_ip = 6.0
+    ctx = build_context(league, hands, full_time_pa=full_pa, batter_lines=lines,
+                        innings_per_start=start_ip)
     with _CACHE_LOCK:
         _CACHE.setdefault(db, {})[key] = ctx
     return ctx

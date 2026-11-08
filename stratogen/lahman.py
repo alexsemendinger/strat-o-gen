@@ -304,6 +304,8 @@ class LahmanDB:
         self._fielding_totals: dict[tuple[int, str, str], _TotalsAcc] = {}
         # (pid, year) -> (G_lf, G_cf, G_rf, G_dh); empty without Appearances
         self._appearances: dict[tuple[str, int], tuple] = {}
+        # (pid, year) -> {team: (G_all, GS or None when unrecorded)}
+        self._starts: dict[tuple[str, int], dict[str, tuple]] | None = None
         self._team_names: dict[tuple[int, str], str] | None = None
         self._team_totals: dict[tuple[int, str], _TotalsAcc] = {}
         self._league_rg: dict[tuple[int, str], list[int]] = {}
@@ -757,10 +759,21 @@ class LahmanDB:
                 partial.add(field)
         return stats, missing, partial
 
-    def batting_season(self, player_id: str, year: int) -> dict | None:
-        """Aggregated batting line for a season (stints summed), or None."""
+    @staticmethod
+    def _team_stints(stints, team_id: str | None):
+        """The stints to sum: all of them, or one team's (a card printed for
+        a traded player's stint with that team)."""
+        if team_id is None or not stints:
+            return stints
+        return [s for s in stints if s[0] == team_id] or None
+
+    def batting_season(self, player_id: str, year: int,
+                       team_id: str | None = None) -> dict | None:
+        """Aggregated batting line for a season (stints summed), or None.
+        With `team_id`, only that team's stint(s). Includes "start_rate"
+        (see start_rate())."""
         self._load_batting()
-        stints = self._batting.get((player_id, year))
+        stints = self._team_stints(self._batting.get((player_id, year)), team_id)
         if not stints:
             return None
         stats, missing, partial = self._aggregate(stints, _BATTING_FIELDS)
@@ -768,12 +781,49 @@ class LahmanDB:
             # Zero-filled or blank: not a measurement of this batter.
             missing.add("SO")
             partial.discard("SO")
+        stats["start_rate"] = self.start_rate(player_id, year,
+                                              [s[0] for s in stints])
         return self._finish_season(stats, missing, partial, stints, _pa_eff,
                                    _BAT_IDX["G"], player_id, year)
 
-    def pitching_season(self, player_id: str, year: int) -> dict | None:
+    def _load_starts(self):
+        if self._starts is not None:
+            return
+        with self._lock:
+            if self._starts is not None:
+                return
+            starts: dict[tuple[str, int], dict[str, tuple]] = {}
+            if self.table_path("Appearances") is not None:
+                cols = ["playerID", "yearID", "teamID", "G_all", "GS"]
+                for pid, year, team, g_all, gs in self._read("Appearances", cols):
+                    teams = starts.setdefault((pid, int(year)), {})
+                    g, s = teams.get(team, (0, 0))
+                    gs = _int_or_none(gs)
+                    teams[team] = (g + (_int_or_none(g_all) or 0),
+                                   None if gs is None or s is None else s + gs)
+            self._starts = starts
+
+    def start_rate(self, player_id: str, year: int,
+                   team_ids: list[str] | None = None) -> float | None:
+        """Games started over games played (Appearances GS / G_all) for the
+        season, or only the given teams' stints. None when Appearances isn't
+        bundled or doesn't record starts for every stint (GS is complete
+        from 1950, about 80% of rows in 1910-49, sparse before)."""
+        self._load_starts()
+        teams = self._starts.get((player_id, year), {})
+        rows = [v for team, v in teams.items()
+                if team_ids is None or team in team_ids]
+        if not rows or any(gs is None for _g, gs in rows):
+            return None
+        games = sum(g for g, _gs in rows)
+        return min(1.0, sum(gs for _g, gs in rows) / games) if games else None
+
+    def pitching_season(self, player_id: str, year: int,
+                        team_id: str | None = None) -> dict | None:
+        """Aggregated pitching line for a season, or None; with `team_id`,
+        only that team's stint(s)."""
         self._load_pitching()
-        stints = self._pitching.get((player_id, year))
+        stints = self._team_stints(self._pitching.get((player_id, year)), team_id)
         if not stints:
             return None
         stats, missing, partial = self._aggregate(stints, _PITCHING_FIELDS)
@@ -1065,9 +1115,9 @@ class LahmanDB:
                 "batters": batters, "batter_coverage": bcov}
 
     def league_batter_lines(self, year: int, league: str,
-                            ) -> list[tuple[str, int, int, int]]:
+                            ) -> list[tuple[str, int, int, int, float | None]]:
         """Every batter who appeared in a (year, league), as compact
-        (bats, PA in this league, season PA, season HR) tuples.
+        (bats, PA in this league, season PA, season HR, start rate) tuples.
 
         Season PA/HR sum all of the player's stints that year (what his
         card is built from); PA in this league weights him in league
@@ -1086,7 +1136,8 @@ class LahmanDB:
             season_pa = sum(_pa_eff(v) for _t, _lg, v in stints)
             season_hr = sum(v[hr_i] or 0 for _t, _lg, v in stints)
             bats = self._people.get(pid, {}).get("bats", "?")
-            out.append((bats, in_lg, season_pa, season_hr))
+            out.append((bats, in_lg, season_pa, season_hr,
+                        self.start_rate(pid, y)))
         return out
 
     # --- league averages ---------------------------------------------------

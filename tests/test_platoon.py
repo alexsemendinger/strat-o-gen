@@ -142,14 +142,16 @@ REAL_ADV = [c for c in REAL if c.transcription.advanced is not None]
 
 
 def test_share_model_against_printed_percentages():
-    """Printed share vs LHP (batters) / LHB (pitchers) on the official
-    cards. Fitted on 12 batters / 7 pitchers (MAE 3.3 / 3.6 points); with
-    the two exact 365 cards added (Yastrzemski 1967 prints 23% vs our 30%,
-    Drysdale 1965 44% vs 37%) it is 3.6 points over 13 batters and 4.0
-    over 8 official pitchers. Bounded here at that achieved level; the
-    unofficial cards (made without split data) miss by ~7.8 and aren't
-    bounded."""
-    bat, pit = [], []
+    """Printed share vs LHP (batters) / LHB (pitchers). Batters: each
+    player's mean miss, every player once (Virdon's ten advanced sides
+    print 7% to 44% against a league share near .29, so they would
+    otherwise drown everyone else); 4.7 points over 24 players, 6.6
+    without the start-rate gate (platoon.BENCH_START_RATE). Pitchers: the
+    official cards, 3.0 points over 13 (one common factor: 6.0), the worst
+    Choate 2014 (a 59% LOOGY: 45% here, 31% with one factor). Bounded at
+    those achieved levels; the unofficial pitchers (made without split
+    data) miss by ~7.8 and aren't bounded."""
+    bat, pit = {}, []
     for c in REAL_ADV:
         s = c.actual_stats
         info = db.player_info(s["player_id"])
@@ -157,15 +159,34 @@ def test_share_model_against_printed_percentages():
         grids = {g["vs"]: g["percent"] / 100 for g in c.transcription.advanced.grids}
         if c.card_type == "batter":
             pred = pl.printed_share(pl.batter_lhp_share(
-                info["bats"], effective_pa(s), ctx))
-            bat.append(abs(pred - grids["LHP"]))
+                info["bats"], effective_pa(s), ctx, s.get("start_rate")))
+            bat.setdefault(s["player_id"], []).append(abs(pred - grids["LHP"]))
         elif c.official:
-            pred = pl.printed_share(pl.pitcher_lhb_share(info["throws"], ctx))
+            pred = pl.printed_share(pl.pitcher_lhb_share(
+                info["throws"], ctx, pl.relief_share(s, ctx.innings_per_start)))
             pit.append(abs(pred - grids["LHB"]))
-    assert len(bat) >= 13 and len(pit) >= 8   # grows with the corpus
-    assert sum(bat) / len(bat) <= 0.037
-    assert sum(pit) / len(pit) <= 0.041
-    assert max(bat + pit) <= 0.10 + 1e-9   # Gibson 1994: 24% vs printed 34%
+    per_player = [sum(v) / len(v) for v in bat.values()]
+    assert len(per_player) >= 24 and len(pit) >= 13   # grows with the corpus
+    assert sum(per_player) / len(per_player) <= 0.048
+    assert sum(pit) / len(pit) <= 0.031
+    assert max(per_player) <= 0.11 + 1e-9   # Bautista 2015: 30% vs printed 19%
+    assert max(pit) <= 0.14 + 1e-9          # Choate 2014: 45% vs printed 59%
+
+
+def test_pitcher_share_follows_hand_and_role():
+    """Relievers face same-handed hitters; starters face stacked lineups."""
+    ctx = pl.league_context(db.league_batting(2014, "NL"), db)
+    lefty = [pl.pitcher_lhb_share("L", ctx, r) for r in (0.0, 1.0)]
+    righty = [pl.pitcher_lhb_share("R", ctx, r) for r in (0.0, 1.0)]
+    assert lefty[0] < lefty[1] and righty[0] > righty[1]
+    assert lefty[1] > righty[1] and lefty[0] < righty[0]
+    # starts get the league's innings per start; the rest is relief
+    assert pl.relief_share({"IPouts": 600, "GS": 0}, 6.0) == 1.0
+    assert pl.relief_share({"IPouts": 600, "GS": 40}, 6.0) == 0.0
+    assert pl.relief_share({"IPouts": 300, "GS": 10}, 6.0) == pytest.approx(0.4)
+    assert pl.relief_share({"IPouts": 0, "GS": 0}, 6.0) is None
+    assert pl.pitcher_lhb_share("R", ctx) == pytest.approx(
+        pl.PITCHER_LHB_FACTOR * (ctx.batter_shares["L"] + ctx.batter_shares["S"]))
 
 
 def test_part_time_righties_are_platooned():
@@ -175,6 +196,15 @@ def test_part_time_righties_are_platooned():
     assert full == pytest.approx(ctx.lhp_share)
     assert ctx.lhp_share < part < 0.5
     assert pl.batter_lhp_share("L", 200, ctx) == pytest.approx(ctx.lhp_share)
+    # a bench player (Linz 1963 started 45 of his 72 games) is platooned;
+    # a regular who missed time (starting 95% of his games) is not
+    assert pl.batter_lhp_share("R", 200, ctx, 0.625) == pytest.approx(part)
+    assert pl.batter_lhp_share("R", 200, ctx, 0.95) == pytest.approx(ctx.lhp_share)
+    assert ctx.lhp_share < pl.batter_lhp_share("R", 200, ctx, 0.80) < part
+    assert db.batting_season("linzph01", 1963)["start_rate"] == pytest.approx(45 / 72)
+    # a traded player's stint card uses that stint's starts
+    assert db.batting_season("cespeyo01", 2015, "NYN")["start_rate"] == \
+        pytest.approx(54 / 57)
 
 
 def test_power_labels_against_real_cards():
@@ -191,7 +221,8 @@ def test_power_labels_against_real_cards():
         pa = effective_pa(s)
         bats = db.player_info(s["player_id"])["bats"]
         sides = pl.batter_sides(bats, pa, s["HR"] / pa,
-                                pl.league_context(c.league, db))
+                                pl.league_context(c.league, db),
+                                s.get("start_rate"))
         for g in c.transcription.advanced.grids:
             total += 1
             agree += sides[g["vs"][0]][2] == g["power"]
@@ -393,6 +424,13 @@ ADV_SIDE_EXEMPT = {
         "scorer reads N-HR as singles for Power-W hitters, so his HR rate "
         "hinges on the matchup mix more than any other card's (re-checked "
         "against the scan)",
+    "pitcher_choate-randy_2014":
+        "36-IP lefty specialist printing 48 strikeouts vs left-handed "
+        "batters and none vs right-handed: no matchup mix fits both his "
+        "hits and strikeouts (tests/test_transcriptions TOLERANCES)",
+    "batter_ramos-wilson_2010":
+        "79-AB call-up whose card prints no walks (tests/test_transcriptions "
+        "TOLERANCES)",
 }
 
 
@@ -564,13 +602,18 @@ def test_cli_advanced(capsys, monkeypatch):
 # - X_SINGLE_RATE 4.9 -> 4.1 per 30 and the */** shares refitted on the
 #   larger corpus (verified: batter targets, chances and cells identical but
 #   for */** suffixes; pitchers' X-block singles, 0.8 chances, moved to
-#   regular singles and outs fell by the same amount; warnings identical).
+#   regular singles and outs fell by the same amount; warnings identical);
+# - the */** shares refitted on 37 cards of 27 players, .35/.18/.40
+#   (verified: targets, warnings and every cell identical but for */**
+#   suffixes; Gwynn and Cobb moved, Mays and Judge unchanged; pitchers'
+#   home runs kept when they overflow the hit budget left all 3 pitchers
+#   identical).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
     ("mayswi01", 1965, "batter", "57ea21c00a2ae4d7"),
-    ("gwynnto01", 1995, "batter", "27958678db54fb15"),
-    ("cobbty01", 1911, "batter", "206371497a889ec4"),
+    ("gwynnto01", 1995, "batter", "0bf3065d5cbf36b0"),
+    ("cobbty01", 1911, "batter", "c8d20747d517c6ea"),
     ("judgeaa01", 2024, "batter", "6919231f9d1bbcc9"),
     ("ryanno01", 1974, "pitcher", "8424b69d1c504357"),
     ("maddugr01", 1995, "pitcher", "7aa74639e575bd26"),

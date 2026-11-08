@@ -1,13 +1,11 @@
 """Auxiliary card ratings (stealing, running, header lines).
 
-Fitted to the ratings printed on the 20 dated real batter cards (the
+Fitted to the ratings printed on the dated real batter cards (the
 plain-text fixtures and the JSON transcriptions; tests/test_ratings.py).
 Stealing thresholds are heuristics on steal volume and success (Raines
 60/9 SB -> AA, Dawson 21/7 -> A, Bonds 13/3 -> B, Mays 9/4 -> C, Cespedes
-3/1 -> D, Murphy 0 -> E): 18/20 exact, the misses LeMahieu 2021 (4/2 in
-597 AB, C vs D) and Carey 1953 (2/1 in 81 AB, D vs C) are both about
-attempts per opportunity. Running comes from Bill James's speed score.
-Official formulas are proprietary.
+3/1 -> D, Murphy 0 -> E; see stealing_rating). Running comes from Bill
+James's speed score. Official formulas are proprietary.
 """
 
 from __future__ import annotations
@@ -24,11 +22,14 @@ def stealing_rating(sb: int, cs: int, cs_missing: bool = False,
     elite success rate. When stolen bases weren't recorded at all (NL
     1876-85, AA 1882-85, UA 1884) the rating is the neutral C, not E.
 
-    Fitted on the 37 dated real batter cards: C takes 7 steals, or 5 at a
-    70% success rate (Carter 1975's 5-for-7 is a C, Virdon 1958's 5-for-8
-    a D); D takes 2 (Howard 1971's 1-for-1 and Virdon 1963's 1-for-3 are
-    E). 35/37 exact, all within one grade; the misses are Carey 1953 (a
-    2-for-3 cameo printed C) and Linz 1963 (1-for-7 printed D).
+    Fitted on the dated real batter cards: C takes steals plus ten times
+    the success rate of at least 12 (Harper 2015's 6-for-10 and Carter
+    1975's 5-for-7 are C, Virdon 1958's 5-for-8 and LeMahieu 2021's 4-for-6
+    D; any 7 steals at a 50% rate qualify); D takes 2 (Howard 1971's 1-for-1
+    and Virdon 1963's 1-for-3 are E). 45/48 exact, all within one grade;
+    the misses are Carey 1953 (a 2-for-3 cameo printed C), Linz 1963
+    (1-for-7 printed D) and Conor Jackson 2008 (10-for-12 printed C, where
+    Judge 2024's 10-for-10 prints B).
     """
     if sb_missing:
         return "C"
@@ -50,7 +51,7 @@ def stealing_rating(sb: int, cs: int, cs_missing: bool = False,
         return "A"
     if sb >= 10 and rate >= 0.60:
         return "B"
-    if sb >= 7 or (sb >= 5 and rate >= 0.70):
+    if sb + 10.0 * rate >= 12.0:
         return "C"
     if sb >= 2:
         return "D"
