@@ -374,25 +374,25 @@ innings), all 248 AL/NL seasons 1901-2024:
 
 | era | train R sim/real | held-out R sim/real |
 |---|---|---|
-| 1901-1919 | 1.005 (sd 0.034) | 0.991 (sd 0.042) |
-| 1920-1941 | 0.998 (0.018) | 0.998 (0.022) |
-| 1942-1960 | 1.010 (0.017) | 1.008 (0.019) |
-| 1961-1976 | 1.006 (0.015) | 1.006 (0.020) |
-| 1977-1992 | 1.012 (0.014) | 1.019 (0.015) |
-| 1993-2009 | 1.009 (0.016) | 1.015 (0.013) |
-| 2010-2024 | 0.991 (0.023) | 1.000 (0.020) |
-| all | 1.004 (sd 0.022), range 0.951-1.075 | 1.005 (sd 0.026), range 0.922-1.091 |
+| 1901-1919 | 0.993 (sd 0.037) | 0.993 (sd 0.040) |
+| 1920-1941 | 1.001 (0.020) | 1.001 (0.024) |
+| 1942-1960 | 1.006 (0.018) | 1.012 (0.018) |
+| 1961-1976 | 1.011 (0.017) | 1.008 (0.014) |
+| 1977-1992 | 1.019 (0.010) | 1.012 (0.019) |
+| 1993-2009 | 1.009 (0.010) | 1.016 (0.012) |
+| 2010-2024 | 0.984 (0.023) | 1.003 (0.019) |
+| all | 1.003 (sd 0.023), range 0.943-1.054 | 1.006 (sd 0.024), range 0.932-1.080 |
 
-247 of the 248 seasons land within ±8% (1919 AL is +9%); 98% of the
-training and 95% of the held-out seasons are within ±5%. On the held-out
-seasons the other rates average 0.99-1.02 of real; SB, CS, HBP, E, WP
-and SH are within ±10% in 97-100% of seasons, PB in 90%, GIDP in 92% and
-IBB in 83%. Double plays turned run 0.89 of real by design: the engine
+All 248 seasons land within ±8% (the extremes are 1914 NL at +8.0% and
+1907 AL at −6.8%); 95% of the training and 96% of the held-out seasons
+are within ±5%. On the held-out seasons the other rates average
+0.99-1.02 of real; SB, CS, HBP, E, WP, SH and GIDP are within ±10% in
+97-100% of seasons, PB in 87% and IBB in 80%. Double plays turned run 0.89 of real by design: the engine
 turns DP grounders and max-effort lineouts only, not strike-'em-out-
 throw-'em-out, liners or flies doubling a runner off, or outfield
 assists. Weak spots: the dead-ball era drifts with the year (1901-1907
-seasons score up to 8% low, 1914-1919 up to 9% high), sacrifice flies run
-~12% high, and balks are noisy.
+seasons score up to 7% low, 1914-1919 up to 8% high), sacrifice flies run
+~6% high, and balks are noisy.
 
 Before the league layer, the engine scored about 13% below real (sd 6%,
 as low as −35%); a 0.75-1.05 band hid the gap. Adding the mechanics one
