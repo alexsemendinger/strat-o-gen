@@ -137,6 +137,8 @@ def test_league_without_left_handed_pitching():
 # --- usage shares and Power ratings vs the real cards ---------------------------
 
 REAL = transcription_cases()
+# cards with a photographed advanced side (a new card may have only its basic side)
+REAL_ADV = [c for c in REAL if c.transcription.advanced is not None]
 
 
 def test_share_model_against_printed_percentages():
@@ -148,7 +150,7 @@ def test_share_model_against_printed_percentages():
     unofficial cards (made without split data) miss by ~7.8 and aren't
     bounded."""
     bat, pit = [], []
-    for c in REAL:
+    for c in REAL_ADV:
         s = c.actual_stats
         info = db.player_info(s["player_id"])
         ctx = pl.league_context(c.league, db)
@@ -160,7 +162,7 @@ def test_share_model_against_printed_percentages():
         elif c.official:
             pred = pl.printed_share(pl.pitcher_lhb_share(info["throws"], ctx))
             pit.append(abs(pred - grids["LHB"]))
-    assert len(bat) == 13 and len(pit) == 8
+    assert len(bat) >= 13 and len(pit) >= 8   # grows with the corpus
     assert sum(bat) / len(bat) <= 0.037
     assert sum(pit) / len(pit) <= 0.041
     assert max(bat + pit) <= 0.10 + 1e-9   # Gibson 1994: 24% vs printed 34%
@@ -182,7 +184,7 @@ def test_power_labels_against_real_cards():
     at 20; see platoon.POWER_HR_THRESHOLD). All misses are printed N
     where the split model says W."""
     agree = total = 0
-    for c in REAL:
+    for c in REAL_ADV:
         if c.card_type != "batter":
             continue
         s = c.actual_stats
@@ -193,8 +195,8 @@ def test_power_labels_against_real_cards():
         for g in c.transcription.advanced.grids:
             total += 1
             agree += sides[g["vs"][0]][2] == g["power"]
-    assert total == 26
-    assert agree >= 22
+    assert total >= 26                         # grows with the corpus
+    assert agree >= 22 and agree / total >= 0.80
 
 
 def test_power_rule():
