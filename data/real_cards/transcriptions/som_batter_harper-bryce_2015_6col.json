@@ -1,0 +1,142 @@
+{
+  "cardId": "batter_harper-bryce_2015",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/simulation-goose-gossage-takes-todays-stars/",
+  "sourceImage": "https://s3.amazonaws.com/som.com/Bryce+Harper+2015+MVP+advanced.jpeg",
+  "cardType": "batter",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Bryce Harper",
+    "bats": "L",
+    "throws": null,
+    "team": "Washington",
+    "year": 2015,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "rf",
+        "rating": 2,
+        "error": "e8",
+        "arm": "-4"
+      },
+      {
+        "pos": "cf",
+        "rating": 3,
+        "error": "e8"
+      }
+    ],
+    "stealing": "C",
+    "stealingDetail": "7/- (13-6)",
+    "bunting": "D",
+    "hitAndRun": "D",
+    "running": "1-14",
+    "power": {
+      "vsL": "N",
+      "vsR": "N"
+    },
+    "notes": "Header reads: 'L | BRYCE HARPER   stealing-(C)   7/- (13-6)   bunting-D   hit & run-D   running 1-14' with fielding sub-line 'rf-2(-4) e8/ cf-3 e8'. Leading 'L' = bats left. Banners: '30% AGAINST LEFT-HAND PITCHERS   Power-N' and '70% AGAINST RIGHT-HAND PITCHERS   Power-N'. The advanced side prints no year or team: year 2015 is from Strat-O-Matic's file name ('Bryce Harper 2015 MVP advanced') and text; team Washington from his 2015 season."
+  },
+  "grids": [
+    {
+      "vs": "LHP",
+      "percent": 30,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "◆ 2-fly (rf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 3, "raw": "▼ 3-SINGLE (cf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE (cf)"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HR 1-4 / DO 5-20", "outcomes": [{"range": [1, 4], "result": "HR"}, {"range": [5, 20], "result": "DO"}]},
+          {"roll": 6, "raw": "DOUBLE (rf)", "outcomes": [{"range": null, "result": "DOUBLE (rf)"}]},
+          {"roll": 7, "raw": "DO 1-15 / fly (rf) B 16-20", "outcomes": [{"range": [1, 15], "result": "DO"}, {"range": [16, 20], "result": "fly (rf) B"}]},
+          {"roll": 8, "raw": "Ω 8-SINGLE**", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 9, "raw": "gb (2b) A+", "outcomes": [{"range": null, "result": "gb (2b) A+"}]},
+          {"roll": 10, "raw": "◆ 10-HR 1-15 / fly (rf) B 16-20", "markers": ["diamond"], "outcomes": [{"range": [1, 15], "result": "HR"}, {"range": [16, 20], "result": "fly (rf) B"}]},
+          {"roll": 11, "raw": "◆ 11-fly (rf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 12, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]},
+          {"roll": 3, "raw": "gb (2b) A", "outcomes": [{"range": null, "result": "gb (2b) A"}]},
+          {"roll": 4, "raw": "△ 4-gb (1b) C / SI* 1-5 / lo (2b) 6-20", "markers": ["upTriangle", "underline:C"], "outcomes": [{"range": null, "result": "gb (1b) C"}, {"range": [1, 5], "result": "SI*"}, {"range": [6, 20], "result": "lo (2b)"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "▼ 10-gb (2b) C", "markers": ["downTriangle", "underline:C"], "outcomes": [{"range": null, "result": "gb (2b) C"}]},
+          {"roll": 11, "raw": "gb (2b) A+", "outcomes": [{"range": null, "result": "gb (2b) A+"}]},
+          {"roll": 12, "raw": "lo (2b) max", "outcomes": [{"range": null, "result": "lo (2b) max"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 5, "raw": "Ω 5-SINGLE**", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE**"}]},
+          {"roll": 6, "raw": "SI* 1-5 / gb (1b) A 6-20", "outcomes": [{"range": [1, 5], "result": "SI*"}, {"range": [6, 20], "result": "gb (1b) A"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] }
+      ]
+    },
+    {
+      "vs": "RHP",
+      "percent": 70,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "◆ 2-HR 1 / fly (lf) B 2-20", "markers": ["diamond"], "outcomes": [{"range": [1, 1], "result": "HR"}, {"range": [2, 20], "result": "fly (lf) B"}]},
+          {"roll": 3, "raw": "◆ 3-fly (lf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (lf) B?"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 6, "raw": "HR 1-14 / DO 15-20", "outcomes": [{"range": [1, 14], "result": "HR"}, {"range": [15, 20], "result": "DO"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "Ω 8-SINGLE (lf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE (lf)"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "◆ 10-HOMERUN", "markers": ["diamond"], "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 11, "raw": "◆ 11-fly (lf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (lf) B?"}]},
+          {"roll": 12, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "lo (2b) max", "outcomes": [{"range": null, "result": "lo (2b) max"}]},
+          {"roll": 3, "raw": "▼ 3-gb (2b) C", "markers": ["downTriangle", "underline:C"], "outcomes": [{"range": null, "result": "gb (2b) C"}]},
+          {"roll": 4, "raw": "gb (2b) A+", "outcomes": [{"range": null, "result": "gb (2b) A+"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "△ 9-strikeout / SI* 1-4 / lo (2b) 5-20", "markers": ["upTriangle"], "outcomes": [{"range": null, "result": "strikeout"}, {"range": [1, 4], "result": "SI*"}, {"range": [5, 20], "result": "lo (2b)"}]},
+          {"roll": 10, "raw": "gb (2b) A+", "outcomes": [{"range": null, "result": "gb (2b) A+"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "▼ 2-gb (1b) C", "markers": ["downTriangle", "underline:C"], "outcomes": [{"range": null, "result": "gb (1b) C"}]},
+          {"roll": 3, "raw": "gb (2b) A", "outcomes": [{"range": null, "result": "gb (2b) A"}]},
+          {"roll": 4, "raw": "fly (cf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (cf) B?"}]},
+          {"roll": 5, "raw": "Ω 5-SINGLE (lf)", "markers": ["omega"], "outcomes": [{"range": null, "result": "SINGLE (lf)"}]},
+          {"roll": 6, "raw": "SI* 1-6 / gb (ss) A 7-20", "outcomes": [{"range": [1, 6], "result": "SI*"}, {"range": [7, 20], "result": "gb (ss) A"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "DOUBLE (rf)", "outcomes": [{"range": null, "result": "DOUBLE (rf)"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "▼ 11-SINGLE (lf)", "markers": ["downTriangle"], "outcomes": [{"range": null, "result": "SINGLE (lf)"}]},
+          {"roll": 12, "raw": "fly (cf) A", "outcomes": [{"range": null, "result": "fly (cf) A"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Strat-O-Matic's own photo of the card (1953x1417, sourceImage on its som.com bucket), used in its March 2016 'SIMULATION: Goose Gossage takes on today's stars' announcement (sourceUrl). The card lies flat and square to the camera and every cell is sharp; the grid banners are printed faintly but legible (30% / 70%, summing to 100). Read twice: (1) from a 1500px view of the whole photo, (2) from 1.6x full-resolution crops of each platoon grid plus a header strip; no differences. Markers: diamond ◆, downTriangle ▼, upTriangle △ (LHP col2 roll4 '△4-gb (1b) C' and RHP col2 roll9 '△9-strikeout', each with an italic 'SI* / lo (2b)' d20 split on the two lines directly beneath, before the next roll; binding unambiguous), omega Ω, '?' as questionMark, underlined class letters as 'underline:C'. Two splits print the class letter run into the range ('gb (1b) A6-20', 'gb (ss) A7-20'); raw inserts the space. 'plus injury' prints on its own line under HBP (LHP col2 roll2, RHP col1 roll12)."
+  }
+}
