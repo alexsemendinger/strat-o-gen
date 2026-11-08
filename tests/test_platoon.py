@@ -607,7 +607,11 @@ def test_cli_advanced(capsys, monkeypatch):
 #   (verified: targets, warnings and every cell identical but for */**
 #   suffixes; Gwynn and Cobb moved, Mays and Judge unchanged; pitchers'
 #   home runs kept when they overflow the hit budget left all 3 pitchers
-#   identical).
+#   identical);
+# - the X layouts grew from 16 to the corpus's 32 real ones (verified:
+#   targets and warnings identical; Ryan and Maddux drew new layouts,
+#   Maddux's 1B/SO moved 0.05 chances in rounding, 7.65/31.75 -> 7.70/
+#   31.70 against 7.658/31.728; Chapman's shrunken block unchanged).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
@@ -615,8 +619,8 @@ _BASIC_GOLDEN = [
     ("gwynnto01", 1995, "batter", "0bf3065d5cbf36b0"),
     ("cobbty01", 1911, "batter", "c8d20747d517c6ea"),
     ("judgeaa01", 2024, "batter", "6919231f9d1bbcc9"),
-    ("ryanno01", 1974, "pitcher", "8424b69d1c504357"),
-    ("maddugr01", 1995, "pitcher", "7aa74639e575bd26"),
+    ("ryanno01", 1974, "pitcher", "1605983579bec703"),
+    ("maddugr01", 1995, "pitcher", "2a184dc04dc58717"),
     ("chapmar01", 2014, "pitcher", "f89b52cd37847c7d"),
 ]
 

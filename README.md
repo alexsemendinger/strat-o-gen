@@ -136,7 +136,7 @@ real cards' standard fielders — 30 chances split ss 7 / 2b 6 / 3b 3 /
 c 3 / cf 3 / 1b 2 / lf 2 / p 2 / rf 2, as 42 of the 47 official real
 pitcher grids print it (the other five are bigger relief blocks containing
 it) — laid
-out like one of the 16 distinct real layouts; a shrunken block keeps the
+out like one of the 32 distinct real layouts; a shrunken block keeps the
 closest exact-sum share of each fielder. 2B/3B allowed aren't
 recorded, so a pitcher's non-HR hits follow the league's 1B/2B/3B mix,
 with the X singles taken out of his singles.
