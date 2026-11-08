@@ -33,12 +33,18 @@ def _card(pid, year, kind):
 
 
 def test_sweep_cards_are_valid_and_on_target():
-    """Every card validates and carries each category within 0.11 chances
-    of its target (over 1500 pool seasons the worst miss is 0.098)."""
+    """Every card validates, never prints more than two results in one
+    cell (as on every real card: 0 of 2,904 cells on the 88 real grids),
+    and carries each category within 0.11 chances of its target. Over
+    1500 pool seasons the 99th-percentile miss is 0.076; extreme
+    strikeout relievers on crowded cards reach 0.185 (B.J. Ryan 2005)."""
     misses = []
     for pid, year, kind in SAMPLE + EDGES:
         card, targets = _card(pid, year, kind)
         assert card.validate() == [], (pid, year)
+        crowded = [(col, d) for col, rows in card.columns.items()
+                   for d, splits in rows.items() if len(splits) > 2]
+        assert not crowded, (pid, year, crowded)
         placed = card.chances()
         for cat, t in targets.items():
             if abs(placed.get(cat, 0.0) - t) > 0.11:

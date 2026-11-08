@@ -1112,20 +1112,26 @@ def _place_categories(targets: dict[str, float], prefs: dict, free: dict,
                 t -= amount
                 got[cat] += amount
         if t > _EPSILON:
-            # Safety net for very crowded cards: continue this category in
-            # the unused d20 tails of earlier splits.
-            tails = sorted((c for c in placed if open_tail(c) <= 20),
-                           key=lambda c: DICE_WEIGHTS[c[1]])
-            for cell in tails:
-                if t <= _EPSILON:
+            # Crowded card, no free cell left. Real cards never print more
+            # than two results in one cell (0 of 2,904 cells on the 88 real
+            # grids), so a remainder may only take over whole unused tails
+            # of one-result split cells — leaving no room for an out after
+            # it — one tail at a time, each time the tail that lands closest
+            # to what's left, while that beats stopping. Whatever is left is
+            # dropped and the out total absorbs it.
+            while t > _EPSILON:
+                best = None
+                for cell in placed:
+                    if len(placed[cell]) != 1 or open_tail(cell) > 20:
+                        continue
+                    amount = DICE_WEIGHTS[cell[1]] * (21 - open_tail(cell)) / 20.0
+                    err = abs(amount - t)
+                    if err < t and (best is None or err < best[0]):
+                        best = (err, cell, amount)
+                if best is None:
                     break
-                w = DICE_WEIGHTS[cell[1]]
-                start = open_tail(cell)
-                avail_slots = 21 - start
-                want_slots = min(avail_slots, max(1, round(20.0 * t / w)))
-                amount = w * want_slots / 20.0
-                placed[cell].append(
-                    (text(cat, amount), start, start + want_slots - 1))
+                _err, cell, amount = best
+                placed[cell].append((text(cat, amount), open_tail(cell), 20))
                 t -= amount
                 got[cat] += amount
         drift += got[cat] - targets.get(cat, 0.0)

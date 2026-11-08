@@ -539,14 +539,18 @@ def test_cli_advanced(capsys, monkeypatch):
 # - batter */** shares became the real-card means (verified: only the */**
 #   suffixes of batter hit texts moved; pitchers identical);
 # - generation warnings were made specific, sized and merged (verified: only
-#   Gwynn/Cobb/Maddux/Chapman warnings changed; targets and grids identical).
+#   Gwynn/Cobb/Maddux/Chapman warnings changed; targets and grids identical);
+# - cells were capped at two results, as on every real card (verified:
+#   targets and warnings identical; Gwynn and Judge each lost one 0.05-
+#   chance walk sliver from a three-result cell, BB 0.95->0.90 and
+#   27.25->27.20, outs +0.05; Gwynn's out texts reshuffled by quota).
 # '++' is stripped and the header excluded, so they only depend on the
 # chance model and layout.
 _BASIC_GOLDEN = [
     ("mayswi01", 1965, "batter", "57ea21c00a2ae4d7"),
-    ("gwynnto01", 1995, "batter", "70695fd9d9e8e55f"),
+    ("gwynnto01", 1995, "batter", "9b5b48f3b24033d0"),
     ("cobbty01", 1911, "batter", "d9c65c4e98c7636d"),
-    ("judgeaa01", 2024, "batter", "b2cf5d1f9112a36b"),
+    ("judgeaa01", 2024, "batter", "6919231f9d1bbcc9"),
     ("ryanno01", 1974, "pitcher", "d4f287e1be21fe60"),
     ("maddugr01", 1995, "pitcher", "a48eedad8177d0fb"),
     ("chapmar01", 2014, "pitcher", "f89b52cd37847c7d"),
