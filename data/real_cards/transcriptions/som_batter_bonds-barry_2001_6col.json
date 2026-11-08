@@ -1,6 +1,6 @@
 {
   "cardId": "batter_bonds-barry_2001",
-  "sourceUrl": "https://web.archive.org/web/20031108080202/http://www.strat-o-matic.com/sphere/bondsa.jpg",
+  "sourceUrl": "https://web.archive.org/web/20031105034949/http://www.strat-o-matic.com:80/sphere/talkshow1003.htm",
   "sourceImage": "https://web.archive.org/web/20031108080202im_/http://www.strat-o-matic.com:80/sphere/bondsa.jpg",
   "cardType": "batter",
   "side": "6col",
@@ -32,7 +32,7 @@
       "vsL": "N",
       "vsR": "N"
     },
-    "notes": "Header reads: 'L | BARRY BONDS   stealing-(B)   *5/- (18-6)   bunting-D   hit & run-D   running 1-14' with fielding sub-line 'lf-2(+1) e7'. Leading 'L' = bats left. Banners: '30% AGAINST LEFT-HAND PITCHERS   Power-N' and '70% AGAINST RIGHT-HAND PITCHERS   Power-N'. The advanced side prints no year or team: 2001 San Francisco is inferred from the fit (see transcription notes). The 2001 basic side is already in the corpus as the text fixture data/real_cards/bonds_2001.txt."
+    "notes": "Header reads: 'L | BARRY BONDS   stealing-(B)   *5/- (18-6)   bunting-D   hit & run-D   running 1-14' with fielding sub-line 'lf-2(+1) e7'. Leading 'L' = bats left. Banners: '30% AGAINST LEFT-HAND PITCHERS   Power-N' and '70% AGAINST RIGHT-HAND PITCHERS   Power-N'. The advanced side prints no year or team: the source page names it as his 2001 card (see transcription notes); team San Francisco. The 2001 basic side is already in the corpus as the text fixture data/real_cards/bonds_2001.txt."
   },
   "grids": [
     {
@@ -132,6 +132,6 @@
   "transcription": {
     "confidence": "high",
     "uncertainCells": [],
-    "notes": "Barry Bonds advanced card image from Strat-O-Matic's own website: www.strat-o-matic.com/sphere/bondsa.jpg (the 'Stratosphere' newsletter area), recovered from the Wayback Machine capture of 2003-11-08 (sourceUrl; raw capture at sourceImage). It is a flat scan, 744x426, sharp: every cell, glyph and d20 range is clear. Read twice: (1) from a 2x view of the whole card, (2) from 3.2x crops of each platoon grid; no differences. YEAR IS INFERRED, not printed: scored against his seasons, the card fits 2001 (his 73-HR year) closely (errors HR .0054, BB .0025, SO .0028, 1B .0019, BA .0132) and clearly does not fit 2000 (BB .067), 2002 (SO .061, 1B .048) or 2003 (1B .052, BB .046) (a November 2003 capture can hold any season card through 2002). Markers: diamond ◆, '?' as questionMark, underlined class letters as 'underline:C'. 'plus injury' prints on its own line under HBP (col1 roll12 of both grids); HBP also on col2 roll4, 4 HBP chances per grid. Walks: 39 chances vs LHP, 38 vs RHP."
+    "notes": "Barry Bonds's 2001 advanced card as published by Strat-O-Matic in its October 2003 'Talk Show' Q&A column on strat-o-matic.com (Stratosphere pages; sourceUrl is the Wayback capture of that page), which answers a reader's request with: 'Here is Bonds card from his 2001 season, when he hit 73 homers', showing bondsb.jpg (basic side; never archived, and the 2001 basic side is already in the corpus as data/real_cards/bonds_2001.txt) and bondsa.jpg (this advanced side; Wayback capture of 2003-11-08 at sourceImage). The image is a flat scan, 744x426, sharp: every cell, glyph and d20 range is clear. Read twice: (1) from a 2x view of the whole card, (2) from 3.2x crops of each platoon grid; no differences. The fit agrees with the page: against 2001 the card scores HR .0054, BB .0025, SO .0028, 1B .0019, BA .0132, while it clearly does not fit 2000 (BB .067), 2002 (SO .061) or 2003 (1B .052). Markers: diamond ◆, '?' as questionMark, underlined class letters as 'underline:C'. 'plus injury' prints on its own line under HBP (col1 roll12 of both grids); HBP also on col2 roll4, 4 HBP chances per grid."
   }
 }
