@@ -1,0 +1,137 @@
+{
+  "cardId": "batter_bonds-barry_2001",
+  "sourceUrl": "https://web.archive.org/web/20031108080202/http://www.strat-o-matic.com/sphere/bondsa.jpg",
+  "sourceImage": "https://web.archive.org/web/20031108080202im_/http://www.strat-o-matic.com:80/sphere/bondsa.jpg",
+  "cardType": "batter",
+  "side": "6col",
+  "official": true,
+  "player": {
+    "name": "Barry Bonds",
+    "bats": "L",
+    "throws": null,
+    "team": "San Francisco",
+    "year": 2001,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "lf",
+        "rating": 2,
+        "error": "e7",
+        "arm": "+1"
+      }
+    ],
+    "stealing": "B",
+    "stealingDetail": "*5/- (18-6)",
+    "bunting": "D",
+    "hitAndRun": "D",
+    "running": "1-14",
+    "power": {
+      "vsL": "N",
+      "vsR": "N"
+    },
+    "notes": "Header reads: 'L | BARRY BONDS   stealing-(B)   *5/- (18-6)   bunting-D   hit & run-D   running 1-14' with fielding sub-line 'lf-2(+1) e7'. Leading 'L' = bats left. Banners: '30% AGAINST LEFT-HAND PITCHERS   Power-N' and '70% AGAINST RIGHT-HAND PITCHERS   Power-N'. The advanced side prints no year or team: 2001 San Francisco is inferred from the fit (see transcription notes). The 2001 basic side is already in the corpus as the text fixture data/real_cards/bonds_2001.txt."
+  },
+  "grids": [
+    {
+      "vs": "LHP",
+      "percent": 30,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "◆ 2-fly (cf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (cf) B?"}]},
+          {"roll": 3, "raw": "◆ 3-fly (lf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (lf) B?"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 6, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 7, "raw": "HR 1-5 / DO 6-20", "outcomes": [{"range": [1, 5], "result": "HR"}, {"range": [6, 20], "result": "DO"}]},
+          {"roll": 8, "raw": "TR 1-3 / fly (cf) B 4-20", "outcomes": [{"range": [1, 3], "result": "TR"}, {"range": [4, 20], "result": "fly (cf) B"}]},
+          {"roll": 9, "raw": "gb (2b) B+", "outcomes": [{"range": null, "result": "gb (2b) B+"}]},
+          {"roll": 10, "raw": "◆ 10-HR 1-16 / fly (lf) B 17-20", "markers": ["diamond"], "outcomes": [{"range": [1, 16], "result": "HR"}, {"range": [17, 20], "result": "fly (lf) B"}]},
+          {"roll": 11, "raw": "◆ 11-fly (lf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (lf) B?"}]},
+          {"roll": 12, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "lo (2b) max", "outcomes": [{"range": null, "result": "lo (2b) max"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "fly (rf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "fly (cf) A", "outcomes": [{"range": null, "result": "fly (cf) A"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "SI* 1-8 / gb (1b) C 9-20", "markers": ["underline:C"], "outcomes": [{"range": [1, 8], "result": "SI*"}, {"range": [9, 20], "result": "gb (1b) C"}]},
+          {"roll": 5, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 6, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "DO** 1 / SI** 2-20", "outcomes": [{"range": [1, 1], "result": "DO**"}, {"range": [2, 20], "result": "SI**"}]}
+        ] }
+      ]
+    },
+    {
+      "vs": "RHP",
+      "percent": 70,
+      "power": "N",
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 5, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 6, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 7, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 8, "raw": "HR 1-9 / DO 10-20", "outcomes": [{"range": [1, 9], "result": "HR"}, {"range": [10, 20], "result": "DO"}]},
+          {"roll": 9, "raw": "fly (lf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (lf) B?"}]},
+          {"roll": 10, "raw": "◆ 10-HR 1-16 / fly (rf) B 17-20", "markers": ["diamond"], "outcomes": [{"range": [1, 16], "result": "HR"}, {"range": [17, 20], "result": "fly (rf) B"}]},
+          {"roll": 11, "raw": "◆ 11-fly (rf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 12, "raw": "HBP plus injury", "outcomes": [{"range": null, "result": "HBP plus injury"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "fly (cf) A", "outcomes": [{"range": null, "result": "fly (cf) A"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "HBP", "outcomes": [{"range": null, "result": "HBP"}]},
+          {"roll": 5, "raw": "fly (cf) B?", "markers": ["questionMark"], "outcomes": [{"range": null, "result": "fly (cf) B?"}]},
+          {"roll": 6, "raw": "gb (2b) C", "markers": ["underline:C"], "outcomes": [{"range": null, "result": "gb (2b) C"}]},
+          {"roll": 7, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 8, "raw": "gb (2b) B+", "outcomes": [{"range": null, "result": "gb (2b) B+"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 5, "raw": "DO 1-8 / fly (cf) B 9-20", "outcomes": [{"range": [1, 8], "result": "DO"}, {"range": [9, 20], "result": "fly (cf) B"}]},
+          {"roll": 6, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 10, "raw": "◆ 10-fly (rf) B?", "markers": ["diamond", "questionMark"], "outcomes": [{"range": null, "result": "fly (rf) B?"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": null,
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Barry Bonds advanced card image from Strat-O-Matic's own website: www.strat-o-matic.com/sphere/bondsa.jpg (the 'Stratosphere' newsletter area), recovered from the Wayback Machine capture of 2003-11-08 (sourceUrl; raw capture at sourceImage). It is a flat scan, 744x426, sharp: every cell, glyph and d20 range is clear. Read twice: (1) from a 2x view of the whole card, (2) from 3.2x crops of each platoon grid; no differences. YEAR IS INFERRED, not printed: scored against his seasons, the card fits 2001 (his 73-HR year) closely (errors HR .0054, BB .0025, SO .0028, 1B .0019, BA .0132) and clearly does not fit 2000 (BB .067), 2002 (SO .061, 1B .048) or 2003 (1B .052, BB .046) (a November 2003 capture can hold any season card through 2002). Markers: diamond ◆, '?' as questionMark, underlined class letters as 'underline:C'. 'plus injury' prints on its own line under HBP (col1 roll12 of both grids); HBP also on col2 roll4, 4 HBP chances per grid. Walks: 39 chances vs LHP, 38 vs RHP."
+  }
+}
