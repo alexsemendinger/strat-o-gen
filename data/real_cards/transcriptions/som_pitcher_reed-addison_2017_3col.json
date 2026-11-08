@@ -1,0 +1,93 @@
+{
+  "cardId": "pitcher_reed-addison_2017",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/2017-baseball-card-corrections/",
+  "sourceImage": "https://s3.amazonaws.com/strat-patch-downloads/Addison+Reed.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Addison Reed",
+    "throws": null,
+    "bats": null,
+    "team": "Boston",
+    "year": 2017,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": {
+      "type": "relief"
+    },
+    "pitcherFielding": "pitcher-4",
+    "battingNumber": "batting # 1",
+    "notes": "Header reads: 'ADDISON REED   pitcher-4   relief' / 'batting # 1' and 'PITCHING CARD   BOSTON'. 'pitcher-4' is the pitcher's fielding rating; 'batting # 1' his batting/bunting designation; 'relief' the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]},
+          {"roll": 3, "raw": "FLYBALL (rf)X", "outcomes": [{"range": null, "result": "FLYBALL (rf)X"}]},
+          {"roll": 4, "raw": "flyball (cf)B", "outcomes": [{"range": null, "result": "flyball (cf)B"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "GROUND-BALL(2b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(2b)X"}]},
+          {"roll": 8, "raw": "flyball (cf)B", "outcomes": [{"range": null, "result": "flyball (cf)B"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "flyball (rf)C", "outcomes": [{"range": null, "result": "flyball (rf)C"}]},
+          {"roll": 11, "raw": "FLYBALL (lf)X", "outcomes": [{"range": null, "result": "FLYBALL (lf)X"}]},
+          {"roll": 12, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "groundball (2b)C", "outcomes": [{"range": null, "result": "groundball (2b)C"}]},
+          {"roll": 3, "raw": "GROUND-BALL(1b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(1b)X"}]},
+          {"roll": 4, "raw": "groundball (2b)C", "outcomes": [{"range": null, "result": "groundball (2b)C"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "GROUND-BALL(SS)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "FLYBALL (cf)X", "outcomes": [{"range": null, "result": "FLYBALL (cf)X"}]},
+          {"roll": 11, "raw": "GROUND-BALL(p)X", "outcomes": [{"range": null, "result": "GROUND-BALL(p)X"}]},
+          {"roll": 12, "raw": "groundball (1b)C", "outcomes": [{"range": null, "result": "groundball (1b)C"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "groundball (1b)C", "outcomes": [{"range": null, "result": "groundball (1b)C"}]},
+          {"roll": 3, "raw": "GROUND-BALL(ss)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(3b)X"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "popout(2b)", "outcomes": [{"range": null, "result": "popout(2b)"}]},
+          {"roll": 8, "raw": "HOMERUN 1-11 / flyball (rf)B 12-20", "outcomes": [{"range": [1, 11], "result": "HOMERUN"}, {"range": [12, 20], "result": "flyball (rf)B"}]},
+          {"roll": 9, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 10, "raw": "CATCHER's CARD X", "outcomes": [{"range": null, "result": "CATCHER'S CARD X"}]},
+          {"roll": 11, "raw": "SINGLE* 1 / lineout(1b) 2-20", "outcomes": [{"range": [1, 1], "result": "SINGLE*"}, {"range": [2, 20], "result": "lineout(1b)"}]},
+          {"roll": 12, "raw": "flyball (rf)C", "outcomes": [{"range": null, "result": "flyball (rf)C"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 2017,
+    "stats": {
+      "W": 1,
+      "L": 1,
+      "ERA": "3.33",
+      "STARTS": 0,
+      "SAVES": 0,
+      "IP": 27,
+      "HITS ALLOWED": 16,
+      "BB": 9,
+      "SO": 28,
+      "HOMERUNS ALLOWED": 5
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Official Strat-O-Matic correction: its '2017 Baseball Card Corrections' announcement (sourceUrl) says 'Addison Reed (Boston card only- 27 IP) is incorrect, please see the corrected card image below' and embeds this image (sourceImage, 332x593). The image is a typeset mock-up rather than a photo, small but clean: every cell, star and d20 range is distinct. Read twice: (1) from a 2.2x upscale of the whole card, (2) from 3.6-4x per-column and stat-box crops; no differences. Printed quirks kept verbatim: 'CATCHER's CARD X', 'GROUND-BALL(SS)X' in column 5 (capital SS; ss elsewhere), 'popout(2b)' and 'lineout(1b)' without a space (outcomes use the corpus forms 'GROUND-BALL(ss)X' and 'CATCHER'S CARD X'). THIS IS A BOSTON-ONLY CARD: Reed was traded from the Mets (NL) to Boston (AL) in 2017, and Strat-O-Matic carded each league's stint separately; the printed line (1-1, 3.33, 27 IP, 16 H, 9 BB, 28 SO, 5 HR) is his Boston stint, so the validator's comparison with his combined 2017 season (2-3, 76 IP) is expected to disagree. Lahman's BOS stint matches every printed number (1-1, 81 outs = 27 IP, 16 H, 9 BB, 28 SO, 5 HR, 106 BFP), and scored against that stint the card is inside the corpus bars: H/PA .0141, HR .0008, BB .0004, SO .0001 (against the combined season: H/PA .0458, BB .0286, SO .0203)."
+  }
+}

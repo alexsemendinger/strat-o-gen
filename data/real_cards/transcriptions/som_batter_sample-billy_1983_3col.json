@@ -1,0 +1,99 @@
+{
+  "cardId": "batter_sample-billy_1983",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/billy-sample-challenge/",
+  "sourceImage": "https://s3.amazonaws.com/som.com/Billy+Sample+basic+card.jpg",
+  "cardType": "batter",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Billy Sample",
+    "bats": null,
+    "throws": null,
+    "team": "Texas Rangers",
+    "year": 1983,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "fielding": [
+      {
+        "pos": "lf",
+        "rating": 2,
+        "error": null
+      },
+      {
+        "pos": "cf",
+        "rating": 3,
+        "error": null
+      }
+    ],
+    "stealing": "AA",
+    "running": "1-15",
+    "notes": "Header reads: 'BILLY SAMPLE   leftfield-2   stealing-AA' / 'centerfield-3   running 1-15' and 'TEXAS RANGERS'. Older card layout: the stat box reads '1983 BATTING RECORD' with AT BATS / DOUBLES / TRIPLES / HOMERUNS / AVERAGE / WALKS / STRIKEOUTS."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 1, "cells": [
+          {"roll": 2, "raw": "popout (3b) plus injury", "outcomes": [{"range": null, "result": "popout (3b) plus injury"}]},
+          {"roll": 3, "raw": "popout (3b)", "outcomes": [{"range": null, "result": "popout (3b)"}]},
+          {"roll": 4, "raw": "popout (ss)", "outcomes": [{"range": null, "result": "popout (ss)"}]},
+          {"roll": 5, "raw": "popout (2b)", "outcomes": [{"range": null, "result": "popout (2b)"}]},
+          {"roll": 6, "raw": "DOUBLE** 1-7 / SINGLE** 8-20", "outcomes": [{"range": [1, 7], "result": "DOUBLE**"}, {"range": [8, 20], "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "TRIPLE 1 / SINGLE** 2-20", "outcomes": [{"range": [1, 1], "result": "TRIPLE"}, {"range": [2, 20], "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "HOMERUN 1-8 / DOUBLE 9-20", "outcomes": [{"range": [1, 8], "result": "HOMERUN"}, {"range": [9, 20], "result": "DOUBLE"}]},
+          {"roll": 9, "raw": "lineout (3b)", "outcomes": [{"range": null, "result": "lineout (3b)"}]},
+          {"roll": 10, "raw": "popout (3b)", "outcomes": [{"range": null, "result": "popout (3b)"}]},
+          {"roll": 11, "raw": "popout (ss)", "outcomes": [{"range": null, "result": "popout (ss)"}]},
+          {"roll": 12, "raw": "lineout (3b)", "outcomes": [{"range": null, "result": "lineout (3b)"}]}
+        ] },
+        { "col": 2, "cells": [
+          {"roll": 2, "raw": "foulout (c)", "outcomes": [{"range": null, "result": "foulout (c)"}]},
+          {"roll": 3, "raw": "groundball (2b) B", "outcomes": [{"range": null, "result": "groundball (2b) B"}]},
+          {"roll": 4, "raw": "popout (ss)", "outcomes": [{"range": null, "result": "popout (ss)"}]},
+          {"roll": 5, "raw": "groundball (ss) A++", "outcomes": [{"range": null, "result": "groundball (ss) A++"}]},
+          {"roll": 6, "raw": "groundball (3b) B", "outcomes": [{"range": null, "result": "groundball (3b) B"}]},
+          {"roll": 7, "raw": "groundball (3b) B", "outcomes": [{"range": null, "result": "groundball (3b) B"}]},
+          {"roll": 8, "raw": "groundball (ss) A", "outcomes": [{"range": null, "result": "groundball (ss) A"}]},
+          {"roll": 9, "raw": "flyball (cf) B", "outcomes": [{"range": null, "result": "flyball (cf) B"}]},
+          {"roll": 10, "raw": "groundball (p) B", "outcomes": [{"range": null, "result": "groundball (p) B"}]},
+          {"roll": 11, "raw": "groundball (ss) A++", "outcomes": [{"range": null, "result": "groundball (ss) A++"}]},
+          {"roll": 12, "raw": "groundball (3b) A", "outcomes": [{"range": null, "result": "groundball (3b) A"}]}
+        ] },
+        { "col": 3, "cells": [
+          {"roll": 2, "raw": "flyball (rf) B", "outcomes": [{"range": null, "result": "flyball (rf) B"}]},
+          {"roll": 3, "raw": "flyball (lf) B", "outcomes": [{"range": null, "result": "flyball (lf) B"}]},
+          {"roll": 4, "raw": "groundball (ss) A", "outcomes": [{"range": null, "result": "groundball (ss) A"}]},
+          {"roll": 5, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 6, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 7, "raw": "SINGLE* 1-7 / lineout (ss) 8-20", "outcomes": [{"range": [1, 7], "result": "SINGLE*"}, {"range": [8, 20], "result": "lineout (ss)"}]},
+          {"roll": 8, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 9, "raw": "flyball (lf) B", "outcomes": [{"range": null, "result": "flyball (lf) B"}]},
+          {"roll": 10, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 11, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 12, "raw": "lineout (2b) into as many outs as possible", "outcomes": [{"range": null, "result": "lineout (2b) into as many outs as possible"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "BATTING RECORD",
+    "season": 1983,
+    "stats": {
+      "AT BATS": 554,
+      "DOUBLES": 28,
+      "TRIPLES": 3,
+      "HOMERUNS": 12,
+      "AVERAGE": ".274",
+      "WALKS": 44,
+      "STRIKEOUTS": 46
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Card image Strat-O-Matic posted with its March 2015 'The Billy Sample Challenge' announcement (sourceUrl), in which Sample played with 'his own Strat-O-Matic card' from the 1983 Texas set; the image is on Strat-O-Matic's som.com bucket (sourceImage). It is small (271x510) but a clean flat scan with crisp type: every cell, star and d20 range is distinct. Read twice: (1) from a 2.6x upscale of the whole card, (2) from 4.5x per-column crops; no differences. The '++' after groundball (ss) A (col 2 rolls 5 and 11) prints as two separated plus signs; SINGLE** (col 1 rolls 6-7) vs SINGLE* (col 3 roll 7) are distinct. Split results print each d20 range on its own line under the result. The printed line matches Lahman exactly (554 AB, 28 2B, 3 3B, 12 HR, .274, 44 BB, 46 SO)."
+  }
+}
