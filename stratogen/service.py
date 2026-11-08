@@ -23,7 +23,7 @@ from .advanced_ratings import (
     advanced_pitcher_header_lines, advanced_pitcher_ratings,
 )
 from .card_json import advanced_card_to_json
-from .fielding import position_ratings, rate_position
+from .fielding import position_ratings, rate_position, unrecorded_positions
 from .generate import (
     average_batter_chances, average_pitcher_chances,
     generate_advanced_batter_card, generate_advanced_pitcher_card,
@@ -361,6 +361,12 @@ def _build(db, player_id: str, year: int, kind: str) -> CardSet:
                 advanced_batter_ratings(db, player_id, year))
             opposing = average_pitcher_chances(league)
             denominator = effective_pa(stats)
+            blank = [p for p in unrecorded_positions(db, player_id, year)
+                     if any(p == pos for pos, _r, _g in positions)]
+            if blank:
+                warn_b = warn_b + [
+                    f"no fielding stats were recorded at {', '.join(blank)} this "
+                    f"season: rated from his prior seasons, or average (3)"]
             if WARN_PA > denominator >= 100:
                 warn_b = warn_b + [
                     f"only {denominator:.0f} plate appearances — small "

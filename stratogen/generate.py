@@ -1364,15 +1364,20 @@ def _missing_data_warnings(stats: dict, card_type: str = "batter",
         names = ", ".join(f"{_FIELD_NAMES[f]} ({f})"
                           for f in sorted(fields, key=list(_FIELD_NAMES).index))
         warnings.append(f"not recorded {when}: {names}; the card treats them as 0")
+    partial = ((set(stats.get("partial") or ()) & _RELEVANT[card_type])
+               - fields - {"SO"})
+    if partial:
+        names = ", ".join(f"{_FIELD_NAMES[f]} ({f})"
+                          for f in sorted(partial, key=list(_FIELD_NAMES).index))
+        warnings.append(f"recorded for only part of the season (not by every "
+                        f"team he played for): {names}; the rest counts as 0")
     if imputed_so:
-        # one line instead of the league note plus this one
-        league_note = next((w for w in warnings
-                            if w.startswith("batter strikeouts weren't recorded")), None)
-        if league_note:
-            warnings.remove(league_note)
-            source = " (taken from its pitchers' totals)"
-        else:
-            source = ""
+        # one line instead of the league note(s) plus this one (a traded
+        # player's blended league carries a note per league)
+        league_notes = [w for w in warnings
+                        if w.startswith("batter strikeouts weren't recorded")]
+        warnings = [w for w in warnings if w not in league_notes]
+        source = " (taken from its pitchers' totals)" if league_notes else ""
         warnings.append(f"strikeouts (SO) weren't recorded for this player "
                         f"{when}: the card uses the league strikeout rate{source}")
     if card_type == "batter" and "CS" in missing and (stats.get("SB") or 0) > 0:
