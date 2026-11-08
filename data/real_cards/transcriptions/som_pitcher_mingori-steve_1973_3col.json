@@ -1,0 +1,93 @@
+{
+  "cardId": "pitcher_mingori-steve_1973",
+  "sourceUrl": "https://www.strat-o-matic.com/announcements/1973-baseball-corrections/",
+  "sourceImage": "https://s3.amazonaws.com/strat-patch-downloads/1973mingoribas.jpg",
+  "cardType": "pitcher",
+  "side": "3col",
+  "official": true,
+  "player": {
+    "name": "Steve Mingori",
+    "throws": null,
+    "bats": null,
+    "team": "Kansas City",
+    "year": 1973,
+    "cardNumber": null,
+    "specialDesignation": null
+  },
+  "ratings": {
+    "role": {
+      "type": "relief"
+    },
+    "pitcherFielding": "pitcher-4",
+    "battingNumber": "batting# 1",
+    "notes": "Header reads: 'STEVE MINGORI   pitcher-4   relief' / 'batting# 1' and 'PITCHING CARD   KANSAS CITY'. 'pitcher-4' is the pitcher's fielding rating; 'batting# 1' his batting/bunting designation; 'relief' the role for this basic-side card."
+  },
+  "grids": [
+    {
+      "vs": "all",
+      "percent": null,
+      "columns": [
+        { "col": 4, "cells": [
+          {"roll": 2, "raw": "flyball (rf)C", "outcomes": [{"range": null, "result": "flyball (rf)C"}]},
+          {"roll": 3, "raw": "groundball (1b)C", "outcomes": [{"range": null, "result": "groundball (1b)C"}]},
+          {"roll": 4, "raw": "CATCHER'S CARD X", "outcomes": [{"range": null, "result": "CATCHER'S CARD X"}]},
+          {"roll": 5, "raw": "groundball (2b)C", "outcomes": [{"range": null, "result": "groundball (2b)C"}]},
+          {"roll": 6, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 7, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 8, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 9, "raw": "HOMERUN", "outcomes": [{"range": null, "result": "HOMERUN"}]},
+          {"roll": 10, "raw": "flyball (cf)B", "outcomes": [{"range": null, "result": "flyball (cf)B"}]},
+          {"roll": 11, "raw": "GROUND-BALL(p)X", "outcomes": [{"range": null, "result": "GROUND-BALL(p)X"}]},
+          {"roll": 12, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]}
+        ] },
+        { "col": 5, "cells": [
+          {"roll": 2, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 3, "raw": "WALK", "outcomes": [{"range": null, "result": "WALK"}]},
+          {"roll": 4, "raw": "flyball (rf)C", "outcomes": [{"range": null, "result": "flyball (rf)C"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "DOUBLE** 1-15 / SINGLE** 16-20", "outcomes": [{"range": [1, 15], "result": "DOUBLE**"}, {"range": [16, 20], "result": "SINGLE**"}]},
+          {"roll": 7, "raw": "SINGLE* 1-2 / lineout (1b) 3-20", "outcomes": [{"range": [1, 2], "result": "SINGLE*"}, {"range": [3, 20], "result": "lineout (1b)"}]},
+          {"roll": 8, "raw": "HOMERUN 1-2 / flyball (rf)B 3-20", "outcomes": [{"range": [1, 2], "result": "HOMERUN"}, {"range": [3, 20], "result": "flyball (rf)B"}]},
+          {"roll": 9, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 10, "raw": "GROUND-BALL(ss)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 11, "raw": "GROUND-BALL(1b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(1b)X"}]},
+          {"roll": 12, "raw": "GROUND-BALL(2b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(2b)X"}]}
+        ] },
+        { "col": 6, "cells": [
+          {"roll": 2, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]},
+          {"roll": 3, "raw": "FLYBALL (lf)X", "outcomes": [{"range": null, "result": "FLYBALL (lf)X"}]},
+          {"roll": 4, "raw": "GROUND-BALL(3b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(3b)X"}]},
+          {"roll": 5, "raw": "strikeout", "outcomes": [{"range": null, "result": "strikeout"}]},
+          {"roll": 6, "raw": "SINGLE", "outcomes": [{"range": null, "result": "SINGLE"}]},
+          {"roll": 7, "raw": "TRIPLE 1 / SINGLE** 2-20", "outcomes": [{"range": [1, 1], "result": "TRIPLE"}, {"range": [2, 20], "result": "SINGLE**"}]},
+          {"roll": 8, "raw": "GROUND-BALL(2b)X", "outcomes": [{"range": null, "result": "GROUND-BALL(2b)X"}]},
+          {"roll": 9, "raw": "GROUND-BALL(ss)X", "outcomes": [{"range": null, "result": "GROUND-BALL(ss)X"}]},
+          {"roll": 10, "raw": "FLYBALL (cf)X", "outcomes": [{"range": null, "result": "FLYBALL (cf)X"}]},
+          {"roll": 11, "raw": "FLYBALL (rf)X", "outcomes": [{"range": null, "result": "FLYBALL (rf)X"}]},
+          {"roll": 12, "raw": "groundball (p)B", "outcomes": [{"range": null, "result": "groundball (p)B"}]}
+        ] }
+      ]
+    }
+  ],
+  "statRecord": {
+    "kind": "PITCHING RECORD",
+    "season": 1973,
+    "stats": {
+      "W": 3,
+      "L": 3,
+      "ERA": "3.57",
+      "STARTS": 1,
+      "SAVES": 1,
+      "IP": 68,
+      "HITS ALLOWED": 69,
+      "BB": 33,
+      "SO": 50,
+      "HOMERUNS ALLOWED": 9
+    }
+  },
+  "transcription": {
+    "confidence": "high",
+    "uncertainCells": [],
+    "notes": "Official Strat-O-Matic correction: the 1973 set's Steve Mingori (KC) card was printed wrong, and Strat-O-Matic posted corrected basic and advanced card images on its '1973 Baseball Corrections' announcement (sourceUrl), stating 'these posted card images are the official corrections' (no physical reprint). This is the basic side (575x1001 scan, sourceImage). Read twice: (1) from a 1.3x view of the whole card, (2) from 2.2-3x upscaled per-column crops and a stat-box crop; no differences. Split results print each d20 range on its own line under the result (e.g. 'DOUBLE**' / '1-15' / 'SINGLE**' / '16-20'); X chances print without spaces ('GROUND-BALL(ss)X'). The printed line matches Lahman (3-3, 3.57, 68 IP, 69 H, 33 BB, 50 SO, 9 HR; his 1973 season was split between Cleveland and Kansas City, card team Kansas City)."
+  }
+}
